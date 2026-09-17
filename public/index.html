@@ -647,147 +647,160 @@
             .form-group.col-span-2, .form-group.col-span-3 { grid-column: span 1; }
             .module-grid { grid-template-columns: repeat(2, 1fr); }
             .detail-grid { grid-template-columns: 1fr; }
-        /* ══ C# APP REGISTRATION FORM STYLES (EXACT WINDOWS FORM REPLICA) ══ */
+        /* ══ C# APP REGISTRATION FORM STYLES (ENLARGED SPACIOUS WINDOWS FORM REPLICA) ══ */
         .modal-desktop {
-            max-width: 1260px !important;
+            width: 98vw !important;
+            max-width: 1560px !important;
             background: #f0f0f0 !important;
-            border: 2px solid #555555;
-            border-radius: 3px !important;
-            box-shadow: 0 12px 48px rgba(0,0,0,0.5) !important;
+            border: 2px solid #475569;
+            border-radius: 4px !important;
+            box-shadow: 0 16px 56px rgba(0,0,0,0.6) !important;
             overflow: hidden;
+            margin: 12px auto !important;
         }
         .desktop-window-titlebar {
-            background: #e8e8e8;
-            border-bottom: 1px solid #b0b0b0;
+            background: #e2e8f0;
+            border-bottom: 1.5px solid #94a3b8;
             display: flex;
             align-items: center;
             justify-content: space-between;
-            padding: 2px 6px;
+            padding: 4px 10px;
             font-family: var(--ku);
             user-select: none;
         }
         .desktop-window-title {
-            font-size: 12px;
-            font-weight: 700;
-            color: #333333;
+            font-size: 13.5px;
+            font-weight: 800;
+            color: #1e293b;
+            letter-spacing: 0.5px;
         }
         .desktop-btn-close {
-            background: #e81123;
+            background: #dc2626;
             color: #ffffff;
             border: none;
-            width: 32px;
-            height: 22px;
-            font-size: 12px;
-            font-weight: 700;
+            width: 36px;
+            height: 25px;
+            font-size: 14px;
+            font-weight: 800;
             cursor: pointer;
             display: flex;
             align-items: center;
             justify-content: center;
+            border-radius: 2px;
             transition: background 0.15s;
         }
-        .desktop-btn-close:hover { background: #b80d1b; }
+        .desktop-btn-close:hover { background: #b91c1c; }
         .desktop-form-container {
-            background: #f4f4f4;
-            border: 1px solid #b8b8b8;
-            border-radius: 2px;
-            padding: 12px 16px 14px;
+            background: #ffffff;
+            border: 1.5px solid #cbd5e1;
+            border-radius: 4px;
+            padding: 16px 24px 18px;
             font-family: var(--ku);
+            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
         }
         .df-user-badge {
-            background: #ffff66;
-            border: 1px solid #d4d400;
+            background: #ffff4d;
+            border: 1.5px solid #d4d400;
             color: #000000;
-            font-size: 20px;
+            font-size: 22px;
             font-weight: 900;
-            padding: 1px 12px;
-            min-width: 36px;
+            padding: 2px 16px;
+            min-width: 44px;
             text-align: center;
-            box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+            border-radius: 3px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.15);
         }
         .df-row {
             display: flex;
             align-items: center;
-            gap: 5px;
-            margin-bottom: 6px;
+            gap: 8px;
+            margin-bottom: 9px;
             flex-wrap: nowrap;
         }
         .df-label {
-            font-size: 13px;
-            font-weight: 700;
-            color: #000000;
+            font-size: 14px;
+            font-weight: 800;
+            color: #0f172a;
             white-space: nowrap;
             user-select: none;
             font-family: var(--ku);
+            margin-left: 2px;
         }
         .df-input {
-            height: 26px;
-            padding: 2px 6px;
-            border: 1px solid #7f9db9;
-            border-radius: 1px;
-            font-size: 13px;
+            height: 32px;
+            padding: 3px 8px;
+            border: 1.5px solid #94a3b8;
+            border-radius: 3px;
+            font-size: 14px;
             font-family: var(--ku) !important;
             background: #ffffff;
             outline: none;
             color: #000000;
+            transition: border-color 0.15s, box-shadow 0.15s;
         }
         .df-input:focus {
-            border-color: #0055ea;
-            box-shadow: 0 0 0 1px #0055ea;
+            border-color: #2563eb;
+            box-shadow: 0 0 0 2px rgba(37,99,235,0.25);
+            background: #ffffff;
         }
         .df-select {
-            height: 26px;
-            padding: 2px 18px 2px 6px;
-            border: 1px solid #7f9db9;
-            border-radius: 1px;
-            font-size: 13px;
+            height: 32px;
+            padding: 3px 22px 3px 8px;
+            border: 1.5px solid #94a3b8;
+            border-radius: 3px;
+            font-size: 14px;
             font-family: var(--ku) !important;
-            background: #ffffff url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%228%22%20height%3D%225%22%20viewBox%3D%220%200%208%205%22%3E%3Cpath%20d%3D%22M0%200l4%204%204-4z%22%20fill%3D%22%23222222%22%2F%3E%3C%2Fsvg%3E") no-repeat left 5px center;
-            background-size: 8px 5px;
+            background: #ffffff url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2210%22%20height%3D%226%22%20viewBox%3D%220%200%2010%206%22%3E%3Cpath%20d%3D%22M0%200l5%205%205-5z%22%20fill%3D%22%231e293b%22%2F%3E%3C%2Fsvg%3E") no-repeat left 6px center;
+            background-size: 10px 6px;
             outline: none;
             color: #000000;
             -webkit-appearance: none;
             -moz-appearance: none;
             appearance: none;
             cursor: pointer;
+            transition: border-color 0.15s, box-shadow 0.15s;
         }
         .df-select:focus {
-            border-color: #0055ea;
-            box-shadow: 0 0 0 1px #0055ea;
+            border-color: #2563eb;
+            box-shadow: 0 0 0 2px rgba(37,99,235,0.25);
+            background: #ffffff;
         }
         .df-plate {
-            border-bottom: 2px solid #0055d4 !important;
+            border-bottom: 3px solid #0055d4 !important;
             text-align: center;
-            font-weight: 800;
+            font-weight: 900;
+            font-size: 15px;
         }
         .df-cyan {
             background: #cbf5fb !important;
-            border-color: #7f9db9 !important;
-            font-weight: 700;
+            border-color: #0284c7 !important;
+            font-weight: 800;
         }
         .df-pink {
             background: #ffb6c1 !important;
-            border-color: #7f9db9 !important;
-            font-weight: 700;
+            border-color: #f472b6 !important;
+            font-weight: 800;
             color: #000000 !important;
             text-align: center;
         }
         .df-red-text {
             color: #dc2626 !important;
             font-weight: 900 !important;
-            font-size: 15px !important;
+            font-size: 16px !important;
         }
         .df-btn-search {
             background: #ffff00;
-            border: 1px solid #707070;
+            border: 1.5px solid #707070;
             color: #000000;
             font-weight: 900;
-            font-size: 13px;
+            font-size: 14px;
             font-family: var(--ku);
-            padding: 2px 14px;
-            height: 26px;
-            border-radius: 1px;
+            padding: 3px 18px;
+            height: 32px;
+            border-radius: 3px;
             cursor: pointer;
             white-space: nowrap;
+            transition: background 0.15s;
         }
         .df-btn-search:hover { background: #fff633; }
         .df-btn-search:active { background: #e6e600; }
@@ -795,27 +808,28 @@
             display: flex;
             align-items: center;
             justify-content: space-between;
-            margin-top: 14px;
-            padding-top: 8px;
-            gap: 6px;
+            margin-top: 16px;
+            padding-top: 12px;
+            border-top: 1.5px solid #e2e8f0;
+            gap: 8px;
             flex-wrap: nowrap;
         }
         .df-actions-group {
             display: flex;
             align-items: center;
-            gap: 6px;
+            gap: 8px;
             flex-wrap: nowrap;
         }
         .btn-df {
-            height: 32px;
-            padding: 3px 12px;
-            border-radius: 1px;
-            font-size: 13.5px;
-            font-weight: 800;
+            height: 36px;
+            padding: 4px 16px;
+            border-radius: 3px;
+            font-size: 14px;
+            font-weight: 900;
             font-family: var(--ku);
             cursor: pointer;
-            border: 1px solid #707070;
-            transition: opacity 0.1s;
+            border: 1.5px solid #64748b;
+            transition: opacity 0.1s, transform 0.1s;
             white-space: nowrap;
             color: #000000;
         }
@@ -828,7 +842,7 @@
         .btn-df-green:hover { background: #00cc00; }
         .btn-df-pink { background: #ff9999; }
         .btn-df-pink:hover { background: #ff8080; }
-        .btn-df-yellow-long { background: #ffff00; padding: 3px 16px; }
+        .btn-df-yellow-long { background: #ffff00; padding: 4px 20px; }
         .btn-df-yellow-long:hover { background: #ffff33; }
     </style>
 </head>
@@ -1094,13 +1108,13 @@
                 <!-- ROW 1 (Plate, Province, Dept, Office, Search, To, Date) -->
                 <div class="df-row">
                     <span class="df-label">ژمارەی ئوتومبێل</span>
-                    <input type="text" id="dfA" class="df-input df-plate c4-kurd" style="width:130px;" placeholder="">
+                    <input type="text" id="dfA" class="df-input df-plate c4-kurd" style="width:160px;" placeholder="">
                     
                     <span class="df-label">تابلۆی</span>
-                    <input type="text" id="dfB" list="provinceList" class="df-input c4-kurd" style="width:85px;text-align:center;" value="سلێمانی">
+                    <input type="text" id="dfB" list="provinceList" class="df-input c4-kurd" style="width:110px;text-align:center;" value="سلێمانی">
                     
                     <span class="df-label">بەش</span>
-                    <select id="dfC" class="df-select" style="width:95px;">
+                    <select id="dfC" class="df-select" style="width:120px;">
                         <option value="تایبەت" selected>تایبەت</option>
                         <option value="بار">بار</option>
                         <option value="باص">باص</option>
@@ -1109,7 +1123,7 @@
                         <option value="تراکتۆر">تراکتۆر</option>
                     </select>
                     
-                    <select id="dfD" class="df-select" style="width:125px;">
+                    <select id="dfD" class="df-select" style="width:150px;">
                         <option value="عمر عوسمان">عمر عوسمان</option>
                         <option value="بێستون">بێستون</option>
                         <option value="کاروان">کاروان</option>
@@ -1120,18 +1134,18 @@
                     <button type="button" class="df-btn-search" onclick="dfSearchCar()">گەڕان</button>
                     
                     <span class="df-label">بۆ</span>
-                    <input type="text" id="dfTo" class="df-input df-pink c4-kurd" style="width:215px;" value="هاتووچۆی پارێزگای سلێمانی">
+                    <input type="text" id="dfTo" class="df-input df-pink c4-kurd" style="width:260px;" value="هاتووچۆی پارێزگای سلێمانی">
                     
-                    <input type="date" id="dfDD" class="df-input" style="width:125px;margin-right:auto;">
+                    <input type="date" id="dfDD" class="df-input" style="width:145px;margin-right:auto;">
                 </div>
 
                 <!-- ROW 2 (Barad 1, Barad 2, Transaction Type) -->
                 <div class="df-row">
                     <span class="df-label">بەڕادی هاتووچۆ</span>
-                    <input type="text" id="dfE" list="baradList" class="df-input c4-kurd" style="width:215px;" placeholder="">
+                    <input type="text" id="dfE" list="baradList" class="df-input c4-kurd" style="width:260px;" placeholder="">
                     
                     <span class="df-label">* بەڕادی هاتووچۆ</span>
-                    <input type="text" id="dfF" list="baradList" class="df-input c4-kurd" style="width:215px;" value="*">
+                    <input type="text" id="dfF" list="baradList" class="df-input c4-kurd" style="width:260px;" value="*">
                     
                     <span class="df-label">جۆری مامەڵە</span>
                     <select id="dfH" class="df-select" style="flex:1;">
@@ -1158,7 +1172,7 @@
                 <!-- ROW 5 (Group, Fuel, Color, Extra, Gear, Small, Left) -->
                 <div class="df-row">
                     <span class="df-label">گرووپ</span>
-                    <select id="dfJ" class="df-select" style="width:85px;">
+                    <select id="dfJ" class="df-select" style="width:115px;">
                         <option value="صالون" selected>صالون</option>
                         <option value="استيشن">استيشن</option>
                         <option value="بيك اب">بيك اب</option>
@@ -1167,7 +1181,7 @@
                     </select>
                     
                     <span class="df-label">سووتەمەنی</span>
-                    <select id="dfK" class="df-select" style="width:95px;">
+                    <select id="dfK" class="df-select" style="width:125px;">
                         <option value=""></option>
                         <option value="بەنزین" selected>بەنزین</option>
                         <option value="گاز">گاز</option>
@@ -1177,54 +1191,54 @@
                     </select>
                     
                     <span class="df-label">ڕەنگ</span>
-                    <input type="text" id="dfL" list="colorList" class="df-input c4-kurd" style="width:95px;" placeholder="">
+                    <input type="text" id="dfL" list="colorList" class="df-input c4-kurd" style="width:125px;" placeholder="">
                     
                     <input type="text" id="dfColorExtra" list="colorList" class="df-input c4-kurd" style="flex:1;" placeholder="">
                     
                     <span class="df-label">گێڕ</span>
-                    <select id="dfM" class="df-select" style="width:75px;">
+                    <select id="dfM" class="df-select" style="width:95px;">
                         <option value="ئۆتۆماتیک" selected>ئۆتۆماتیک</option>
                         <option value="عادی">عادی</option>
                     </select>
                     
-                    <input type="text" id="dfStatusSmall" class="df-input" style="width:35px;text-align:center;">
+                    <input type="text" id="dfStatusSmall" class="df-input" style="width:48px;text-align:center;">
                     
-                    <input type="text" id="dfExtraLeft" class="df-input" style="width:115px;">
+                    <input type="text" id="dfExtraLeft" class="df-input" style="width:135px;">
                 </div>
 
                 <!-- ROW 6 (Doors, Passengers, Model, Cylinders, Inspection Fee, Fees) -->
                 <div class="df-row">
                     <span class="df-label">ژ.دەرگا</span>
-                    <input type="number" id="dfN" class="df-input" style="width:55px;text-align:center;" value="0">
+                    <input type="number" id="dfN" class="df-input" style="width:70px;text-align:center;" value="0">
                     
                     <span class="df-label">ژ.سەرنشین</span>
-                    <input type="number" id="dfQ" class="df-input" style="width:55px;text-align:center;" value="0">
+                    <input type="number" id="dfQ" class="df-input" style="width:70px;text-align:center;" value="0">
                     
                     <span class="df-label">مۆدێل</span>
-                    <input type="number" id="dfP" class="df-input" style="width:65px;text-align:center;" value="0">
+                    <input type="number" id="dfP" class="df-input" style="width:85px;text-align:center;" value="0">
                     
                     <span class="df-label">ژ.بستۆن</span>
-                    <input type="number" id="dfO" class="df-input" style="width:55px;text-align:center;" value="0">
+                    <input type="number" id="dfO" class="df-input" style="width:70px;text-align:center;" value="0">
                     
                     <span class="df-label">اجور كشف</span>
-                    <input type="text" id="dfII" class="df-input" style="width:65px;text-align:center;" value="0">
+                    <input type="text" id="dfII" class="df-input" style="width:85px;text-align:center;" value="0">
                     
                     <span class="df-label">پارەی رسومات</span>
-                    <input type="text" id="dfJJ" class="df-input" style="width:90px;text-align:center;" value="">
+                    <input type="text" id="dfJJ" class="df-input" style="width:110px;text-align:center;" value="">
                 </div>
 
                 <!-- ROW 7 (Chassis/VIN, Cabin, Star, Mobile) -->
                 <div class="df-row">
                     <span class="df-label">ژمارەی شاسی</span>
-                    <input type="text" id="dfR" class="df-input df-cyan" style="width:280px;text-transform:uppercase;letter-spacing:1px;font-weight:700;" placeholder="" required>
+                    <input type="text" id="dfR" class="df-input df-cyan" style="width:340px;text-transform:uppercase;letter-spacing:1px;font-weight:800;font-size:15px;" placeholder="" required>
                     
                     <span class="df-label">ژ.قەمەرە</span>
-                    <input type="text" id="dfS" class="df-input df-cyan" style="width:55px;text-align:center;color:#0284c7;font-weight:700;" value="0">
+                    <input type="text" id="dfS" class="df-input df-cyan" style="width:70px;text-align:center;color:#0284c7;font-weight:800;" value="0">
                     
-                    <input type="text" id="dfStar" class="df-input" style="width:240px;text-align:center;font-weight:bold;font-size:16px;" value="*">
+                    <input type="text" id="dfStar" class="df-input" style="width:280px;text-align:center;font-weight:bold;font-size:17px;" value="*">
                     
                     <span class="df-label">ژ.مۆبایل</span>
-                    <input type="text" id="dfT" class="df-input df-red-text" style="width:150px;text-align:center;" value="0">
+                    <input type="text" id="dfT" class="df-input df-red-text" style="width:180px;text-align:center;" value="0">
                 </div>
 
                 <!-- ROW 8 (Notes) -->
@@ -1240,16 +1254,16 @@
                 </div>
                 <div class="df-row">
                     <span class="df-label">ژمارەی شاسی عەرەبانە</span>
-                    <input type="text" id="dfW" class="df-input" style="width:230px;text-align:center;" value="*">
+                    <input type="text" id="dfW" class="df-input" style="width:280px;text-align:center;" value="*">
                     
                     <span class="df-label">ڕەنگی</span>
-                    <input type="text" id="dfX" class="df-input c4-kurd" style="width:75px;">
+                    <input type="text" id="dfX" class="df-input c4-kurd" style="width:100px;">
                     
                     <div style="flex:1;"></div>
                     
                     <span class="df-label">تەن</span>
-                    <input type="number" id="dfY" class="df-input" style="width:55px;text-align:center;" value="0">
-                    <select class="df-select" style="width:30px;padding:0;"></select>
+                    <input type="number" id="dfY" class="df-input" style="width:70px;text-align:center;" value="0">
+                    <select class="df-select" style="width:36px;padding:0;"></select>
                 </div>
 
                 <!-- ROW 10 (Trailer 2) -->
@@ -1259,16 +1273,16 @@
                 </div>
                 <div class="df-row">
                     <span class="df-label">ژمارەی شاسی عەرەبانە</span>
-                    <input type="text" id="dfAA" class="df-input" style="width:230px;text-align:center;" value="*">
+                    <input type="text" id="dfAA" class="df-input" style="width:280px;text-align:center;" value="*">
                     
                     <span class="df-label">ڕەنگی</span>
-                    <input type="text" id="dfBB" class="df-input c4-kurd" style="width:75px;">
+                    <input type="text" id="dfBB" class="df-input c4-kurd" style="width:100px;">
                     
                     <div style="flex:1;"></div>
                     
                     <span class="df-label">تەن</span>
-                    <input type="number" id="dfCC" class="df-input" style="width:55px;text-align:center;" value="0">
-                    <select class="df-select" style="width:30px;padding:0;"></select>
+                    <input type="number" id="dfCC" class="df-input" style="width:70px;text-align:center;" value="0">
+                    <select class="df-select" style="width:36px;padding:0;"></select>
                 </div>
 
                 <!-- BOTTOM ACTIONS & BARCODE (Right to Left: Barcode -> Yellow long -> Pink -> Green -> Yellow -> Red) -->
@@ -1282,28 +1296,30 @@
                     </div>
 
                     <!-- Barcode graphic exactly on the right -->
-                    <div style="display:flex;align-items:center;background:white;padding:2px 8px;border:1px solid #707070;border-radius:1px;height:32px;">
-                        <svg width="105" height="26" viewBox="0 0 105 26">
-                            <rect x="2" y="1" width="3" height="24" fill="#000"/>
-                            <rect x="7" y="1" width="2" height="24" fill="#000"/>
-                            <rect x="11" y="1" width="4" height="24" fill="#000"/>
-                            <rect x="17" y="1" width="2" height="24" fill="#000"/>
-                            <rect x="21" y="1" width="5" height="24" fill="#000"/>
-                            <rect x="28" y="1" width="2" height="24" fill="#000"/>
-                            <rect x="32" y="1" width="3" height="24" fill="#000"/>
-                            <rect x="37" y="1" width="5" height="24" fill="#000"/>
-                            <rect x="44" y="1" width="2" height="24" fill="#000"/>
-                            <rect x="48" y="1" width="4" height="24" fill="#000"/>
-                            <rect x="54" y="1" width="2" height="24" fill="#000"/>
-                            <rect x="58" y="1" width="5" height="24" fill="#000"/>
-                            <rect x="65" y="1" width="3" height="24" fill="#000"/>
-                            <rect x="70" y="1" width="2" height="24" fill="#000"/>
-                            <rect x="74" y="1" width="4" height="24" fill="#000"/>
-                            <rect x="80" y="1" width="3" height="24" fill="#000"/>
-                            <rect x="85" y="1" width="2" height="24" fill="#000"/>
-                            <rect x="89" y="1" width="5" height="24" fill="#000"/>
-                            <rect x="96" y="1" width="2" height="24" fill="#000"/>
-                            <rect x="100" y="1" width="3" height="24" fill="#000"/>
+                    <div style="display:flex;align-items:center;background:white;padding:3px 10px;border:1.5px solid #64748b;border-radius:2px;height:36px;">
+                        <svg width="115" height="28" viewBox="0 0 115 28">
+                            <rect x="2" y="1" width="3" height="26" fill="#000"/>
+                            <rect x="7" y="1" width="2" height="26" fill="#000"/>
+                            <rect x="11" y="1" width="4" height="26" fill="#000"/>
+                            <rect x="17" y="1" width="2" height="26" fill="#000"/>
+                            <rect x="21" y="1" width="5" height="26" fill="#000"/>
+                            <rect x="28" y="1" width="2" height="26" fill="#000"/>
+                            <rect x="32" y="1" width="3" height="26" fill="#000"/>
+                            <rect x="37" y="1" width="5" height="26" fill="#000"/>
+                            <rect x="44" y="1" width="2" height="26" fill="#000"/>
+                            <rect x="48" y="1" width="4" height="26" fill="#000"/>
+                            <rect x="54" y="1" width="2" height="26" fill="#000"/>
+                            <rect x="58" y="1" width="5" height="26" fill="#000"/>
+                            <rect x="65" y="1" width="3" height="26" fill="#000"/>
+                            <rect x="70" y="1" width="2" height="26" fill="#000"/>
+                            <rect x="74" y="1" width="4" height="26" fill="#000"/>
+                            <rect x="80" y="1" width="3" height="26" fill="#000"/>
+                            <rect x="85" y="1" width="2" height="26" fill="#000"/>
+                            <rect x="89" y="1" width="5" height="26" fill="#000"/>
+                            <rect x="96" y="1" width="2" height="26" fill="#000"/>
+                            <rect x="100" y="1" width="3" height="26" fill="#000"/>
+                            <rect x="105" y="1" width="4" height="26" fill="#000"/>
+                            <rect x="111" y="1" width="2" height="26" fill="#000"/>
                         </svg>
                     </div>
                 </div>
@@ -1708,11 +1724,50 @@ document.addEventListener('keydown', e => {
     if(e.key === 'Escape') document.querySelectorAll('.overlay.show').forEach(ov => ov.classList.remove('show'));
 });
 
+// ─── ENTER KEY AS TAB (RAPID DATA ENTRY FOR DESKTOP) ───────────────────
+function initEnterAsTab() {
+    const modal = document.getElementById('modalRegister');
+    if (!modal || modal._enterTabInit) return;
+    modal._enterTabInit = true;
+
+    modal.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter') {
+            const target = e.target;
+            // If focused on an action button, allow Enter to click it
+            if (target.tagName === 'BUTTON') {
+                return;
+            }
+
+            // In inputs and selects, pressing Enter moves to the next field (Shift+Enter to previous)
+            if (target.tagName === 'INPUT' || target.tagName === 'SELECT') {
+                e.preventDefault();
+                
+                const focusables = Array.from(modal.querySelectorAll(
+                    'input:not([type="hidden"]):not([disabled]), select:not([disabled]), button:not([disabled])'
+                )).filter(el => el.offsetParent !== null && !el.classList.contains('desktop-btn-close'));
+
+                const index = focusables.indexOf(target);
+                if (index > -1) {
+                    const nextIndex = e.shiftKey ? index - 1 : index + 1;
+                    if (nextIndex >= 0 && nextIndex < focusables.length) {
+                        const nextEl = focusables[nextIndex];
+                        nextEl.focus();
+                        if (nextEl.select && typeof nextEl.select === 'function' && nextEl.tagName === 'INPUT') {
+                            nextEl.select();
+                        }
+                    }
+                }
+            }
+        }
+    });
+}
+
 // ─── 1. MODULE: REGISTER VEHICLE (EXACT C# DESKTOP LOGIC) ───────────────
 let loadedVehicleId = null;
 
 function openRegisterModal() {
     try {
+        initEnterAsTab();
         const regAlert = document.getElementById('regAlert');
         if (regAlert) regAlert.innerHTML = '';
         if (currentUser) {
@@ -1733,6 +1788,13 @@ function openRegisterModal() {
         console.warn('Register modal init warning:', err);
     }
     openOverlay('modalRegister');
+    setTimeout(() => {
+        const first = document.getElementById('dfA');
+        if (first) {
+            first.focus();
+            if (first.select) first.select();
+        }
+    }, 120);
 }
 
 function dfResetNew() {
