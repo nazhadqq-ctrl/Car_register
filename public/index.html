@@ -1262,7 +1262,7 @@
                     <input type="text" id="dfI" list="categoryList" class="df-input c4-kurd" style="flex:1;" placeholder="">
                 </div>
 
-                <!-- ROW 5 (Group, Fuel, Color, Extra, Gear, Small, Left) -->
+                <!-- ROW 5 (Group, Fuel, Color, Gear) -->
                 <div class="df-row">
                     <span class="df-label">گرووپ</span>
                     <select id="dfJ" class="df-select" style="width:115px;">
@@ -1289,14 +1289,13 @@
                     </select>
                     
                     <span class="df-label">گێڕ</span>
-                    <select id="dfM" class="df-select" style="width:95px;">
+                    <select id="dfM" class="df-select" style="width:240px;font-weight:800;">
                         <option value="ئۆتۆماتیک" selected>ئۆتۆماتیک</option>
                         <option value="عادی">عادی</option>
+                        <option value="کارەبایی">کارەبایی</option>
+                        <option value="هایبرد">هایبرد</option>
+                        <option value="هایدرۆجین">هایدرۆجین</option>
                     </select>
-                    
-                    <input type="text" id="dfStatusSmall" class="df-input" style="width:48px;text-align:center;">
-                    
-                    <input type="text" id="dfExtraLeft" class="df-input" style="width:135px;">
                 </div>
 
                 <!-- ROW 6 (Doors, Passengers, Model, Cylinders, Inspection Fee, Fees) -->
@@ -1320,17 +1319,19 @@
                     <input type="text" id="dfJJ" class="df-input" style="width:110px;text-align:center;" value="">
                 </div>
 
-                <!-- ROW 7 (Chassis/VIN, Key Length, Cabin, Star, Mobile) -->
+                <!-- ROW 7 (Chassis/VIN, Key Length, Cabin, Barcode, Mobile) -->
                 <div class="df-row">
                     <span class="df-label">ژمارەی شاسی</span>
-                    <input type="text" id="dfR" class="df-input df-cyan auto-en-upper" style="width:315px;text-transform:uppercase;letter-spacing:1px;font-weight:900;font-size:15px;direction:ltr;font-family:Consolas, monospace, sans-serif;" placeholder="" required>
+                    <input type="text" id="dfR" class="df-input df-cyan auto-en-upper" style="width:315px;text-transform:uppercase;letter-spacing:1px;font-weight:900;font-size:15px;direction:ltr;font-family:'Courier New', Courier, monospace;text-align:center;" placeholder="" required>
                     
                     <input type="text" id="dfKeyLength" class="df-input" style="width:45px;text-align:center;background:#fef08a;border:1.5px solid #ca8a04;color:#854d0e;font-weight:900;font-size:14px;cursor:default;" readonly value="0" title="Key Length (ژمارەی پیتەکان)">
                     
                     <span class="df-label">ژ.قەمەرە</span>
-                    <input type="text" id="dfS" class="df-input df-cyan auto-en-upper" style="width:75px;text-align:center;color:#0284c7;font-weight:900;direction:ltr;font-family:Consolas, monospace, sans-serif;" value="0">
+                    <input type="text" id="dfS" class="df-input df-cyan auto-en-upper" style="width:75px;text-align:center;color:#0284c7;font-weight:900;direction:ltr;font-family:'Courier New', Courier, monospace;" value="0">
                     
-                    <input type="text" id="dfStar" class="df-input" style="width:260px;text-align:center;font-weight:bold;font-size:17px;" value="*">
+                    <span class="df-label">بارکۆد</span>
+                    <input type="text" id="dfBarcode" class="df-input auto-en-upper" style="width:250px;text-align:center;font-weight:900;font-size:14px;direction:ltr;font-family:'Courier New', Courier, monospace;letter-spacing:1px;color:#1e3a8a;background:#f1f5f9;border:1.5px solid #cbd5e1;" placeholder="چاوەڕوانی شاسی..." disabled>
+                    <input type="hidden" id="dfStar" value="*">
                     
                     <span class="df-label">ژ.مۆبایل</span>
                     <input type="text" id="dfT" class="df-input df-red-text" style="width:170px;text-align:center;" value="0">
@@ -1349,7 +1350,7 @@
                 </div>
                 <div class="df-row">
                     <span class="df-label">ژمارەی شاسی عەرەبانە</span>
-                    <input type="text" id="dfW" class="df-input auto-en-upper" style="width:280px;text-align:center;text-transform:uppercase;direction:ltr;font-family:Consolas, monospace, sans-serif;font-weight:800;" value="*">
+                    <input type="text" id="dfW" class="df-input auto-en-upper" style="width:280px;text-align:center;text-transform:uppercase;direction:ltr;font-family:'Courier New', Courier, monospace;font-weight:900;font-size:14px;letter-spacing:1px;" value="*">
                     
                     <span class="df-label">ڕەنگی</span>
                     <input type="text" id="dfX" class="df-input c4-kurd" style="width:100px;">
@@ -1368,7 +1369,7 @@
                 </div>
                 <div class="df-row">
                     <span class="df-label">ژمارەی شاسی عەرەبانە</span>
-                    <input type="text" id="dfAA" class="df-input auto-en-upper" style="width:280px;text-align:center;text-transform:uppercase;direction:ltr;font-family:Consolas, monospace, sans-serif;font-weight:800;" value="*">
+                    <input type="text" id="dfAA" class="df-input auto-en-upper" style="width:280px;text-align:center;text-transform:uppercase;direction:ltr;font-family:'Courier New', Courier, monospace;font-weight:900;font-size:14px;letter-spacing:1px;" value="*">
                     
                     <span class="df-label">ڕەنگی</span>
                     <input type="text" id="dfBB" class="df-input c4-kurd" style="width:100px;">
@@ -1781,6 +1782,47 @@ function updateKeyLength() {
     }
 }
 
+// ─── UNIQUE BARCODE GENERATOR & ACTIVATION ──────────────────────────────
+function generateUniqueBarcode() {
+    const dfR = document.getElementById('dfR');
+    const ch = dfR ? dfR.value.trim().toUpperCase().replace(/[^A-Z0-9]/g, '') : '';
+    const lastCh = ch.length >= 6 ? ch.slice(-6) : (ch ? ch.padStart(6, '0') : '000000');
+    const now = new Date();
+    const yy = String(now.getFullYear()).slice(-2);
+    const mm = String(now.getMonth() + 1).padStart(2, '0');
+    const dd = String(now.getDate()).padStart(2, '0');
+    const rand = Math.floor(1000 + Math.random() * 9000);
+    return `TC${yy}${mm}${dd}${lastCh}${rand}`;
+}
+
+function updateBarcodeState() {
+    const dfR = document.getElementById('dfR');
+    const bEl = document.getElementById('dfBarcode');
+    if (!dfR || !bEl) return;
+    const cleanCh = dfR.value.replace(/\s+/g, '');
+    if (cleanCh.length >= 5) {
+        bEl.disabled = false;
+        bEl.style.background = '#ffffff';
+        bEl.style.borderColor = '#2563eb';
+        bEl.style.color = '#1e3a8a';
+        bEl.style.cursor = 'text';
+        if (!bEl.value || bEl.value === '*' || bEl.dataset.autoGen === 'true') {
+            bEl.value = generateUniqueBarcode();
+            bEl.dataset.autoGen = 'true';
+        }
+    } else {
+        if (bEl.dataset.autoGen === 'true') {
+            bEl.value = '';
+        }
+        bEl.disabled = true;
+        bEl.style.background = '#f1f5f9';
+        bEl.style.borderColor = '#cbd5e1';
+        bEl.style.color = '#94a3b8';
+        bEl.style.cursor = 'not-allowed';
+        bEl.placeholder = 'چاوەڕوانی شاسی...';
+    }
+}
+
 function setupAutoEnglishUpper() {
     document.addEventListener('input', function(e) {
         if (e.target && e.target.classList.contains('auto-en-upper')) {
@@ -1793,6 +1835,10 @@ function setupAutoEnglishUpper() {
             }
             if (e.target.id === 'dfR') {
                 updateKeyLength();
+                updateBarcodeState();
+            }
+            if (e.target.id === 'dfBarcode') {
+                delete e.target.dataset.autoGen;
             }
         }
     });
@@ -2016,6 +2062,17 @@ function dfResetNew() {
     setVal('dfCC', 0);
     setVal('dfKeyLength', 0);
     updateKeyLength();
+    const bReset = document.getElementById('dfBarcode');
+    if (bReset) {
+        bReset.value = '';
+        delete bReset.dataset.autoGen;
+        bReset.disabled = true;
+        bReset.style.background = '#f1f5f9';
+        bReset.style.borderColor = '#cbd5e1';
+        bReset.style.color = '#94a3b8';
+        bReset.style.cursor = 'not-allowed';
+        bReset.placeholder = 'چاوەڕوانی شاسی...';
+    }
     const regAlert = document.getElementById('regAlert');
     if (regAlert) regAlert.innerHTML = '';
 }
@@ -2088,6 +2145,28 @@ async function dfSearchCar() {
         set('dfQ', r.Q || 0);
         set('dfR', r.R || '');
         updateKeyLength();
+        
+        // Handle Barcode
+        const bEl = document.getElementById('dfBarcode');
+        if (bEl) {
+            const code = r.Barcod || r.KK || (r.R ? generateUniqueBarcode() : '');
+            bEl.value = code;
+            if (code) {
+                bEl.disabled = false;
+                bEl.style.background = '#ffffff';
+                bEl.style.borderColor = '#2563eb';
+                bEl.style.color = '#1e3a8a';
+                bEl.style.cursor = 'text';
+            } else {
+                bEl.disabled = true;
+                bEl.style.background = '#f1f5f9';
+                bEl.style.borderColor = '#cbd5e1';
+                bEl.style.color = '#94a3b8';
+                bEl.style.cursor = 'not-allowed';
+                bEl.placeholder = 'چاوەڕوانی شاسی...';
+            }
+        }
+        
         set('dfS', r.S || 0);
         set('dfStar', '*');
         set('dfT', r.T || 0);
@@ -2222,6 +2301,8 @@ function getFormPayload() {
         II: val('dfII'),
         JJ: val('dfJJ'),
         DD: val('dfDD'),
+        KK: val('dfBarcode') || val('dfStar') || '',
+        Barcode: val('dfBarcode') || val('dfStar') || '',
         GG: currentUser?.name || currentUser?.username || ''
     };
 }

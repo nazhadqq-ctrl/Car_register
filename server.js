@@ -553,7 +553,7 @@ app.post('/api/register', requireAuth, async (req, res) => {
     try {
         const {
             A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U,
-            V, W, X, Y, Z, AA, BB, CC, II, JJ, GG, DD
+            V, W, X, Y, Z, AA, BB, CC, II, JJ, GG, DD, KK, Barcode
         } = req.body;
 
         if (!A && !R) {
@@ -609,8 +609,9 @@ app.post('/api/register', requireAuth, async (req, res) => {
             .input('FF', sql.NVarChar, user)
             .input('GG', sql.NVarChar, GG || '')
             .input('DD', sql.NVarChar, DD || new Date().toISOString().slice(0, 10))
-            .query(`INSERT INTO T1 (A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U, V, W, X, Y, Z, AA, BB, CC, II, JJ, FF, GG, DD, EE)
-                    VALUES (@A, @B, @C, @D, @E, @F, @G, @H, @I, @J, @K, @L, @M, @N, @O, @P, @Q, @R, @S, @T, @U, @V, @W, @X, @Y, @Z, @AA, @BB, @CC, @II, @JJ, @FF, @GG, @DD, GETDATE())`);
+            .input('KK', sql.NVarChar, KK || Barcode || '')
+            .query(`INSERT INTO T1 (A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U, V, W, X, Y, Z, AA, BB, CC, II, JJ, FF, GG, DD, EE, KK)
+                    VALUES (@A, @B, @C, @D, @E, @F, @G, @H, @I, @J, @K, @L, @M, @N, @O, @P, @Q, @R, @S, @T, @U, @V, @W, @X, @Y, @Z, @AA, @BB, @CC, @II, @JJ, @FF, @GG, @DD, GETDATE(), @KK)`);
 
         res.json({ success: true, message: 'ئوتومبێل بە سەرکەوتوویی تۆمارکرا', warnings });
     } catch (err) {
@@ -625,7 +626,7 @@ app.put('/api/register/:id', requireAuth, async (req, res) => {
         const id = req.params.id;
         const {
             A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U,
-            V, W, X, Y, Z, AA, BB, CC, II, JJ, GG, DD
+            V, W, X, Y, Z, AA, BB, CC, II, JJ, GG, DD, KK, Barcode
         } = req.body;
 
         const pool = await getPool();
@@ -665,11 +666,12 @@ app.put('/api/register/:id', requireAuth, async (req, res) => {
             .input('II', sql.NVarChar, II != null ? String(II) : '25000')
             .input('JJ', sql.NVarChar, JJ != null ? String(JJ) : '0')
             .input('GG', sql.NVarChar, GG || '')
+            .input('KK', sql.NVarChar, KK || Barcode || '')
             .query(`UPDATE T1 SET
                         A=@A, B=@B, C=@C, D=@D, E=@E, F=@F, G=@G, H=@H, I=@I, J=@J,
                         K=@K, L=@L, M=@M, N=@N, O=@O, P=@P, Q=@Q, R=@R, S=@S, T=@T,
                         U=@U, V=@V, W=@W, X=@X, Y=@Y, Z=@Z, AA=@AA, BB=@BB, CC=@CC,
-                        II=@II, JJ=@JJ, GG=@GG
+                        II=@II, JJ=@JJ, GG=@GG, KK=@KK
                     WHERE id = @id`);
 
         res.json({ success: true, message: 'زانیاری ئوتومبێل بە سەرکەوتوویی نوێکرایەوە' });
