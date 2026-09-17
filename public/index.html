@@ -1694,10 +1694,12 @@ document.querySelectorAll('.nav-tab').forEach(tab => {
 
 // ─── MODAL OVERLAYS ────────────────────────────────────────────────────
 function openOverlay(id) {
-    document.getElementById(id).classList.add('show');
+    const el = document.getElementById(id);
+    if (el) el.classList.add('show');
 }
 function closeOverlay(id) {
-    document.getElementById(id).classList.remove('show');
+    const el = document.getElementById(id);
+    if (el) el.classList.remove('show');
 }
 document.querySelectorAll('.overlay').forEach(ov => {
     ov.addEventListener('click', function(e) { if(e.target === this) this.classList.remove('show'); });
@@ -1710,59 +1712,74 @@ document.addEventListener('keydown', e => {
 let loadedVehicleId = null;
 
 function openRegisterModal() {
-    document.getElementById('regAlert').innerHTML = '';
-    if (currentUser) {
-        document.getElementById('dfUserBadge').textContent = currentUser.username || currentUser.id || '9';
-        if (currentUser.place) {
-            const opt = Array.from(document.getElementById('dfD').options).find(o => o.value === currentUser.place);
-            if (opt) opt.selected = true;
+    try {
+        const regAlert = document.getElementById('regAlert');
+        if (regAlert) regAlert.innerHTML = '';
+        if (currentUser) {
+            const badge = document.getElementById('dfUserBadge');
+            if (badge) badge.textContent = currentUser.username || currentUser.id || '9';
+            if (currentUser.place) {
+                const dfD = document.getElementById('dfD');
+                if (dfD && dfD.options) {
+                    const opt = Array.from(dfD.options).find(o => o.value === currentUser.place);
+                    if (opt) opt.selected = true;
+                }
+            }
         }
-    }
-    if (!loadedVehicleId) {
-        dfResetNew();
+        if (!loadedVehicleId) {
+            dfResetNew();
+        }
+    } catch(err) {
+        console.warn('Register modal init warning:', err);
     }
     openOverlay('modalRegister');
 }
 
 function dfResetNew() {
     loadedVehicleId = null;
-    document.getElementById('dfA').value = '';
-    document.getElementById('dfB').value = 'سلێمانی';
-    document.getElementById('dfC').value = 'تایبەت';
-    document.getElementById('dfTo').value = 'هاتووچۆی پارێزگای سلێمانی';
-    document.getElementById('dfDD').value = new Date().toISOString().slice(0, 10);
-    document.getElementById('dfE').value = '';
-    document.getElementById('dfF').value = '*';
-    document.getElementById('dfH').value = 'تۆماری یەکەم جار';
-    document.getElementById('dfH2').value = '';
-    document.getElementById('dfG').value = '';
-    document.getElementById('dfI').value = '';
-    document.getElementById('dfJ').value = 'صالون';
-    document.getElementById('dfK').value = 'بەنزین';
-    document.getElementById('dfL').value = '';
-    document.getElementById('dfM').value = 'ئۆتۆماتیک';
-    document.getElementById('dfStatusSmall').value = '';
-    document.getElementById('dfN').value = 0;
-    document.getElementById('dfQ').value = 0;
-    document.getElementById('dfP').value = 0;
-    document.getElementById('dfO').value = 0;
-    document.getElementById('dfII').value = 0;
-    document.getElementById('dfJJ').value = 0;
-    document.getElementById('dfR').value = '';
-    document.getElementById('dfS').value = 0;
-    document.getElementById('dfStar').value = '*';
-    document.getElementById('dfT').value = 0;
-    document.getElementById('dfU').value = '';
-    document.getElementById('dfV').value = '';
-    document.getElementById('dfW').value = '*';
-    document.getElementById('dfX').value = '';
-    document.getElementById('dfY').value = 0;
-    document.getElementById('dfZ').value = '';
-    document.getElementById('dfAA').value = '*';
-    document.getElementById('dfBB').value = '';
-    document.getElementById('dfCC').value = 0;
-    document.getElementById('regAlert').innerHTML = '';
-    showToast('✨ فۆرم بۆ تۆماری نوێ ئامادەکرا');
+    const setVal = (id, val) => {
+        const el = document.getElementById(id);
+        if (el) el.value = val;
+    };
+
+    setVal('dfA', '');
+    setVal('dfB', 'سلێمانی');
+    setVal('dfC', 'تایبەت');
+    setVal('dfTo', 'هاتووچۆی پارێزگای سلێمانی');
+    setVal('dfDD', new Date().toISOString().slice(0, 10));
+    setVal('dfE', '');
+    setVal('dfF', '*');
+    setVal('dfH', 'تۆماری یەکەم جار');
+    setVal('dfG', '');
+    setVal('dfI', '');
+    setVal('dfJ', 'صالون');
+    setVal('dfK', 'بەنزین');
+    setVal('dfL', '');
+    setVal('dfColorExtra', '');
+    setVal('dfM', 'ئۆتۆماتیک');
+    setVal('dfStatusSmall', '');
+    setVal('dfExtraLeft', '');
+    setVal('dfN', 0);
+    setVal('dfQ', 0);
+    setVal('dfP', 0);
+    setVal('dfO', 0);
+    setVal('dfII', 0);
+    setVal('dfJJ', '');
+    setVal('dfR', '');
+    setVal('dfS', 0);
+    setVal('dfStar', '*');
+    setVal('dfT', 0);
+    setVal('dfU', '');
+    setVal('dfV', '');
+    setVal('dfW', '*');
+    setVal('dfX', '');
+    setVal('dfY', 0);
+    setVal('dfZ', '');
+    setVal('dfAA', '*');
+    setVal('dfBB', '');
+    setVal('dfCC', 0);
+    const regAlert = document.getElementById('regAlert');
+    if (regAlert) regAlert.innerHTML = '';
 }
 
 async function dfSearchCar() {
@@ -1785,41 +1802,46 @@ async function dfSearchCar() {
         }
 
         // Populate fields
+        // Populate fields safely
         loadedVehicleId = r.id;
-        document.getElementById('dfA').value = r.A || '';
-        document.getElementById('dfB').value = r.B || 'سلێمانی';
-        document.getElementById('dfC').value = r.C || 'تایبەت';
-        document.getElementById('dfD').value = r.D || '';
-        document.getElementById('dfE').value = r.E || '';
-        document.getElementById('dfF').value = r.F || '*';
-        document.getElementById('dfG').value = r.G || '';
-        document.getElementById('dfH').value = r.H || 'تۆماری یەکەم جار';
-        document.getElementById('dfI').value = r.I || '';
-        document.getElementById('dfJ').value = r.J || 'صالون';
-        document.getElementById('dfK').value = r.K || 'بەنزین';
-        document.getElementById('dfL').value = r.L || '';
-        document.getElementById('dfM').value = r.M || 'ئۆتۆماتیک';
-        document.getElementById('dfN').value = r.N || 0;
-        document.getElementById('dfO').value = r.O || 0;
-        document.getElementById('dfP').value = r.P || 0;
-        document.getElementById('dfQ').value = r.Q || 0;
-        document.getElementById('dfR').value = r.R || '';
-        document.getElementById('dfS').value = r.S || 0;
-        document.getElementById('dfStar').value = '*';
-        document.getElementById('dfT').value = r.T || 0;
-        document.getElementById('dfU').value = r.U || '';
-        document.getElementById('dfV').value = r.V || '';
-        document.getElementById('dfW').value = r.W || '*';
-        document.getElementById('dfX').value = r.X || '';
-        document.getElementById('dfY').value = r.Y || 0;
-        document.getElementById('dfZ').value = r.Z || '';
-        document.getElementById('dfAA').value = r.AA || '*';
-        document.getElementById('dfBB').value = r.BB || '';
-        document.getElementById('dfCC').value = r.CC || 0;
-        document.getElementById('dfII').value = r.II || 0;
-        document.getElementById('dfJJ').value = r.JJ || 0;
+        const set = (id, v) => {
+            const el = document.getElementById(id);
+            if (el) el.value = (v !== null && v !== undefined) ? v : '';
+        };
+        set('dfA', r.A || '');
+        set('dfB', r.B || 'سلێمانی');
+        set('dfC', r.C || 'تایبەت');
+        set('dfD', r.D || '');
+        set('dfE', r.E || '');
+        set('dfF', r.F || '*');
+        set('dfG', r.G || '');
+        set('dfH', r.H || 'تۆماری یەکەم جار');
+        set('dfI', r.I || '');
+        set('dfJ', r.J || 'صالون');
+        set('dfK', r.K || 'بەنزین');
+        set('dfL', r.L || '');
+        set('dfM', r.M || 'ئۆتۆماتیک');
+        set('dfN', r.N || 0);
+        set('dfO', r.O || 0);
+        set('dfP', r.P || 0);
+        set('dfQ', r.Q || 0);
+        set('dfR', r.R || '');
+        set('dfS', r.S || 0);
+        set('dfStar', '*');
+        set('dfT', r.T || 0);
+        set('dfU', r.U || '');
+        set('dfV', r.V || '');
+        set('dfW', r.W || '*');
+        set('dfX', r.X || '');
+        set('dfY', r.Y || 0);
+        set('dfZ', r.Z || '');
+        set('dfAA', r.AA || '*');
+        set('dfBB', r.BB || '');
+        set('dfCC', r.CC || 0);
+        set('dfII', r.II || 0);
+        set('dfJJ', r.JJ || 0);
         if (r.DD) {
-            document.getElementById('dfDD').value = new Date(r.DD).toISOString().slice(0, 10);
+            set('dfDD', new Date(r.DD).toISOString().slice(0, 10));
         }
 
         showToast(`✅ زانیاری ئوتومبێل دۆزرایەوە (ID: ${r.id})`);
@@ -1891,39 +1913,47 @@ async function dfUpdateVehicle() {
 }
 
 function getFormPayload() {
+    const val = id => {
+        const el = document.getElementById(id);
+        return el ? el.value.trim() : '';
+    };
+    const num = id => {
+        const el = document.getElementById(id);
+        return el ? (el.value || 0) : 0;
+    };
     return {
-        A: document.getElementById('dfA').value.trim(),
-        B: document.getElementById('dfB').value.trim(),
-        C: document.getElementById('dfC').value.trim(),
-        D: document.getElementById('dfD').value.trim(),
-        E: document.getElementById('dfE').value.trim(),
-        F: document.getElementById('dfF').value.trim(),
-        G: document.getElementById('dfG').value.trim(),
-        H: document.getElementById('dfH').value.trim(),
-        I: document.getElementById('dfI').value.trim(),
-        J: document.getElementById('dfJ').value.trim(),
-        K: document.getElementById('dfK').value.trim(),
-        L: document.getElementById('dfL').value.trim(),
-        M: document.getElementById('dfM').value.trim(),
-        N: document.getElementById('dfN').value,
-        O: document.getElementById('dfO').value,
-        P: document.getElementById('dfP').value,
-        Q: document.getElementById('dfQ').value,
-        R: document.getElementById('dfR').value.trim().toUpperCase(),
-        S: document.getElementById('dfS').value.trim(),
-        T: document.getElementById('dfT').value.trim(),
-        U: document.getElementById('dfU').value.trim(),
-        V: document.getElementById('dfV').value.trim(),
-        W: document.getElementById('dfW').value.trim(),
-        X: document.getElementById('dfX').value.trim(),
-        Y: document.getElementById('dfY').value,
-        Z: document.getElementById('dfZ').value.trim(),
-        AA: document.getElementById('dfAA').value.trim(),
-        BB: document.getElementById('dfBB').value.trim(),
-        CC: document.getElementById('dfCC').value,
-        II: document.getElementById('dfII').value.trim(),
-        JJ: document.getElementById('dfJJ').value.trim(),
-        DD: document.getElementById('dfDD').value,
+        A: val('dfA'),
+        B: val('dfB'),
+        C: val('dfC'),
+        D: val('dfD'),
+        E: val('dfE'),
+        F: val('dfF'),
+        G: val('dfG'),
+        H: val('dfH'),
+        I: val('dfI'),
+        J: val('dfJ'),
+        K: val('dfK'),
+        L: val('dfL'),
+        M: val('dfM'),
+        N: num('dfN'),
+        O: num('dfO'),
+        P: num('dfP'),
+        Q: num('dfQ'),
+        R: val('dfR').toUpperCase(),
+        S: num('dfS'),
+        T: val('dfT'),
+        U: val('dfU'),
+        V: val('dfV'),
+        W: val('dfW'),
+        X: val('dfX'),
+        Y: num('dfY'),
+        Z: val('dfZ'),
+        AA: val('dfAA'),
+        BB: val('dfBB'),
+        CC: num('dfCC'),
+        II: val('dfII'),
+        JJ: val('dfJJ'),
+        DD: val('dfDD'),
         GG: currentUser?.name || currentUser?.username || ''
     };
 }
