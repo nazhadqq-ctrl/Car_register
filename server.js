@@ -383,12 +383,147 @@ app.delete('/api/hijz/:id', requireAuth, async (req, res) => {
     }
 });
 
-// ─── FIND VEHICLE FOR REGISTRATION FORM ─────────────────────────────
+// ─── FIND VEHICLE FOR REGISTRATION FORM (TAQEGA & T1) ────────────────
 app.get('/api/register/find', requireAuth, async (req, res) => {
     try {
-        const { plate, chassis } = req.query;
+        const { plate, tablo, bash, chassis } = req.query;
         if (!plate && !chassis) return res.json(null);
+
         const pool = await getPool();
+
+        // 1. FIRST PRIORITY: SEARCH IN [Taqega].[dbo].[VA]
+        // Condition: (ژمارەی ئوتومبێل + تابلۆ یان پارێزگا + بەش)
+        if (plate && plate.trim()) {
+            const cleanPlate = plate.trim();
+            const cleanTablo = (tablo || '').trim();
+            const cleanBash = (bash || '').trim();
+
+            const reqVa = pool.request()
+                .input('plate', sql.NVarChar, cleanPlate);
+
+            let vaQuery = `
+                SELECT TOP 1 * FROM [Taqega].[dbo].[VA]
+                WHERE (auto_no = @plate OR REPLACE(auto_no, ' ', '') = @plate)
+            `;
+
+            if (cleanTablo) {
+                reqVa.input('tablo', sql.NVarChar, cleanTablo);
+                const normTablo = cleanTablo.replace(/ى/g, 'ی').replace(/ك/g, 'ک');
+                reqVa.input('normTablo', sql.NVarChar, normTablo);
+                const coreTablo = cleanTablo.length > 4 ? cleanTablo.slice(0, 5) : cleanTablo;
+                reqVa.input('coreTablo', sql.NVarChar, `%${coreTablo}%`);
+
+                vaQuery += ` AND (plet = @tablo OR REPLACE(plet, N'ى', N'ی') = @normTablo OR plet LIKE @coreTablo) `;
+            }
+
+            if (cleanBash) {
+                reqVa.input('bash', sql.NVarChar, cleanBash);
+                const normBash = cleanBash.replace(/ى/g, 'ی').replace(/ك/g, 'ک');
+                reqVa.input('normBash', sql.NVarChar, normBash);
+                const coreBash = cleanBash.length > 3 ? cleanBash.slice(0, 4) : cleanBash;
+                reqVa.input('coreBash', sql.NVarChar, `%${coreBash}%`);
+
+                vaQuery += ` AND (bash = @bash OR REPLACE(bash, N'ى', N'ی') = @normBash OR bash LIKE @coreBash) `;
+            }
+
+            vaQuery += ` ORDER BY id DESC `;
+
+            const vaResult = await reqVa.query(vaQuery);
+
+            if (vaResult.recordset.length > 0) {
+                const r = vaResult.recordset[0];
+                return res.json({
+                    source: 'Taqega',
+                    id: r.id,
+                    A: r.auto_no || cleanPlate,
+                    B: r.plet ? r.plet.replace(/ى/g, 'ی') : (cleanTablo || 'سلێمانی'),
+                    C: r.bash || (cleanBash || 'تایبەت'),
+                    D: r.CC || '',
+                    E: '',
+                    F: '*',
+                    G: (r.Name_ || '').trim(),
+                    H: 'تۆماری یەکەم جار',
+                    I: (r.car_type || '').trim(),
+                    J: (r.Car_group || '').trim() || 'صالون',
+                    K: (r.Feull || '').trim() || 'بەنزین',
+                    L: (r.color || '').trim(),
+                    M: (r.Gear || '').trim() === 'عادی' ? 'عادی' : 'ئۆتۆماتیک',
+                    N: 4,
+                    O: r.celender || 0,
+                    P: r.Model || 0,
+                    Q: 5,
+                    R: (r.shassy || '').trim().toUpperCase(),
+                    S: 0,
+                    T: (r.mobile || '').trim() || 0,
+                    U: (r.NNote_ || '').trim(),
+                    V: '',
+                    W: '*',
+                    X: '',
+                    Y: 0,
+                    Z: '',
+                    AA: '*',
+                    BB: '',
+                    CC: 0,
+                    II: r.EE || 0,
+                    JJ: 0,
+                    DD: r.Date_ ? new Date(r.Date_).toISOString().slice(0, 10) : new Date().toISOString().slice(0, 10),
+                    resulat: r.resulat || '',
+                    Psulla: r.Psulla || '',
+                    Barcod: r.Barcod || ''
+                });
+            }
+        }
+
+        // If not found in VA by plate+tablo+bash, but chassis provided:
+        if (chassis && chassis.trim()) {
+            const cleanChassis = chassis.trim().toUpperCase();
+            const chRes = await pool.request()
+                .input('chassis', sql.NVarChar, cleanChassis)
+                .query(`SELECT TOP 1 * FROM [Taqega].[dbo].[VA] WHERE shassy = @chassis ORDER BY id DESC`);
+            
+            if (chRes.recordset.length > 0) {
+                const r = chRes.recordset[0];
+                return res.json({
+                    source: 'Taqega',
+                    id: r.id,
+                    A: r.auto_no || '',
+                    B: r.plet ? r.plet.replace(/ى/g, 'ی') : 'سلێمانی',
+                    C: r.bash || 'تایبەت',
+                    D: r.CC || '',
+                    E: '',
+                    F: '*',
+                    G: (r.Name_ || '').trim(),
+                    H: 'تۆماری یەکەم جار',
+                    I: (r.car_type || '').trim(),
+                    J: (r.Car_group || '').trim() || 'صالون',
+                    K: (r.Feull || '').trim() || 'بەنزین',
+                    L: (r.color || '').trim(),
+                    M: (r.Gear || '').trim() === 'عادی' ? 'عادی' : 'ئۆتۆماتیک',
+                    N: 4,
+                    O: r.celender || 0,
+                    P: r.Model || 0,
+                    Q: 5,
+                    R: (r.shassy || '').trim().toUpperCase(),
+                    S: 0,
+                    T: (r.mobile || '').trim() || 0,
+                    U: (r.NNote_ || '').trim(),
+                    V: '',
+                    W: '*',
+                    X: '',
+                    Y: 0,
+                    Z: '',
+                    AA: '*',
+                    BB: '',
+                    CC: 0,
+                    II: r.EE || 0,
+                    JJ: 0,
+                    DD: r.Date_ ? new Date(r.Date_).toISOString().slice(0, 10) : new Date().toISOString().slice(0, 10),
+                    resulat: r.resulat || ''
+                });
+            }
+        }
+
+        // 2. FALLBACK: SEARCH IN [T1]
         const request = pool.request();
         let query = 'SELECT TOP 1 * FROM T1 WHERE ';
         if (plate && plate.trim()) {
@@ -400,7 +535,13 @@ app.get('/api/register/find', requireAuth, async (req, res) => {
         }
         query += 'ORDER BY id DESC';
         const result = await request.query(query);
-        res.json(result.recordset[0] || null);
+        if (result.recordset.length > 0) {
+            const row = result.recordset[0];
+            row.source = 'T1';
+            return res.json(row);
+        }
+
+        return res.json(null);
     } catch (err) {
         console.error('Find vehicle error:', err);
         res.status(500).json({ error: err.message });

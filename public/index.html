@@ -2022,20 +2022,25 @@ function dfResetNew() {
 
 async function dfSearchCar() {
     const plate = document.getElementById('dfA').value.trim();
+    const tablo = document.getElementById('dfB').value.trim();
+    const bash = document.getElementById('dfC').value.trim();
     const chassis = document.getElementById('dfR').value.trim();
+
     if (!plate && !chassis) {
-        showToast('⚠️ تکایە تابلۆ یان شاسی بنووسە بۆ گەڕان', true);
+        showToast('⚠️ تکایە ژمارەی ئوتومبێل یان شاسی بنووسە بۆ گەڕان', true);
         return;
     }
     try {
         const params = new URLSearchParams();
         if (plate) params.append('plate', plate);
-        else if (chassis) params.append('chassis', chassis);
+        if (tablo) params.append('tablo', tablo);
+        if (bash) params.append('bash', bash);
+        if (chassis) params.append('chassis', chassis);
 
         const res = await fetch('/api/register/find?' + params.toString());
         const r = await res.json();
         if (!r) {
-            showToast('⚠️ ئەم ئوتومبێلە لە سیستم نەدۆزرایەوە', true);
+            showToast('⚠️ ئەم ئوتومبێلە لە سیستم یان تاقیگە نەدۆزرایەوە', true);
             return;
         }
 
@@ -2044,9 +2049,14 @@ async function dfSearchCar() {
         const set = (id, v) => {
             const el = document.getElementById(id);
             if (!el) return;
-            const val = (v !== null && v !== undefined) ? String(v).trim() : '';
+            let val = (v !== null && v !== undefined) ? String(v).trim() : '';
             if (el.tagName === 'SELECT') {
                 let opt = Array.from(el.options).find(o => o.value === val);
+                if (!opt && val) {
+                    const normVal = val.replace(/ى/g, 'ی').replace(/ك/g, 'ک');
+                    opt = Array.from(el.options).find(o => o.value.replace(/ى/g, 'ی').replace(/ك/g, 'ک') === normVal);
+                    if (opt) val = opt.value;
+                }
                 if (!opt && val) {
                     opt = document.createElement('option');
                     opt.value = val;
@@ -2058,10 +2068,10 @@ async function dfSearchCar() {
                 el.value = val;
             }
         };
-        set('dfA', r.A || '');
-        set('dfB', r.B || 'سلێمانی');
-        set('dfC', r.C || 'تایبەت');
-        set('dfD', r.D || (currentUser && (currentUser.place || currentUser.Place_)) || 'عمر عوسمان');
+
+        set('dfA', r.A || plate);
+        set('dfB', r.B || tablo || 'سلێمانی');
+        set('dfC', r.C || bash || 'تایبەت');
         set('dfTo', r.Place_ || r.To || 'هاتووچۆی پارێزگای سلێمانی');
         set('dfE', r.E || '');
         set('dfF', r.F || '*');
@@ -2096,8 +2106,13 @@ async function dfSearchCar() {
             set('dfDD', new Date(r.DD).toISOString().slice(0, 10));
         }
 
-        showToast(`✅ زانیاری ئوتومبێل دۆزرایەوە (ID: ${r.id})`);
+        if (r.source === 'Taqega') {
+            showToast(`✅ داتای ئوتومبێل لە تاقیگە (Taqega - VA) دۆزرایەوە ${r.resulat ? '(' + r.resulat + ')' : ''}`);
+        } else {
+            showToast(`✅ زانیاری ئوتومبێل دۆزرایەوە (ID: ${r.id})`);
+        }
     } catch(err) {
+        console.error('Search error:', err);
         showToast('⚠️ کێشەی پەیوەندی بە سێرڤەر', true);
     }
 }
