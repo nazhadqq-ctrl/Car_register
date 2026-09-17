@@ -1,0 +1,590 @@
+<!DOCTYPE html>
+<html lang="ku" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>بەڕێوەبەرایەتی هاتووچۆی پارێزگای سلێمانی - هۆبەی پشکنین</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --ku-font: 'Speda';
+            --primary: #1a3a6b;
+            --primary-light: #2557a7;
+            --accent: #c8a84b;
+            --accent-light: #f0c842;
+            --dark: #0d1b35;
+            --text-light: rgba(255,255,255,0.9);
+            --danger: #e74c3c;
+            --success: #27ae60;
+            --input-bg: rgba(255,255,255,0.07);
+            --input-border: rgba(255,255,255,0.13);
+            --input-focus: rgba(200,168,75,0.5);
+        }
+
+        body {
+            font-family: Speda;
+            min-height: 100vh;
+            background: linear-gradient(135deg, #0b1628 0%, #1a3a6b 45%, #0a2240 75%, #060e1c 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            position: relative;
+        }
+
+        /* ── Animated BG ── */
+        .bg-glow {
+            position: fixed; inset: 0; pointer-events: none; z-index: 0;
+            background:
+                radial-gradient(ellipse 600px 400px at 20% 30%, rgba(37,87,167,0.25) 0%, transparent 70%),
+                radial-gradient(ellipse 500px 400px at 80% 70%, rgba(200,168,75,0.1) 0%, transparent 70%);
+        }
+        .particle {
+            position: fixed; border-radius: 50%;
+            background: rgba(200,168,75,0.07);
+            animation: floatUp linear infinite;
+            pointer-events: none; z-index: 0;
+        }
+        @keyframes floatUp {
+            0%   { transform: translateY(110vh) scale(0.3); opacity:0; }
+            10%  { opacity: 1; }
+            90%  { opacity: 1; }
+            100% { transform: translateY(-10vh) scale(1); opacity:0; }
+        }
+        .road-anim {
+            position: fixed; bottom: 0; left: 0; right: 0; height: 4px;
+            background: linear-gradient(90deg, transparent, var(--accent), transparent);
+            animation: roadSlide 3.5s linear infinite; opacity: 0.25; pointer-events: none; z-index: 0;
+        }
+        @keyframes roadSlide { 0%{transform:translateX(-100%)} 100%{transform:translateX(100%)} }
+
+        /* ── Login Wrapper ── */
+        .login-wrapper {
+            position: relative; z-index: 10;
+            width: 100%; max-width: 500px; padding: 20px;
+            animation: fadeIn 0.5s ease-out;
+        }
+        @keyframes fadeIn { from{opacity:0;transform:translateY(20px)} to{opacity:1;transform:translateY(0)} }
+
+        /* ── Header ── */
+        .header {
+            text-align: center; margin-bottom: 28px;
+        }
+        .logo-wrap {
+            width: 90px; height: 90px; margin: 0 auto 14px; position: relative;
+        }
+        .logo-wrap::before {
+            content: ''; position: absolute; inset: -3px; border-radius: 50%;
+            background: conic-gradient(var(--accent) 0%, var(--primary-light) 50%, var(--accent) 100%);
+            animation: spinLogo 5s linear infinite;
+        }
+        @keyframes spinLogo { to{transform:rotate(360deg)} }
+        .logo-inner {
+            position: relative; width: 100%; height: 100%; background: var(--dark);
+            border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 38px;
+        }
+        .header-title {
+            color: var(--accent-light); font-size: 18px; font-weight: 900;
+            line-height: 1.5; text-shadow: 0 0 30px rgba(200,168,75,0.35);
+        }
+        .header-sub {
+            color: rgba(255,255,255,0.5); font-size: 12px; margin-top: 5px;
+        }
+
+        /* ── Card ── */
+        .card {
+            background: rgba(255,255,255,0.06);
+            backdrop-filter: blur(28px);
+            -webkit-backdrop-filter: blur(28px);
+            border: 1px solid rgba(255,255,255,0.11);
+            border-radius: 22px; padding: 36px 32px;
+            box-shadow: 0 30px 70px rgba(0,0,0,0.45), inset 0 1px 0 rgba(255,255,255,0.09);
+        }
+        .card-title {
+            color: white; font-size: 16px; font-weight: 700;
+            text-align: center; margin-bottom: 26px;
+            display: flex; align-items: center; gap: 10px;
+        }
+        .card-title::before, .card-title::after {
+            content: ''; flex: 1; height: 1px;
+            background: linear-gradient(90deg, transparent, rgba(200,168,75,0.4));
+        }
+        .card-title::after {
+            background: linear-gradient(270deg, transparent, rgba(200,168,75,0.4));
+        }
+
+        /* ── Form Label ── */
+        .form-group { margin-bottom: 18px; position: relative; }
+        .form-label {
+            display: flex; align-items: center; gap: 7px;
+            color: var(--accent-light); font-size: 13px; font-weight: 700;
+            margin-bottom: 7px;
+        }
+
+        /* ── COMBOBOX ── */
+        .combo-wrap { position: relative; user-select: none; }
+
+        /* The visible "button" that shows selected value */
+        .combo-box {
+            width: 100%; padding: 12px 42px 12px 38px;
+            background: var(--input-bg);
+            border: 1.5px solid var(--input-border);
+            border-radius: 11px; color: white;
+            font-family: Speda;
+            font-size: 14px; direction: rtl; text-align: right;
+            cursor: pointer; transition: all 0.25s;
+            display: flex; align-items: center;
+            min-height: 48px; line-height: 1.4;
+        }
+        .combo-box:hover, .combo-box.open {
+            background: rgba(255,255,255,0.1);
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(200,168,75,0.15);
+        }
+        .combo-box .placeholder { color: rgba(255,255,255,0.3); }
+        .combo-box .selected-val { color: white; font-weight: 600; }
+
+        /* Arrow icon */
+        .combo-arrow {
+            position: absolute; left: 13px; top: 50%; transform: translateY(-50%);
+            color: rgba(200,168,75,0.6); font-size: 12px; pointer-events: none;
+            transition: transform 0.25s;
+        }
+        .combo-box.open + .combo-arrow { transform: translateY(-50%) rotate(180deg); }
+        .combo-icon {
+            position: absolute; right: 13px; top: 50%; transform: translateY(-50%);
+            font-size: 17px; pointer-events: none;
+        }
+
+        /* Dropdown Panel */
+        .combo-dropdown {
+            position: absolute; top: calc(100% + 6px); left: 0; right: 0;
+            background: rgba(10, 22, 45, 0.98);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(200,168,75,0.25);
+            border-radius: 13px; z-index: 999;
+            display: none; overflow: hidden;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.55);
+            animation: dropDown 0.18s ease-out;
+        }
+        @keyframes dropDown { from{opacity:0;transform:translateY(-6px)} to{opacity:1;transform:translateY(0)} }
+        .combo-dropdown.open { display: block; }
+
+        /* Search input inside dropdown */
+        .combo-search {
+            width: 100%; padding: 10px 14px;
+            background: rgba(255,255,255,0.05);
+            border: none; border-bottom: 1px solid rgba(255,255,255,0.07);
+            color: white; font-family: 'Speda;
+            font-size: 13px; direction: rtl; outline: none;
+        }
+        .combo-search::placeholder { color: rgba(255,255,255,0.3); }
+
+        /* Options list */
+        .combo-options {
+            max-height: 200px; overflow-y: auto;
+        }
+        .combo-options::-webkit-scrollbar { width: 4px; }
+        .combo-options::-webkit-scrollbar-thumb { background: var(--accent); border-radius: 4px; }
+
+        .combo-option {
+            padding: 11px 16px; color: rgba(255,255,255,0.85);
+            font-size: 13.5px; cursor: pointer; direction: rtl;
+            display: flex; align-items: center; justify-content: space-between;
+            border-bottom: 1px solid rgba(255,255,255,0.04);
+            transition: background 0.15s;
+        }
+        .combo-option:last-child { border-bottom: none; }
+        .combo-option:hover, .combo-option.highlighted {
+            background: rgba(200,168,75,0.15); color: white;
+        }
+        .combo-option.selected {
+            background: rgba(200,168,75,0.2); color: var(--accent-light);
+        }
+        .combo-option .opt-badge {
+            font-size: 11px; color: rgba(200,168,75,0.7);
+            background: rgba(200,168,75,0.1); padding: 2px 8px;
+            border-radius: 10px; white-space: nowrap;
+        }
+        .combo-empty {
+            padding: 16px; text-align: center;
+            color: rgba(255,255,255,0.3); font-size: 13px;
+        }
+
+        /* ── Password ── */
+        .pass-wrap { position: relative; }
+        .pass-input {
+            width: 100%; padding: 12px 42px 12px 42px;
+            background: var(--input-bg);
+            border: 1.5px solid var(--input-border);
+            border-radius: 11px; color: white;
+            font-family: 'Speda;
+            font-size: 15px; direction: ltr; text-align: left;
+            outline: none; transition: all 0.25s;
+            letter-spacing: 2px;
+        }
+        .pass-input:focus {
+            background: rgba(255,255,255,0.1);
+            border-color: var(--accent);
+            box-shadow: 0 0 0 3px rgba(200,168,75,0.15);
+        }
+        .pass-input::placeholder { letter-spacing: 0; color: rgba(255,255,255,0.3); }
+        .pass-icon { position: absolute; right: 13px; top: 50%; transform: translateY(-50%); font-size: 17px; }
+        .toggle-pass {
+            position: absolute; left: 12px; top: 50%; transform: translateY(-50%);
+            background: none; border: none; color: rgba(255,255,255,0.35);
+            cursor: pointer; font-size: 17px; padding: 4px; transition: color 0.2s;
+        }
+        .toggle-pass:hover { color: var(--accent); }
+
+        /* ── Error ── */
+        .error-box {
+            background: rgba(231,76,60,0.13); border: 1px solid rgba(231,76,60,0.3);
+            border-radius: 10px; padding: 11px 15px; color: #ff8a80;
+            font-size: 13px; margin-bottom: 18px;
+            display: none; align-items: center; gap: 8px;
+            animation: shake 0.3s ease;
+        }
+        .error-box.show { display: flex; }
+        @keyframes shake { 0%,100%{transform:translateX(0)} 25%{transform:translateX(-5px)} 75%{transform:translateX(5px)} }
+
+        /* ── Login Btn ── */
+        .btn-login {
+            width: 100%; padding: 15px;
+            background: linear-gradient(135deg, #d4a832 0%, #a8841a 100%);
+            border: none; border-radius: 13px;
+            color: #0d1b35; font-family: 'Speda;
+            font-size: 17px; font-weight: 900;
+            cursor: pointer; transition: all 0.25s; margin-top: 8px;
+            box-shadow: 0 6px 25px rgba(200,168,75,0.35);
+            position: relative; overflow: hidden;
+        }
+        .btn-login::after {
+            content: ''; position: absolute; top: 0; left: -100%; width: 100%; height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: left 0.5s;
+        }
+        .btn-login:hover::after { left: 100%; }
+        .btn-login:hover { transform: translateY(-2px); box-shadow: 0 10px 35px rgba(200,168,75,0.5); }
+        .btn-login:active { transform: translateY(0); }
+        .btn-login:disabled { opacity: 0.65; cursor: not-allowed; transform: none; }
+        .spin {
+            display: inline-block; width: 17px; height: 17px;
+            border: 2px solid rgba(0,0,0,0.2); border-top-color: #0d1b35;
+            border-radius: 50%; animation: spinLogo 0.7s linear infinite;
+            vertical-align: middle; margin-left: 8px;
+        }
+
+        .footer { text-align: center; margin-top: 20px; color: rgba(255,255,255,0.25); font-size: 12px; }
+    </style>
+</head>
+<body>
+
+<div class="bg-glow"></div>
+<div class="road-anim"></div>
+
+<!-- Login -->
+<div class="login-wrapper">
+
+    <div class="header">
+        <div class="logo-wrap">
+            <div class="logo-inner">🚦</div>
+        </div>
+        <div class="header-title">بەڕێوەبەرایەتی هاتووچۆی پارێزگای سلێمانی</div>
+        <div class="header-sub">هۆبەی پشکنینی ئوتومبێل</div>
+    </div>
+
+    <div class="card">
+        <div class="card-title">چوونەژوورەوە</div>
+
+        <div class="error-box" id="errBox">
+            <span>⚠️</span><span id="errText"></span>
+        </div>
+
+        <form id="loginForm" onsubmit="doLogin(event)">
+
+            <!-- USERNAME COMBO -->
+            <div class="form-group">
+                <label class="form-label">👤 ناوی یوزەر</label>
+                <div class="combo-wrap" id="userComboWrap">
+                    <span class="combo-icon">👤</span>
+                    <div class="combo-box" id="userComboBox" tabindex="0" onclick="toggleCombo('user')">
+                        <span class="placeholder" id="userDisplay">یوزەر هەڵبژێرە...</span>
+                    </div>
+                    <span class="combo-arrow" id="userArrow">▼</span>
+                    <div class="combo-dropdown" id="userDropdown">
+                        <input type="text" class="combo-search" id="userSearch"
+                               placeholder="ناوی یوزەر بنووسە بۆ گەڕان..."
+                               oninput="filterCombo('user', this.value)"
+                               onkeydown="comboKeydown(event,'user')">
+                        <div class="combo-options" id="userOptions"></div>
+                    </div>
+                </div>
+                <input type="hidden" id="usernameVal">
+            </div>
+
+            <!-- PLACE COMBO -->
+            <div class="form-group">
+                <label class="form-label">📍 شوێنی کار</label>
+                <div class="combo-wrap" id="placeComboWrap">
+                    <span class="combo-icon">📍</span>
+                    <div class="combo-box" id="placeComboBox" tabindex="0" onclick="toggleCombo('place')">
+                        <span class="placeholder" id="placeDisplay">شوێن هەڵبژێرە...</span>
+                    </div>
+                    <span class="combo-arrow" id="placeArrow">▼</span>
+                    <div class="combo-dropdown" id="placeDropdown">
+                        <input type="text" class="combo-search" id="placeSearch"
+                               placeholder="شوێن بنووسە بۆ گەڕان..."
+                               oninput="filterCombo('place', this.value)"
+                               onkeydown="comboKeydown(event,'place')">
+                        <div class="combo-options" id="placeOptions"></div>
+                    </div>
+                </div>
+                <input type="hidden" id="placeVal">
+            </div>
+
+            <!-- PASSWORD -->
+            <div class="form-group">
+                <label class="form-label">🔒 پاسۆرد</label>
+                <div class="pass-wrap">
+                    <span class="pass-icon">🔒</span>
+                    <input type="password" class="pass-input" id="passInput"
+                           placeholder="پاسۆرد..." required>
+                    <button type="button" class="toggle-pass" id="togglePass">👁</button>
+                </div>
+            </div>
+
+            <button type="submit" class="btn-login" id="loginBtn">
+                🔓 چوونەژوورەوە
+            </button>
+        </form>
+    </div>
+    <div class="footer">© 2024 – بەڕێوەبەرایەتی هاتووچۆ – سلێمانی</div>
+</div>
+
+<script>
+// ─── Data ────────────────────────────────────────────────────────────────────
+let allUsers = [];
+let allPlaces = [];
+let highlightIdx = { user: -1, place: -1 };
+
+// Load users & places from API
+fetch('/api/users')
+    .then(r => r.json())
+    .then(data => {
+        // Remove duplicates by User_id
+        const seen = new Set();
+        allUsers = data.filter(u => {
+            if (seen.has(u.User_id)) return false;
+            seen.add(u.User_id); return true;
+        });
+        // Extract distinct places
+        const placeSet = new Set();
+        allUsers.forEach(u => { if (u.Place_ && u.Place_ !== '*' && u.Place_.trim()) placeSet.add(u.Place_.trim()); });
+        allPlaces = [...placeSet].sort((a,b) => a.localeCompare(b, 'ar'));
+        renderOptions('user', allUsers);
+        renderOptions('place', allPlaces.map(p => ({ User_id: p, Place_: '' })));
+    })
+    .catch(() => {});
+
+// ─── Combobox Engine ──────────────────────────────────────────────────────────
+function toggleCombo(type) {
+    const isOpen = document.getElementById(type + 'Dropdown').classList.contains('open');
+    closeAllCombos();
+    if (!isOpen) openCombo(type);
+}
+
+function openCombo(type) {
+    document.getElementById(type + 'Dropdown').classList.add('open');
+    document.getElementById(type + 'ComboBox').classList.add('open');
+    highlightIdx[type] = -1;
+    setTimeout(() => {
+        const search = document.getElementById(type + 'Search');
+        search.value = '';
+        search.focus();
+        filterCombo(type, '');
+    }, 50);
+}
+
+function closeAllCombos() {
+    ['user','place'].forEach(t => {
+        document.getElementById(t + 'Dropdown').classList.remove('open');
+        document.getElementById(t + 'ComboBox').classList.remove('open');
+        highlightIdx[t] = -1;
+    });
+}
+
+// Click outside to close
+document.addEventListener('click', function(e) {
+    if (!e.target.closest('.combo-wrap')) closeAllCombos();
+});
+
+// Keyboard: open combo on Enter/Space/ArrowDown on the box
+['user','place'].forEach(type => {
+    document.getElementById(type + 'ComboBox').addEventListener('keydown', function(e) {
+        if (['Enter','ArrowDown',' '].includes(e.key)) { e.preventDefault(); openCombo(type); }
+    });
+});
+
+// ─── Filter & Render ──────────────────────────────────────────────────────────
+function filterCombo(type, val) {
+    const v = val.trim().toLowerCase();
+    highlightIdx[type] = -1;
+
+    if (type === 'user') {
+        const filtered = v
+            ? allUsers.filter(u => u.User_id.toLowerCase().includes(v))
+            : allUsers;
+        renderOptions('user', filtered);
+    } else {
+        const filtered = v
+            ? allPlaces.filter(p => p.toLowerCase().includes(v))
+            : allPlaces;
+        renderOptions('place', filtered.map(p => ({ User_id: p, Place_: '' })));
+    }
+}
+
+function renderOptions(type, items) {
+    const container = document.getElementById(type + 'Options');
+    const currentVal = document.getElementById(type === 'user' ? 'usernameVal' : 'placeVal').value;
+
+    if (items.length === 0) {
+        container.innerHTML = '<div class="combo-empty">هیچ ئەنجامێک نەدۆزرایەوە</div>';
+        return;
+    }
+
+    container.innerHTML = items.map((item, i) => {
+        const label = type === 'user' ? item.User_id : item.User_id;
+        const badge = (type === 'user' && item.Place_ && item.Place_ !== '*')
+            ? `<span class="opt-badge">${item.Place_}</span>` : '';
+        const isSel = (label === currentVal) ? 'selected' : '';
+        return `<div class="combo-option ${isSel}" data-idx="${i}" data-val="${label.replace(/"/g,'&quot;')}"
+                     onclick="selectOption('${type}', '${label.replace(/'/g,"\\'")}')">
+                    <span>${label}</span>${badge}
+                </div>`;
+    }).join('');
+}
+
+function selectOption(type, val) {
+    const hiddenId = type === 'user' ? 'usernameVal' : 'placeVal';
+    const displayId = type + 'Display';
+    document.getElementById(hiddenId).value = val;
+    const displayEl = document.getElementById(displayId);
+    displayEl.className = 'selected-val';
+    displayEl.textContent = val;
+
+    // If user selected, auto-fill place
+    if (type === 'user') {
+        const userObj = allUsers.find(u => u.User_id === val);
+        if (userObj && userObj.Place_ && userObj.Place_ !== '*') {
+            document.getElementById('placeVal').value = userObj.Place_;
+            const pd = document.getElementById('placeDisplay');
+            pd.className = 'selected-val';
+            pd.textContent = userObj.Place_;
+        }
+        // Focus password
+        setTimeout(() => document.getElementById('passInput').focus(), 100);
+    }
+    closeAllCombos();
+}
+
+// ─── Keyboard Navigation inside dropdown ─────────────────────────────────────
+function comboKeydown(e, type) {
+    const opts = document.getElementById(type + 'Options').querySelectorAll('.combo-option');
+    if (opts.length === 0) return;
+
+    if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        highlightIdx[type] = Math.min(highlightIdx[type] + 1, opts.length - 1);
+        updateHighlight(type, opts);
+    } else if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        highlightIdx[type] = Math.max(highlightIdx[type] - 1, 0);
+        updateHighlight(type, opts);
+    } else if (e.key === 'Enter') {
+        e.preventDefault();
+        if (highlightIdx[type] >= 0 && opts[highlightIdx[type]]) {
+            const val = opts[highlightIdx[type]].dataset.val;
+            selectOption(type, val);
+        } else if (opts.length === 1) {
+            selectOption(type, opts[0].dataset.val);
+        }
+    } else if (e.key === 'Escape') {
+        closeAllCombos();
+    }
+}
+
+function updateHighlight(type, opts) {
+    opts.forEach((o, i) => {
+        o.classList.toggle('highlighted', i === highlightIdx[type]);
+        if (i === highlightIdx[type]) o.scrollIntoView({ block: 'nearest' });
+    });
+}
+
+// ─── Password Toggle ─────────────────────────────────────────────────────────
+document.getElementById('togglePass').addEventListener('click', function() {
+    const inp = document.getElementById('passInput');
+    if (inp.type === 'password') { inp.type = 'text'; this.textContent = '🙈'; }
+    else { inp.type = 'password'; this.textContent = '👁'; }
+});
+
+// ─── Login Submit ─────────────────────────────────────────────────────────────
+async function doLogin(e) {
+    e.preventDefault();
+    hideError();
+    const username = document.getElementById('usernameVal').value.trim();
+    const password = document.getElementById('passInput').value;
+
+    if (!username) { showError('تکایە ناوی یوزەر هەڵبژێرە'); return; }
+    if (!password) { showError('پاسۆرد بنووسە'); return; }
+
+    const btn = document.getElementById('loginBtn');
+    btn.disabled = true;
+    btn.innerHTML = '<span class="spin"></span> پشکنین...';
+
+    try {
+        const res = await fetch('/api/login', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ username, password })
+        });
+        const data = await res.json();
+        if (data.success) {
+            btn.innerHTML = '✅ بەسەرکەوتوویی چووینەژوورەوە';
+            btn.style.background = 'linear-gradient(135deg,#27ae60,#1e8449)';
+            setTimeout(() => window.location.href = '/index.html', 700);
+        } else {
+            showError(data.message || 'ناوی یوزەر یان پاسۆرد هەڵەیە');
+            btn.disabled = false;
+            btn.innerHTML = '🔓 چوونەژوورەوە';
+        }
+    } catch {
+        showError('کێشەی پەیوەندی بە سێرڤەر');
+        btn.disabled = false;
+        btn.innerHTML = '🔓 چوونەژوورەوە';
+    }
+}
+
+function showError(msg) {
+    const b = document.getElementById('errBox');
+    document.getElementById('errText').textContent = msg;
+    b.classList.add('show');
+}
+function hideError() { document.getElementById('errBox').classList.remove('show'); }
+
+// ─── Particles ────────────────────────────────────────────────────────────────
+for (let i = 0; i < 12; i++) {
+    const p = document.createElement('div');
+    p.className = 'particle';
+    const s = Math.random() * 50 + 15;
+    p.style.cssText = `width:${s}px;height:${s}px;left:${Math.random()*100}%;
+        animation-duration:${Math.random()*14+10}s;animation-delay:${Math.random()*12}s;`;
+    document.body.appendChild(p);
+}
+
+// ─── Already logged in? ───────────────────────────────────────────────────────
+fetch('/api/me').then(r=>r.json()).then(d=>{ if(d.loggedIn) window.location.href='/index.html'; });
+</script>
+</body>
+</html>

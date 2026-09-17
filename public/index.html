@@ -1,0 +1,2560 @@
+<!DOCTYPE html>
+<html lang="ku" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>هۆبەی پشکنین – هاتووچۆی سلێمانی</title>
+    <style>
+        :root {
+            --ku: Speda, Tahoma, sans-serif;
+            --primary: #1a3a6b;
+            --primary-d: #0d1e3d;
+            --accent: #c8a84b;
+            --accent-l: #f0c842;
+            --bg: #eef1f7;
+            --white: #ffffff;
+            --text: #1a2744;
+            --muted: #7a8aa8;
+            --danger: #e03b3b;
+            --danger-bg: #fde8e8;
+            --success: #1e9e5c;
+            --success-bg: #e6f7ef;
+            --warning: #f59e0b;
+            --warning-bg: #fef3c7;
+            --info: #2980b9;
+            --border: #d8dfe8;
+            --radius: 12px;
+            --shadow: 0 4px 18px rgba(0,0,0,0.08);
+        }
+
+        * { margin:0; padding:0; box-sizing:border-box; font-family:var(--ku); }
+
+        body {
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* ══ TOPBAR ═══════════════════════════════════════════════ */
+        .topbar {
+            background: linear-gradient(135deg, var(--primary-d) 0%, var(--primary) 100%);
+            padding: 0 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 3px 16px rgba(0,0,0,0.25);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            min-height: 64px;
+        }
+
+        .topbar-brand {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            color: white;
+        }
+        .topbar-brand .icon { font-size: 28px; }
+        .topbar-brand .title-wrap { line-height: 1.3; }
+        .topbar-brand .title { font-size: 15px; font-weight: 700; color: var(--accent-l); }
+        .topbar-brand .subtitle { font-size: 11px; color: rgba(255,255,255,0.6); }
+
+        .topbar-user {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .topbar-user .user-name {
+            color: rgba(255,255,255,0.9);
+            font-size: 13px;
+            font-weight: 600;
+        }
+        .topbar-user .user-place {
+            color: rgba(255,255,255,0.5);
+            font-size: 11px;
+        }
+        .avatar {
+            width: 38px; height: 38px; border-radius: 50%;
+            background: linear-gradient(135deg, var(--accent), #8a6820);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 17px; flex-shrink: 0; color: white;
+        }
+        .btn-out {
+            background: rgba(255,255,255,0.1);
+            border: 1px solid rgba(255,255,255,0.2);
+            border-radius: 8px;
+            color: rgba(255,255,255,0.7);
+            padding: 7px 14px;
+            font-size: 12px;
+            cursor: pointer;
+            font-family: var(--ku);
+            transition: all .2s;
+        }
+        .btn-out:hover { background: rgba(224,59,59,0.5); color: white; border-color: var(--danger); }
+
+        /* ══ NAV TABS ══════════════════════════════════════════════ */
+        .nav-tabs {
+            background: var(--white);
+            border-bottom: 2px solid var(--border);
+            display: flex;
+            align-items: center;
+            padding: 0 24px;
+            gap: 4px;
+            overflow-x: auto;
+        }
+        .nav-tab {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 13px 18px;
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--muted);
+            cursor: pointer;
+            border-bottom: 3px solid transparent;
+            white-space: nowrap;
+            transition: all .2s;
+            text-decoration: none;
+            font-family: var(--ku);
+            user-select: none;
+        }
+        .nav-tab:hover { color: var(--primary); background: #f4f7fd; }
+        .nav-tab.active {
+            color: var(--primary);
+            border-bottom-color: var(--accent);
+            background: linear-gradient(to bottom, transparent, rgba(200,168,75,0.08));
+        }
+        .nav-tab .tab-icon { font-size: 17px; }
+
+        .tab-badge {
+            background: var(--danger);
+            color: white;
+            font-size: 10px;
+            font-weight: 700;
+            padding: 2px 7px;
+            border-radius: 20px;
+            min-width: 20px;
+            text-align: center;
+        }
+
+        /* ══ PAGE CONTENT ══════════════════════════════════════════ */
+        .page { display: none; padding: 22px 26px; flex: 1; }
+        .page.active { display: block; }
+
+        /* ══ STAT CARDS ════════════════════════════════════════════ */
+        .stats-row {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 16px;
+            margin-bottom: 22px;
+        }
+        .stat-card {
+            background: var(--white);
+            border-radius: var(--radius);
+            padding: 18px 20px;
+            box-shadow: var(--shadow);
+            display: flex;
+            align-items: center;
+            gap: 16px;
+            border-right: 4px solid var(--primary);
+            transition: transform .2s;
+        }
+        .stat-card:hover { transform: translateY(-3px); }
+        .stat-card.green { border-right-color: var(--success); }
+        .stat-card.blue { border-right-color: var(--info); }
+        .stat-card.red { border-right-color: var(--danger); }
+        .stat-card .sicon { font-size: 30px; }
+        .stat-card .sval { font-size: 24px; font-weight: 900; color: var(--primary); }
+        .stat-card .slabel { font-size: 12px; color: var(--muted); margin-top: 2px; }
+
+        /* ══ MODULE GRID ════════════════════════════════════════════ */
+        .module-section {
+            margin-bottom: 22px;
+        }
+        .module-section-title {
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--primary);
+            margin-bottom: 12px;
+            padding-right: 4px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .module-section-title::after {
+            content: '';
+            flex: 1;
+            height: 1px;
+            background: var(--border);
+        }
+        .module-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+            gap: 14px;
+        }
+        .mod-card {
+            border-radius: 14px;
+            padding: 18px 12px 16px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 9px;
+            cursor: pointer;
+            transition: all .2s;
+            text-align: center;
+            border: none;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 4px 14px rgba(0,0,0,0.1);
+            color: white;
+            user-select: none;
+        }
+        .mod-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 10px 24px rgba(0,0,0,0.18);
+        }
+        .mod-card:active { transform: translateY(-1px); }
+        .mod-icon { font-size: 32px; line-height: 1; }
+        .mod-label {
+            font-size: 13px;
+            font-weight: 700;
+            font-family: var(--ku);
+            color: white;
+            line-height: 1.3;
+        }
+        /* Buttons Palettes matching C# App */
+        .mc-yellow { background: linear-gradient(135deg, #f59e0b, #d97706); }
+        .mc-cyan   { background: linear-gradient(135deg, #06b6d4, #0891b2); }
+        .mc-pink   { background: linear-gradient(135deg, #ec4899, #db2777); }
+        .mc-white  { background: linear-gradient(135deg, #475569, #334155); }
+        .mc-peach  { background: linear-gradient(135deg, #f97316, #ea580c); }
+        .mc-blue   { background: linear-gradient(135deg, #2563eb, #1d4ed8); }
+        .mc-green  { background: linear-gradient(135deg, #10b981, #059669); }
+        .mc-purple { background: linear-gradient(135deg, #8b5cf6, #7c3aed); }
+        .mc-red    { background: linear-gradient(135deg, #ef4444, #dc2626); }
+        .mc-teal   { background: linear-gradient(135deg, #14b8a6, #0d9488); }
+        .mc-indigo { background: linear-gradient(135deg, #4f46e5, #4338ca); }
+
+        /* ══ HERO BANNER WITH CAR IMAGE ═════════════════════════════ */
+        .hero-banner {
+            background: var(--white);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            padding: 16px 20px;
+            margin-bottom: 22px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            overflow: hidden;
+            border: 1px solid var(--border);
+        }
+        .hero-banner img {
+            max-width: 100%;
+            height: auto;
+            max-height: 220px;
+            object-fit: contain;
+            border-radius: 8px;
+        }
+
+        /* ══ SEARCH BOX ════════════════════════════════════════════ */
+        .search-box {
+            background: var(--white);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            padding: 22px;
+            margin-bottom: 20px;
+        }
+        .search-box h3 {
+            font-size: 15px;
+            color: var(--primary);
+            margin-bottom: 14px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .search-row {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        .s-input {
+            flex: 1;
+            min-width: 220px;
+            padding: 11px 16px;
+            border: 2px solid var(--border);
+            border-radius: 10px;
+            font-size: 14px;
+            font-family: var(--ku);
+            color: var(--text);
+            outline: none;
+            transition: border-color .2s;
+        }
+        .s-input:focus { border-color: var(--primary); }
+        .s-select {
+            padding: 11px 14px;
+            border: 2px solid var(--border);
+            border-radius: 10px;
+            font-size: 13px;
+            font-family: var(--ku);
+            color: var(--text);
+            background: var(--white);
+            outline: none;
+            cursor: pointer;
+        }
+        .btn-search {
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 10px;
+            padding: 11px 22px;
+            font-size: 14px;
+            font-family: var(--ku);
+            font-weight: 700;
+            cursor: pointer;
+            transition: background .2s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .btn-search:hover { background: var(--primary-d); }
+
+        .search-chips {
+            display: flex;
+            gap: 8px;
+            margin-top: 12px;
+            flex-wrap: wrap;
+        }
+        .chip {
+            padding: 5px 12px;
+            border-radius: 20px;
+            background: #f0f3f8;
+            font-size: 12px;
+            color: var(--muted);
+            cursor: pointer;
+            transition: all .2s;
+            font-family: var(--ku);
+            border: 1px solid transparent;
+        }
+        .chip:hover, .chip.active {
+            background: var(--primary);
+            color: white;
+        }
+
+        /* ══ TABLES & RESULTS ══════════════════════════════════════ */
+        .result-wrap {
+            background: var(--white);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            overflow: hidden;
+            margin-bottom: 24px;
+        }
+        .result-head {
+            padding: 16px 22px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: #fafbfe;
+        }
+        .result-title {
+            font-size: 14px;
+            font-weight: 700;
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .result-count {
+            background: var(--primary);
+            color: white;
+            font-size: 12px;
+            font-weight: 700;
+            padding: 3px 10px;
+            border-radius: 20px;
+        }
+        .table-wrap { overflow-x: auto; }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 13px;
+        }
+        thead tr {
+            background: #f4f7fd;
+            border-bottom: 2px solid var(--border);
+        }
+        th {
+            padding: 12px 14px;
+            text-align: right;
+            font-weight: 700;
+            color: var(--muted);
+            white-space: nowrap;
+            font-size: 12px;
+        }
+        td {
+            padding: 12px 14px;
+            border-bottom: 1px solid var(--border);
+            white-space: nowrap;
+            color: var(--text);
+        }
+        tbody tr {
+            transition: background .15s;
+            cursor: pointer;
+        }
+        tbody tr:hover { background: #f0f5ff; }
+
+        /* Badges */
+        .badge {
+            display: inline-block;
+            padding: 3px 9px;
+            border-radius: 6px;
+            font-size: 11px;
+            font-weight: 700;
+        }
+        .badge-private { background: #e8f5e9; color: #2e7d32; }
+        .badge-cargo   { background: #e3f2fd; color: #1565c0; }
+        .badge-danger  { background: #ffebee; color: #c62828; }
+        .badge-warning { background: #fff8e1; color: #f57f17; }
+        .badge-sp      { background: #f3e5f5; color: #6a1b9a; }
+
+        /* ══ MODALS ════════════════════════════════════════════════ */
+        .overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(10,22,45,0.65);
+            backdrop-filter: blur(4px);
+            z-index: 999;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .overlay.show { display: flex; }
+        .modal {
+            background: var(--white);
+            border-radius: 16px;
+            width: 100%;
+            max-width: 860px;
+            max-height: 90vh;
+            overflow-y: auto;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            display: flex;
+            flex-direction: column;
+            animation: popIn .22s ease;
+        }
+        .modal-lg { max-width: 980px; }
+        @keyframes popIn {
+            from { transform: scale(0.96); opacity: 0; }
+            to   { transform: scale(1); opacity: 1; }
+        }
+        .modal-head {
+            padding: 18px 24px;
+            border-bottom: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: linear-gradient(to left, #f8faff, #fff);
+            position: sticky;
+            top: 0;
+            z-index: 10;
+        }
+        .modal-title {
+            font-size: 16px;
+            font-weight: 700;
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 20px;
+            color: var(--muted);
+            cursor: pointer;
+            padding: 4px 8px;
+            border-radius: 6px;
+            transition: all .2s;
+        }
+        .modal-close:hover { background: #fee2e2; color: var(--danger); }
+        .modal-body { padding: 24px; }
+        .modal-foot {
+            padding: 16px 24px;
+            border-top: 1px solid var(--border);
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            gap: 10px;
+            background: #fafbfe;
+            position: sticky;
+            bottom: 0;
+        }
+
+        /* ══ FORM GRID ═════════════════════════════════════════════ */
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 14px;
+        }
+        .form-grid.cols-2 { grid-template-columns: repeat(2, 1fr); }
+        .form-grid.cols-4 { grid-template-columns: repeat(4, 1fr); }
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+        .form-group.col-span-2 { grid-column: span 2; }
+        .form-group.col-span-3 { grid-column: span 3; }
+        .form-label {
+            font-size: 12px;
+            font-weight: 700;
+            color: var(--muted);
+        }
+        .form-input, .form-select, .form-textarea {
+            padding: 10px 14px;
+            border: 1.5px solid var(--border);
+            border-radius: 8px;
+            font-size: 13px;
+            font-family: var(--ku);
+            outline: none;
+            transition: all .2s;
+            background: #fafbfe;
+        }
+        .form-input:focus, .form-select:focus, .form-textarea:focus {
+            border-color: var(--primary);
+            background: white;
+            box-shadow: 0 0 0 3px rgba(26,58,107,0.1);
+        }
+        .form-textarea { resize: vertical; min-height: 70px; }
+
+        /* Buttons */
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            padding: 10px 20px;
+            font-size: 13px;
+            font-weight: 700;
+            font-family: var(--ku);
+            cursor: pointer;
+            transition: all .2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .btn-primary:hover { background: var(--primary-d); }
+        .btn-secondary {
+            background: #e2e8f0;
+            color: #334155;
+            border: none;
+            border-radius: 8px;
+            padding: 10px 18px;
+            font-size: 13px;
+            font-family: var(--ku);
+            cursor: pointer;
+            transition: all .2s;
+        }
+        .btn-secondary:hover { background: #cbd5e1; }
+        .btn-danger-sm {
+            background: var(--danger);
+            color: white;
+            border: none;
+            border-radius: 6px;
+            padding: 5px 10px;
+            font-size: 11px;
+            font-family: var(--ku);
+            cursor: pointer;
+            transition: all .2s;
+        }
+        .btn-danger-sm:hover { background: #b91c1c; }
+
+        /* Alert Callout */
+        .alert-box {
+            padding: 12px 16px;
+            border-radius: 8px;
+            font-size: 13px;
+            margin-bottom: 14px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .alert-danger { background: var(--danger-bg); color: var(--danger); border: 1px solid #fca5a5; }
+        .alert-success { background: var(--success-bg); color: var(--success); border: 1px solid #86efac; }
+        .alert-warning { background: var(--warning-bg); color: #b45309; border: 1px solid #fde68a; }
+
+        /* Detail Items */
+        .detail-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 14px;
+        }
+        .d-item {
+            background: #f8fafc;
+            border-radius: 8px;
+            padding: 12px;
+            border: 1px solid var(--border);
+        }
+        .d-item.full { grid-column: span 3; }
+        .d-label { font-size: 11px; color: var(--muted); margin-bottom: 3px; }
+        .d-val { font-size: 14px; font-weight: 700; color: var(--text); }
+        .d-val.hl { color: var(--primary); }
+
+        /* Spinners & Empty */
+        .spin-box { padding: 40px; text-align: center; }
+        .spinner {
+            width: 36px; height: 36px;
+            border: 4px solid var(--border);
+            border-top-color: var(--primary);
+            border-radius: 50%;
+            animation: spin .8s linear infinite;
+            margin: 0 auto;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+        .empty-box { padding: 40px; text-align: center; color: var(--muted); }
+        .empty-box .eicon { font-size: 40px; margin-bottom: 10px; }
+
+        /* Toast notification */
+        #toast {
+            position: fixed;
+            bottom: 24px;
+            left: 24px;
+            background: #1e293b;
+            color: white;
+            padding: 12px 20px;
+            border-radius: 10px;
+            font-size: 13px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+            z-index: 9999;
+            display: none;
+            animation: slideUp .2s ease;
+        }
+        @keyframes slideUp { from { transform: translateY(20px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+
+        /* Responsive */
+        @media (max-width: 900px) {
+            .form-grid { grid-template-columns: repeat(2, 1fr); }
+            .form-group.col-span-3 { grid-column: span 2; }
+            .detail-grid { grid-template-columns: repeat(2, 1fr); }
+            .d-item.full { grid-column: span 2; }
+        }
+        @media (max-width: 650px) {
+            .stats-row { grid-template-columns: 1fr 1fr; }
+            .form-grid { grid-template-columns: 1fr; }
+            .form-group.col-span-2, .form-group.col-span-3 { grid-column: span 1; }
+            .module-grid { grid-template-columns: repeat(2, 1fr); }
+            .detail-grid { grid-template-columns: 1fr; }
+        /* ══ C# APP REGISTRATION FORM STYLES (EXACT WINDOWS FORM REPLICA) ══ */
+        .modal-desktop {
+            max-width: 1260px !important;
+            background: #f0f0f0 !important;
+            border: 2px solid #555555;
+            border-radius: 3px !important;
+            box-shadow: 0 12px 48px rgba(0,0,0,0.5) !important;
+            overflow: hidden;
+        }
+        .desktop-window-titlebar {
+            background: #e8e8e8;
+            border-bottom: 1px solid #b0b0b0;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 2px 6px;
+            font-family: var(--ku);
+            user-select: none;
+        }
+        .desktop-window-title {
+            font-size: 12px;
+            font-weight: 700;
+            color: #333333;
+        }
+        .desktop-btn-close {
+            background: #e81123;
+            color: #ffffff;
+            border: none;
+            width: 32px;
+            height: 22px;
+            font-size: 12px;
+            font-weight: 700;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.15s;
+        }
+        .desktop-btn-close:hover { background: #b80d1b; }
+        .desktop-form-container {
+            background: #f4f4f4;
+            border: 1px solid #b8b8b8;
+            border-radius: 2px;
+            padding: 12px 16px 14px;
+            font-family: var(--ku);
+        }
+        .df-user-badge {
+            background: #ffff66;
+            border: 1px solid #d4d400;
+            color: #000000;
+            font-size: 20px;
+            font-weight: 900;
+            padding: 1px 12px;
+            min-width: 36px;
+            text-align: center;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.1);
+        }
+        .df-row {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            margin-bottom: 6px;
+            flex-wrap: nowrap;
+        }
+        .df-label {
+            font-size: 13px;
+            font-weight: 700;
+            color: #000000;
+            white-space: nowrap;
+            user-select: none;
+            font-family: var(--ku);
+        }
+        .df-input {
+            height: 26px;
+            padding: 2px 6px;
+            border: 1px solid #7f9db9;
+            border-radius: 1px;
+            font-size: 13px;
+            font-family: var(--ku) !important;
+            background: #ffffff;
+            outline: none;
+            color: #000000;
+        }
+        .df-input:focus {
+            border-color: #0055ea;
+            box-shadow: 0 0 0 1px #0055ea;
+        }
+        .df-select {
+            height: 26px;
+            padding: 2px 18px 2px 6px;
+            border: 1px solid #7f9db9;
+            border-radius: 1px;
+            font-size: 13px;
+            font-family: var(--ku) !important;
+            background: #ffffff url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%228%22%20height%3D%225%22%20viewBox%3D%220%200%208%205%22%3E%3Cpath%20d%3D%22M0%200l4%204%204-4z%22%20fill%3D%22%23222222%22%2F%3E%3C%2Fsvg%3E") no-repeat left 5px center;
+            background-size: 8px 5px;
+            outline: none;
+            color: #000000;
+            -webkit-appearance: none;
+            -moz-appearance: none;
+            appearance: none;
+            cursor: pointer;
+        }
+        .df-select:focus {
+            border-color: #0055ea;
+            box-shadow: 0 0 0 1px #0055ea;
+        }
+        .df-plate {
+            border-bottom: 2px solid #0055d4 !important;
+            text-align: center;
+            font-weight: 800;
+        }
+        .df-cyan {
+            background: #cbf5fb !important;
+            border-color: #7f9db9 !important;
+            font-weight: 700;
+        }
+        .df-pink {
+            background: #ffb6c1 !important;
+            border-color: #7f9db9 !important;
+            font-weight: 700;
+            color: #000000 !important;
+            text-align: center;
+        }
+        .df-red-text {
+            color: #dc2626 !important;
+            font-weight: 900 !important;
+            font-size: 15px !important;
+        }
+        .df-btn-search {
+            background: #ffff00;
+            border: 1px solid #707070;
+            color: #000000;
+            font-weight: 900;
+            font-size: 13px;
+            font-family: var(--ku);
+            padding: 2px 14px;
+            height: 26px;
+            border-radius: 1px;
+            cursor: pointer;
+            white-space: nowrap;
+        }
+        .df-btn-search:hover { background: #fff633; }
+        .df-btn-search:active { background: #e6e600; }
+        .df-actions-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-top: 14px;
+            padding-top: 8px;
+            gap: 6px;
+            flex-wrap: nowrap;
+        }
+        .df-actions-group {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            flex-wrap: nowrap;
+        }
+        .btn-df {
+            height: 32px;
+            padding: 3px 12px;
+            border-radius: 1px;
+            font-size: 13.5px;
+            font-weight: 800;
+            font-family: var(--ku);
+            cursor: pointer;
+            border: 1px solid #707070;
+            transition: opacity 0.1s;
+            white-space: nowrap;
+            color: #000000;
+        }
+        .btn-df:active { transform: translateY(1px); }
+        .btn-df-red { background: #ff4d4d; }
+        .btn-df-red:hover { background: #ff3333; }
+        .btn-df-yellow { background: #ffff00; }
+        .btn-df-yellow:hover { background: #ffff33; }
+        .btn-df-green { background: #00e600; }
+        .btn-df-green:hover { background: #00cc00; }
+        .btn-df-pink { background: #ff9999; }
+        .btn-df-pink:hover { background: #ff8080; }
+        .btn-df-yellow-long { background: #ffff00; padding: 3px 16px; }
+        .btn-df-yellow-long:hover { background: #ffff33; }
+    </style>
+</head>
+<body>
+
+<!-- ══ TOPBAR ══════════════════════════════════════════════════════ -->
+<header class="topbar">
+    <div class="topbar-brand">
+        <span class="icon">🚦</span>
+        <div class="title-wrap">
+            <div class="title">بەڕێوەبەرایەتی هاتووچۆی پارێزگای سلێمانی – هۆبەی پشکنین</div>
+            <div class="subtitle" id="todayDate"></div>
+        </div>
+    </div>
+    <div class="topbar-user">
+        <div style="text-align:right">
+            <div class="user-name" id="topUserName">–</div>
+            <div class="user-place" id="topUserPlace">–</div>
+        </div>
+        <div class="avatar">👤</div>
+        <button class="btn-out" id="logoutBtn">⬅ دەرچوون</button>
+    </div>
+</header>
+
+<!-- ══ NAV TABS ═════════════════════════════════════════════════════ -->
+<nav class="nav-tabs" id="navTabs">
+    <a class="nav-tab active" data-page="dashboard"><span class="tab-icon">📊</span> داشبۆرد</a>
+    <a class="nav-tab" data-page="search"><span class="tab-icon">🔍</span> گەڕانی ئوتومبێل</a>
+    <a class="nav-tab" data-page="suspicious"><span class="tab-icon">⚠️</span> گومانلێکراو (RAP) <span class="tab-badge" id="suspBadge">0</span></a>
+    <a class="nav-tab" data-page="reports"><span class="tab-icon">📋</span> ڕاپۆرت و ئامار</a>
+</nav>
+
+<!-- ══ DASHBOARD PAGE ════════════════════════════════════════════════ -->
+<div class="page active" id="page-dashboard">
+
+    <!-- Stat cards -->
+    <div class="stats-row">
+        <div class="stat-card">
+            <div class="sicon">🚗</div>
+            <div>
+                <div class="sval" id="statTotal">…</div>
+                <div class="slabel">کۆی گشتی ئوتومبێل</div>
+            </div>
+        </div>
+        <div class="stat-card green">
+            <div class="sicon">📅</div>
+            <div>
+                <div class="sval" id="statToday">…</div>
+                <div class="slabel">ئەمڕۆ تۆمارکراو</div>
+            </div>
+        </div>
+        <div class="stat-card blue">
+            <div class="sicon">🏠</div>
+            <div>
+                <div class="sval" id="statPrivate">…</div>
+                <div class="slabel">تایبەت</div>
+            </div>
+        </div>
+        <div class="stat-card red">
+            <div class="sicon">🚛</div>
+            <div>
+                <div class="sval" id="statCargo">…</div>
+                <div class="slabel">بارهەڵگر</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ══ HERO BANNER ═══════════════════════════════════════════════ -->
+    <div class="hero-banner">
+        <img src="/img/traffic_hero.png" alt="پشکنینی هاتووچۆ و شاسی">
+    </div>
+
+    <!-- ══ 11 MODULE SHORTCUTS ════════════════════════════════════════ -->
+    <div class="module-section">
+        <div class="module-section-title">بەشەکانی سیستەم (پشکنین و تۆمارکردن)</div>
+        <div class="module-grid">
+
+            <!-- 1. تۆمار کردن -->
+            <div class="mod-card mc-yellow" onclick="openRegisterModal()">
+                <div class="mod-icon">📝</div>
+                <div class="mod-label">تۆمار کردن</div>
+            </div>
+
+            <!-- 2. گومرگ -->
+            <div class="mod-card mc-cyan" onclick="openGomrgModal()">
+                <div class="mod-icon">🛃</div>
+                <div class="mod-label">گومرگ</div>
+            </div>
+
+            <!-- 3. دانانی نیشانەی حیجز -->
+            <div class="mod-card mc-pink" onclick="openHijzAddModal()">
+                <div class="mod-icon">🔖</div>
+                <div class="mod-label">دانانی نیشانەی حیجز</div>
+            </div>
+
+            <!-- 4. لابردنی حیجز -->
+            <div class="mod-card mc-peach" onclick="openHijzListModal()">
+                <div class="mod-icon">🗑️</div>
+                <div class="mod-label">لابردنی حیجز</div>
+            </div>
+
+            <!-- 5. گەڕانی وورد -->
+            <div class="mod-card mc-white" onclick="openAdvSearchModal()">
+                <div class="mod-icon">🔎</div>
+                <div class="mod-label">گەڕانی وورد</div>
+            </div>
+
+            <!-- 6. تۆماری کەسی -->
+            <div class="mod-card mc-pink" onclick="openPersonalModal()">
+                <div class="mod-icon">👤</div>
+                <div class="mod-label">تۆماری کەسی</div>
+            </div>
+
+            <!-- 7. کارمەند و بەشەکان -->
+            <div class="mod-card mc-cyan" onclick="openStaffModal()">
+                <div class="mod-icon">👥</div>
+                <div class="mod-label">کارمەند و بەشەکان</div>
+            </div>
+
+            <!-- 8. هەڵەکان و دووبارە -->
+            <div class="mod-card mc-white" onclick="openDuplicatesModal()">
+                <div class="mod-icon">⚠️</div>
+                <div class="mod-label">هەڵەکان و دووبارە</div>
+            </div>
+
+            <!-- 9. تۆماری لێدراوی -->
+            <div class="mod-card mc-yellow" onclick="switchTab('suspicious')">
+                <div class="mod-icon">🚫</div>
+                <div class="mod-label">تۆماری لێدراوی</div>
+            </div>
+
+            <!-- 10. ئامارەکان -->
+            <div class="mod-card mc-purple" onclick="openStatsModal()">
+                <div class="mod-icon">📈</div>
+                <div class="mod-label">ئامارەکان</div>
+            </div>
+
+            <!-- 11. ڕاپۆرت -->
+            <div class="mod-card mc-peach" onclick="switchTab('reports')">
+                <div class="mod-icon">📋</div>
+                <div class="mod-label">ڕاپۆرت</div>
+            </div>
+
+        </div>
+    </div>
+
+    <!-- Quick Search -->
+    <div class="search-box">
+        <h3>🔍 گەڕانی خێرا لە ئوتومبێلەکان</h3>
+        <div class="search-row">
+            <input type="text" id="dashQ" class="s-input c4-kurd" placeholder="بگەڕێ بەپێی تابلۆ، شاسی، خاوەن، مۆدێل، ڕەنگ..." autocomplete="off">
+            <input type="hidden" id="dashField" value="">
+            <button class="btn-search" onclick="doSearch()">🔍 گەڕان</button>
+        </div>
+        <div class="search-chips">
+            <span class="chip active" onclick="setChip(this, '')">هەمووی</span>
+            <span class="chip" onclick="setChip(this, 'chassis')">شاسی</span>
+            <span class="chip" onclick="setChip(this, 'plate')">تابلۆ</span>
+            <span class="chip" onclick="setChip(this, 'owner')">ناوی خاوەن</span>
+            <span class="chip" onclick="setChip(this, 'model')">مۆدێل</span>
+            <span class="chip" onclick="setChip(this, 'color')">ڕەنگ</span>
+        </div>
+    </div>
+
+    <!-- Quick Results Area -->
+    <div class="result-wrap" id="dashResults" style="display:none;">
+        <div class="result-head">
+            <div class="result-title">ئەنجامەکانی گەڕان</div>
+            <div class="result-count" id="dashCount">0</div>
+        </div>
+        <div class="table-wrap" id="dashTable"></div>
+    </div>
+
+</div>
+
+<!-- ══ SEARCH PAGE ═══════════════════════════════════════════════════ -->
+<div class="page" id="page-search">
+    <div class="search-box">
+        <h3>🔍 گەڕانی ئوتومبێل</h3>
+        <div class="search-row">
+            <input type="text" id="advQ" class="s-input c4-kurd" placeholder="دەقی گەڕان بنووسە..." autocomplete="off">
+            <select id="advField" class="s-select">
+                <option value="">هەموو خانەکان</option>
+                <option value="chassis">شاسی</option>
+                <option value="plate">تابلۆ</option>
+                <option value="owner">خاوەن</option>
+                <option value="model">مۆدێل</option>
+                <option value="color">ڕەنگ</option>
+                <option value="type">جۆری ئوتومبێل</option>
+            </select>
+            <button class="btn-search" onclick="doAdvSearch()">🔍 گەڕان</button>
+        </div>
+    </div>
+    <div class="result-wrap">
+        <div class="result-head">
+            <div class="result-title">ئەنجامەکان</div>
+            <div class="result-count" id="advCount">0</div>
+        </div>
+        <div class="table-wrap" id="advTable">
+            <div class="empty-box"><div class="eicon">🔍</div><p>گەڕانێک بکە بۆ دیتنی ئوتومبێلەکان</p></div>
+        </div>
+    </div>
+</div>
+
+<!-- ══ SUSPICIOUS PAGE (RAP) ═════════════════════════════════════════ -->
+<div class="page" id="page-suspicious">
+    <div class="result-wrap">
+        <div class="result-head">
+            <div class="result-title">⚠️ ئوتومبێلی گومانلێکراو و لێدراوی – RAP</div>
+            <div class="result-count" id="suspCount">0</div>
+        </div>
+        <div class="table-wrap" id="suspTable">
+            <div class="spin-box"><div class="spinner"></div></div>
+        </div>
+    </div>
+</div>
+
+<!-- ══ REPORTS PAGE ══════════════════════════════════════════════════ -->
+<div class="page" id="page-reports">
+    <div class="result-wrap">
+        <div class="result-head">
+            <div class="result-title">📋 ئاماری گشتی و بەشەکان</div>
+            <button class="btn-primary" onclick="window.print()" style="font-size:12px;padding:6px 14px;">🖨️ چاپکردن</button>
+        </div>
+        <div id="reportBody" style="padding:24px">
+            <div class="spin-box"><div class="spinner"></div></div>
+        </div>
+    </div>
+</div>
+
+<!-- ═══════════════════════════════════════════════════════════════════
+     MODALS FOR THE 11 MODULES
+════════════════════════════════════════════════════════════════════ -->
+
+<!-- 1. MODAL: REGISTER NEW VEHICLE (EXACT C# WINDOWS FORM REPLICA) -->
+<div class="overlay" id="modalRegister">
+    <div class="modal modal-desktop">
+        <!-- Windows Form Window Header -->
+        <div class="desktop-window-titlebar">
+            <div style="display:flex;align-items:center;gap:8px;">
+                <span class="desktop-window-title">ALL</span>
+            </div>
+            <button class="desktop-btn-close" onclick="closeOverlay('modalRegister')" title="داخستن">✕</button>
+        </div>
+
+        <div style="padding:10px 14px 14px;background:#f0f0f0;">
+            <div id="regAlert"></div>
+            
+            <div class="desktop-form-container">
+                <!-- TOP BANNER: PEACH ICON, CENTER BILINGUAL TITLE, USER BADGE 9 (ROW 0) -->
+                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+                    <div style="display:flex;align-items:center;gap:6px;">
+                        <div style="width:34px;height:34px;background:#fed7aa;border:1px solid #fdba74;border-radius:2px;"></div>
+                    </div>
+                    <div style="text-align:center;font-size:23px;font-weight:900;letter-spacing:0.5px;">
+                        <span style="color:#0033cc;">بەڕێوەبەرایەتی هاتووچۆی پارێزگای سلێمانی</span>
+                        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+                        <span style="color:#e60000;">هۆبەی پشکنین</span>
+                    </div>
+                    <div class="df-user-badge" id="dfUserBadge">9</div>
+                </div>
+
+                <!-- ROW 1 (Plate, Province, Dept, Office, Search, To, Date) -->
+                <div class="df-row">
+                    <span class="df-label">ژمارەی ئوتومبێل</span>
+                    <input type="text" id="dfA" class="df-input df-plate c4-kurd" style="width:130px;" placeholder="">
+                    
+                    <span class="df-label">تابلۆی</span>
+                    <input type="text" id="dfB" list="provinceList" class="df-input c4-kurd" style="width:85px;text-align:center;" value="سلێمانی">
+                    
+                    <span class="df-label">بەش</span>
+                    <select id="dfC" class="df-select" style="width:95px;">
+                        <option value="تایبەت" selected>تایبەت</option>
+                        <option value="بار">بار</option>
+                        <option value="باص">باص</option>
+                        <option value="بیناسازی">بیناسازی</option>
+                        <option value="کرێ">کرێ</option>
+                        <option value="تراکتۆر">تراکتۆر</option>
+                    </select>
+                    
+                    <select id="dfD" class="df-select" style="width:125px;">
+                        <option value="عمر عوسمان">عمر عوسمان</option>
+                        <option value="بێستون">بێستون</option>
+                        <option value="کاروان">کاروان</option>
+                        <option value="گشتی هاتووچۆ">گشتی هاتووچۆ</option>
+                        <option value="چەرموو">چەرموو</option>
+                    </select>
+                    
+                    <button type="button" class="df-btn-search" onclick="dfSearchCar()">گەڕان</button>
+                    
+                    <span class="df-label">بۆ</span>
+                    <input type="text" id="dfTo" class="df-input df-pink c4-kurd" style="width:215px;" value="هاتووچۆی پارێزگای سلێمانی">
+                    
+                    <input type="date" id="dfDD" class="df-input" style="width:125px;margin-right:auto;">
+                </div>
+
+                <!-- ROW 2 (Barad 1, Barad 2, Transaction Type) -->
+                <div class="df-row">
+                    <span class="df-label">بەڕادی هاتووچۆ</span>
+                    <input type="text" id="dfE" list="baradList" class="df-input c4-kurd" style="width:215px;" placeholder="">
+                    
+                    <span class="df-label">* بەڕادی هاتووچۆ</span>
+                    <input type="text" id="dfF" list="baradList" class="df-input c4-kurd" style="width:215px;" value="*">
+                    
+                    <span class="df-label">جۆری مامەڵە</span>
+                    <select id="dfH" class="df-select" style="flex:1;">
+                        <option value="تۆماری یەکەم جار" selected>تۆماری یەکەم جار</option>
+                        <option value="بەناوکردن">بەناوکردن</option>
+                        <option value="گۆڕینی خاوەندارێتی">گۆڕینی خاوەندارێتی</option>
+                        <option value="تازەکردنەوە">تازەکردنەوە</option>
+                        <option value="گۆڕینی تابلۆ">گۆڕینی تابلۆ</option>
+                    </select>
+                </div>
+
+                <!-- ROW 3 (Owner Full Name) -->
+                <div class="df-row">
+                    <span class="df-label">ناوی خاوەن سوار ڕەو</span>
+                    <input type="text" id="dfG" class="df-input c4-kurd" style="flex:1;" placeholder="">
+                </div>
+
+                <!-- ROW 4 (Car Make & Model Type) -->
+                <div class="df-row">
+                    <span class="df-label">جۆری ئوتومبێل</span>
+                    <input type="text" id="dfI" list="categoryList" class="df-input c4-kurd" style="flex:1;" placeholder="">
+                </div>
+
+                <!-- ROW 5 (Group, Fuel, Color, Extra, Gear, Small, Left) -->
+                <div class="df-row">
+                    <span class="df-label">گرووپ</span>
+                    <select id="dfJ" class="df-select" style="width:85px;">
+                        <option value="صالون" selected>صالون</option>
+                        <option value="استيشن">استيشن</option>
+                        <option value="بيك اب">بيك اب</option>
+                        <option value="حمل">حمل</option>
+                        <option value="صالون/تایبەت">صالون/تایبەت</option>
+                    </select>
+                    
+                    <span class="df-label">سووتەمەنی</span>
+                    <select id="dfK" class="df-select" style="width:95px;">
+                        <option value=""></option>
+                        <option value="بەنزین" selected>بەنزین</option>
+                        <option value="گاز">گاز</option>
+                        <option value="هایبرد">هایبرد</option>
+                        <option value="بەنزین + غاز">بەنزین + غاز</option>
+                        <option value="بەنزین+شحن">بەنزین+شحن</option>
+                    </select>
+                    
+                    <span class="df-label">ڕەنگ</span>
+                    <input type="text" id="dfL" list="colorList" class="df-input c4-kurd" style="width:95px;" placeholder="">
+                    
+                    <input type="text" id="dfColorExtra" list="colorList" class="df-input c4-kurd" style="flex:1;" placeholder="">
+                    
+                    <span class="df-label">گێڕ</span>
+                    <select id="dfM" class="df-select" style="width:75px;">
+                        <option value="ئۆتۆماتیک" selected>ئۆتۆماتیک</option>
+                        <option value="عادی">عادی</option>
+                    </select>
+                    
+                    <input type="text" id="dfStatusSmall" class="df-input" style="width:35px;text-align:center;">
+                    
+                    <input type="text" id="dfExtraLeft" class="df-input" style="width:115px;">
+                </div>
+
+                <!-- ROW 6 (Doors, Passengers, Model, Cylinders, Inspection Fee, Fees) -->
+                <div class="df-row">
+                    <span class="df-label">ژ.دەرگا</span>
+                    <input type="number" id="dfN" class="df-input" style="width:55px;text-align:center;" value="0">
+                    
+                    <span class="df-label">ژ.سەرنشین</span>
+                    <input type="number" id="dfQ" class="df-input" style="width:55px;text-align:center;" value="0">
+                    
+                    <span class="df-label">مۆدێل</span>
+                    <input type="number" id="dfP" class="df-input" style="width:65px;text-align:center;" value="0">
+                    
+                    <span class="df-label">ژ.بستۆن</span>
+                    <input type="number" id="dfO" class="df-input" style="width:55px;text-align:center;" value="0">
+                    
+                    <span class="df-label">اجور كشف</span>
+                    <input type="text" id="dfII" class="df-input" style="width:65px;text-align:center;" value="0">
+                    
+                    <span class="df-label">پارەی رسومات</span>
+                    <input type="text" id="dfJJ" class="df-input" style="width:90px;text-align:center;" value="">
+                </div>
+
+                <!-- ROW 7 (Chassis/VIN, Cabin, Star, Mobile) -->
+                <div class="df-row">
+                    <span class="df-label">ژمارەی شاسی</span>
+                    <input type="text" id="dfR" class="df-input df-cyan" style="width:280px;text-transform:uppercase;letter-spacing:1px;font-weight:700;" placeholder="" required>
+                    
+                    <span class="df-label">ژ.قەمەرە</span>
+                    <input type="text" id="dfS" class="df-input df-cyan" style="width:55px;text-align:center;color:#0284c7;font-weight:700;" value="0">
+                    
+                    <input type="text" id="dfStar" class="df-input" style="width:240px;text-align:center;font-weight:bold;font-size:16px;" value="*">
+                    
+                    <span class="df-label">ژ.مۆبایل</span>
+                    <input type="text" id="dfT" class="df-input df-red-text" style="width:150px;text-align:center;" value="0">
+                </div>
+
+                <!-- ROW 8 (Notes) -->
+                <div class="df-row">
+                    <span class="df-label">تێبینی</span>
+                    <input type="text" id="dfU" class="df-input c4-kurd" style="flex:1;" placeholder="">
+                </div>
+
+                <!-- ROW 9 (Trailer 1) -->
+                <div class="df-row">
+                    <span class="df-label">جۆری پاشگری یەکەم</span>
+                    <input type="text" id="dfV" class="df-input c4-kurd" style="flex:1;">
+                </div>
+                <div class="df-row">
+                    <span class="df-label">ژمارەی شاسی عەرەبانە</span>
+                    <input type="text" id="dfW" class="df-input" style="width:230px;text-align:center;" value="*">
+                    
+                    <span class="df-label">ڕەنگی</span>
+                    <input type="text" id="dfX" class="df-input c4-kurd" style="width:75px;">
+                    
+                    <div style="flex:1;"></div>
+                    
+                    <span class="df-label">تەن</span>
+                    <input type="number" id="dfY" class="df-input" style="width:55px;text-align:center;" value="0">
+                    <select class="df-select" style="width:30px;padding:0;"></select>
+                </div>
+
+                <!-- ROW 10 (Trailer 2) -->
+                <div class="df-row">
+                    <span class="df-label">جۆری پاشگری دووەم</span>
+                    <input type="text" id="dfZ" class="df-input c4-kurd" style="flex:1;">
+                </div>
+                <div class="df-row">
+                    <span class="df-label">ژمارەی شاسی عەرەبانە</span>
+                    <input type="text" id="dfAA" class="df-input" style="width:230px;text-align:center;" value="*">
+                    
+                    <span class="df-label">ڕەنگی</span>
+                    <input type="text" id="dfBB" class="df-input c4-kurd" style="width:75px;">
+                    
+                    <div style="flex:1;"></div>
+                    
+                    <span class="df-label">تەن</span>
+                    <input type="number" id="dfCC" class="df-input" style="width:55px;text-align:center;" value="0">
+                    <select class="df-select" style="width:30px;padding:0;"></select>
+                </div>
+
+                <!-- BOTTOM ACTIONS & BARCODE (Right to Left: Barcode -> Yellow long -> Pink -> Green -> Yellow -> Red) -->
+                <div class="df-actions-row">
+                    <div class="df-actions-group">
+                        <button type="button" class="btn-df btn-df-red" onclick="dfSaveVehicle()">تۆمار کردنی زانیاری</button>
+                        <button type="button" class="btn-df btn-df-yellow" onclick="dfPrintInspection()">چاپ کردنی فۆرم</button>
+                        <button type="button" class="btn-df btn-df-green" onclick="dfPrintCard()">چاپ کردنی فۆرم</button>
+                        <button type="button" class="btn-df btn-df-pink" onclick="dfResetNew()">تۆماری نوێ</button>
+                        <button type="button" class="btn-df btn-df-yellow-long" onclick="dfUpdateVehicle()">ڕاست کردنەوەی زانیاری لە کاتی ڕاکێشان و کەم و کورتی</button>
+                    </div>
+
+                    <!-- Barcode graphic exactly on the right -->
+                    <div style="display:flex;align-items:center;background:white;padding:2px 8px;border:1px solid #707070;border-radius:1px;height:32px;">
+                        <svg width="105" height="26" viewBox="0 0 105 26">
+                            <rect x="2" y="1" width="3" height="24" fill="#000"/>
+                            <rect x="7" y="1" width="2" height="24" fill="#000"/>
+                            <rect x="11" y="1" width="4" height="24" fill="#000"/>
+                            <rect x="17" y="1" width="2" height="24" fill="#000"/>
+                            <rect x="21" y="1" width="5" height="24" fill="#000"/>
+                            <rect x="28" y="1" width="2" height="24" fill="#000"/>
+                            <rect x="32" y="1" width="3" height="24" fill="#000"/>
+                            <rect x="37" y="1" width="5" height="24" fill="#000"/>
+                            <rect x="44" y="1" width="2" height="24" fill="#000"/>
+                            <rect x="48" y="1" width="4" height="24" fill="#000"/>
+                            <rect x="54" y="1" width="2" height="24" fill="#000"/>
+                            <rect x="58" y="1" width="5" height="24" fill="#000"/>
+                            <rect x="65" y="1" width="3" height="24" fill="#000"/>
+                            <rect x="70" y="1" width="2" height="24" fill="#000"/>
+                            <rect x="74" y="1" width="4" height="24" fill="#000"/>
+                            <rect x="80" y="1" width="3" height="24" fill="#000"/>
+                            <rect x="85" y="1" width="2" height="24" fill="#000"/>
+                            <rect x="89" y="1" width="5" height="24" fill="#000"/>
+                            <rect x="96" y="1" width="2" height="24" fill="#000"/>
+                            <rect x="100" y="1" width="3" height="24" fill="#000"/>
+                        </svg>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 2. MODAL: GOMRG (CUSTOMS) -->
+<div class="overlay" id="modalGomrg">
+    <div class="modal modal-lg">
+        <div class="modal-head">
+            <div class="modal-title">🛃 تۆماری گومرگ</div>
+            <button class="modal-close" onclick="closeOverlay('modalGomrg')">✕</button>
+        </div>
+        <div class="modal-body">
+            <div style="display:flex;gap:10px;margin-bottom:16px;">
+                <input type="text" id="gomrgQ" class="s-input c4-kurd" placeholder="گەڕان لە گومرگ بە شاسی، تابلۆ، ناوی خاوەن، یان هۆکار...">
+                <button class="btn-search" onclick="loadGomrg()">🔍 گەڕان</button>
+                <button class="btn-primary" onclick="toggleGomrgAdd()" style="background:#0891b2;">+ تۆماری نوێ</button>
+            </div>
+
+            <!-- Inline Gomrg Add Form -->
+            <div id="gomrgAddBox" style="display:none;background:#f0f9ff;border:1px solid #bae6fd;border-radius:10px;padding:16px;margin-bottom:16px;">
+                <h4 style="color:#0369a1;margin-bottom:12px;font-size:14px;">تۆمارکردنی ئوتومبێل لە گومرگ</h4>
+                <div class="form-grid">
+                    <div class="form-group"><label class="form-label">ژمارەی تابلۆ</label><input type="text" id="gCarN" class="form-input c4-kurd"></div>
+                    <div class="form-group"><label class="form-label">شاسی</label><input type="text" id="gShassy" class="form-input" style="text-transform:uppercase;"></div>
+                    <div class="form-group"><label class="form-label">ناوی خاوەن</label><input type="text" id="gName" class="form-input c4-kurd"></div>
+                    <div class="form-group col-span-2"><label class="form-label">وەسف و جۆری ئوتومبێل</label><input type="text" id="gType" class="form-input c4-kurd"></div>
+                    <div class="form-group"><label class="form-label">مۆدێل</label><input type="text" id="gModel" class="form-input"></div>
+                    <div class="form-group"><label class="form-label">شوێن</label><input type="text" id="gPlace" list="placeList" class="form-input c4-kurd"></div>
+                    <div class="form-group"><label class="form-label">پارێزگا</label><input type="text" id="gParezga" list="provinceList" class="form-input c4-kurd"></div>
+                    <div class="form-group"><label class="form-label">بەش</label><input type="text" id="gBash" class="form-input c4-kurd" value="بار"></div>
+                    <div class="form-group col-span-3"><label class="form-label">هۆکار / تێبینی</label><input type="text" id="gReason" class="form-input c4-kurd"></div>
+                </div>
+                <div style="margin-top:12px;text-align:left;">
+                    <button class="btn-secondary" onclick="toggleGomrgAdd()" style="margin-left:8px;">پاشگەزبوونەوە</button>
+                    <button class="btn-primary" onclick="submitGomrg()" style="background:#0891b2;">تۆمارکردن</button>
+                </div>
+            </div>
+
+            <div class="table-wrap" id="gomrgTableWrap">
+                <div class="spin-box"><div class="spinner"></div></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 3. MODAL: SET HIJZ (ADD HIJZ) -->
+<div class="overlay" id="modalHijzAdd">
+    <div class="modal">
+        <div class="modal-head">
+            <div class="modal-title">🔖 دانانی نیشانەی حیجز لەسەر ئوتومبێل</div>
+            <button class="modal-close" onclick="closeOverlay('modalHijzAdd')">✕</button>
+        </div>
+        <div class="modal-body">
+            <div id="hijzAlert"></div>
+            <form onsubmit="handleHijzSubmit(event)">
+                <div class="form-grid cols-2">
+                    <div class="form-group">
+                        <label class="form-label">ژمارەی تابلۆ (Auto_No)</label>
+                        <input type="text" id="hPlate" class="form-input c4-kurd" required placeholder="ژمارەی تابلۆ یان مەلەف">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">پارێزگا / شوێن</label>
+                        <input type="text" id="hPlace" list="placeList" class="form-input c4-kurd" placeholder="سلێمانی...">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">جۆری پلێت</label>
+                        <input type="text" id="hType" list="typeList" class="form-input c4-kurd" value="تایبەت">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">شاسی ئۆتۆمبێل (Reg_Name) *</label>
+                        <input type="text" id="hChassis" class="form-input" required placeholder="شاسی بۆ حیجزکردن" style="text-transform:uppercase;">
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">بەروار</label>
+                        <input type="date" id="hDate" class="form-input">
+                    </div>
+                    <div class="form-group col-span-2">
+                        <label class="form-label">هۆکاری حیجز و تێبینی نووسراو *</label>
+                        <textarea id="hNote" class="form-textarea c4-kurd" required placeholder="هۆکاری حیجز یان حەفر یان کۆسرە بنووسە..."></textarea>
+                    </div>
+                </div>
+                <div class="modal-foot" style="margin-top:20px;padding:0;background:none;border:none;">
+                    <button type="button" class="btn-secondary" onclick="closeOverlay('modalHijzAdd')">داخستن</button>
+                    <button type="submit" class="btn-primary" style="background:#db2777;">🔒 دانانی حیجز</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- 4. MODAL: HIJZ LIST & REMOVE -->
+<div class="overlay" id="modalHijzList">
+    <div class="modal modal-lg">
+        <div class="modal-head">
+            <div class="modal-title">🗑️ لیستی حیجز و لابردنی حیجز</div>
+            <button class="modal-close" onclick="closeOverlay('modalHijzList')">✕</button>
+        </div>
+        <div class="modal-body">
+            <div style="display:flex;gap:10px;margin-bottom:16px;">
+                <input type="text" id="hijzSearchQ" class="s-input c4-kurd" placeholder="گەڕان بەپێی شاسی، تابلۆ، هۆکاری حیجز...">
+                <button class="btn-search" onclick="loadHijzList()">🔍 گەڕان</button>
+            </div>
+            <div class="table-wrap" id="hijzTableWrap">
+                <div class="spin-box"><div class="spinner"></div></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 5. MODAL: ADVANCED SEARCH -->
+<div class="overlay" id="modalAdvSearch">
+    <div class="modal modal-lg">
+        <div class="modal-head">
+            <div class="modal-title">🔎 گەڕانی وورد و فرە-مەرج</div>
+            <button class="modal-close" onclick="closeOverlay('modalAdvSearch')">✕</button>
+        </div>
+        <div class="modal-body">
+            <div class="form-grid">
+                <div class="form-group"><label class="form-label">شاسی</label><input type="text" id="asChassis" class="form-input"></div>
+                <div class="form-group"><label class="form-label">تابلۆ</label><input type="text" id="asPlate" class="form-input c4-kurd"></div>
+                <div class="form-group"><label class="form-label">مۆدێل</label><input type="text" id="asModel" class="form-input c4-kurd"></div>
+                <div class="form-group"><label class="form-label">ڕەنگ</label><input type="text" id="asColor" list="colorList" class="form-input c4-kurd"></div>
+                <div class="form-group"><label class="form-label">سووتەمەنی</label><input type="text" id="asFuel" list="fuelList" class="form-input c4-kurd"></div>
+                <div class="form-group"><label class="form-label">بستۆن</label><input type="number" id="asCylinders" class="form-input"></div>
+                <div class="form-group"><label class="form-label">ساڵ</label><input type="number" id="asYear" class="form-input"></div>
+                <div class="form-group"><label class="form-label">پارێزگا</label><input type="text" id="asProvince" list="provinceList" class="form-input c4-kurd"></div>
+                <div class="form-group"><label class="form-label">ناوی خاوەن</label><input type="text" id="asOwner" class="form-input c4-kurd"></div>
+            </div>
+            <div style="margin-top:16px;text-align:left;">
+                <button class="btn-primary" onclick="runAdvancedSearch()">🔎 دەستپێکردنی گەڕانی وورد</button>
+            </div>
+            <div class="table-wrap" id="asResultsWrap" style="margin-top:18px;"></div>
+        </div>
+    </div>
+</div>
+
+<!-- 6. MODAL: PERSONAL RECORDS -->
+<div class="overlay" id="modalPersonal">
+    <div class="modal modal-lg">
+        <div class="modal-head">
+            <div class="modal-title">👤 تۆماری کەسی – ئوتومبێلە پشکنراوەکانی بەکارهێنەر</div>
+            <button class="modal-close" onclick="closeOverlay('modalPersonal')">✕</button>
+        </div>
+        <div class="modal-body">
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:18px;">
+                <div class="stat-card green"><div class="sicon">📅</div><div><div class="sval" id="myToday">0</div><div class="slabel">تۆمارکراوی ئەمڕۆت</div></div></div>
+                <div class="stat-card blue"><div class="sicon">🚗</div><div><div class="sval" id="myTotal">0</div><div class="slabel">کۆی گشتی تۆمارەکانت لە سیستم</div></div></div>
+            </div>
+            <div class="table-wrap" id="personalTableWrap">
+                <div class="spin-box"><div class="spinner"></div></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 7. MODAL: STAFF & PLACES -->
+<div class="overlay" id="modalStaff">
+    <div class="modal modal-lg">
+        <div class="modal-head">
+            <div class="modal-title">👥 کارمەندان و بەشەکانی هاتووچۆ</div>
+            <button class="modal-close" onclick="closeOverlay('modalStaff')">✕</button>
+        </div>
+        <div class="modal-body">
+            <div class="table-wrap" id="staffTableWrap">
+                <div class="spin-box"><div class="spinner"></div></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- 8. MODAL: DUPLICATES & ERRORS -->
+<div class="overlay" id="modalDuplicates">
+    <div class="modal modal-lg">
+        <div class="modal-head">
+            <div class="modal-title">⚠️ هەڵەکان و دووبارەکان لە سیستم (شاسی و تابلۆ)</div>
+            <button class="modal-close" onclick="closeOverlay('modalDuplicates')">✕</button>
+        </div>
+        <div class="modal-body">
+            <div class="alert-box alert-warning">
+                ℹ️ ئەم بەشە ئەو شاسی و تابلۆیانە پیشان دەدات کە زیاد لە جارێک لە سیستم تۆمارکراون.
+            </div>
+            <h4 style="color:var(--primary);margin:12px 0 8px;font-size:14px;">🔹 دووبارەی ژمارەی شاسی (Chassis Duplicates)</h4>
+            <div class="table-wrap" id="dupChassisWrap" style="margin-bottom:24px;"></div>
+
+            <h4 style="color:var(--primary);margin:12px 0 8px;font-size:14px;">🔹 دووبارەی تابلۆکان (Plate Duplicates)</h4>
+            <div class="table-wrap" id="dupPlateWrap"></div>
+        </div>
+    </div>
+</div>
+
+<!-- 9. MODAL: FULL STATS -->
+<div class="overlay" id="modalStats">
+    <div class="modal">
+        <div class="modal-head">
+            <div class="modal-title">📈 ئامارەکانی پشکنینی هاتووچۆ</div>
+            <button class="modal-close" onclick="closeOverlay('modalStats')">✕</button>
+        </div>
+        <div class="modal-body" id="statsModalBody">
+            <div class="spin-box"><div class="spinner"></div></div>
+        </div>
+    </div>
+</div>
+
+<!-- 10. MODAL: VEHICLE DETAIL -->
+<div class="overlay" id="detailModal">
+    <div class="modal">
+        <div class="modal-head">
+            <div class="modal-title" id="modalTitle">زانیاری ئوتومبێل</div>
+            <button class="modal-close" onclick="closeOverlay('detailModal')">✕</button>
+        </div>
+        <div class="modal-body">
+            <div class="detail-grid" id="modalBody"></div>
+        </div>
+    </div>
+</div>
+
+<!-- DATALISTS FOR AUTOCOMPLETE & C4KURD COMBOBOXES -->
+<datalist id="provinceList"></datalist>
+<datalist id="placeList"></datalist>
+<datalist id="userList"></datalist>
+<datalist id="colorList"></datalist>
+<datalist id="baradList"></datalist>
+<datalist id="typeList">
+    <option value="تایبەت">
+    <option value="بار">
+    <option value="باص">
+    <option value="بیناسازی">
+    <option value="تراکتۆر">
+    <option value="کرێ">
+</datalist>
+<datalist id="categoryList">
+    <option value="صالون">
+    <option value="استيشن">
+    <option value="بیک اب دبل قمارە">
+    <option value="بیک اب تاك قمارە">
+    <option value="لۆری">
+    <option value="قلاب">
+    <option value="کانتر">
+    <option value="براد">
+    <option value="فلات">
+    <option value="سایلو">
+</datalist>
+<datalist id="fuelList">
+    <option value="بەنزین">
+    <option value="گاز">
+    <option value="هایبرد">
+    <option value="بەنزین + غاز">
+    <option value="بەنزین+شحن">
+</datalist>
+<datalist id="gearList">
+    <option value="ئۆتۆماتیک">
+    <option value="عادی">
+</datalist>
+
+<!-- Toast -->
+<div id="toast"></div>
+
+<script>
+// ─── AUTH & INITIALIZATION ──────────────────────────────────────────────
+let currentUser = null;
+async function init() {
+    try {
+        const r = await fetch('/api/me');
+        const d = await r.json();
+        if (!d.loggedIn) { window.location.href = '/login.html'; return; }
+        currentUser = d.user;
+        document.getElementById('topUserName').textContent  = currentUser.name || currentUser.username || '-';
+        document.getElementById('topUserPlace').textContent = currentUser.permission ? `${currentUser.permission} - ${currentUser.place||''}` : (currentUser.place || '-');
+
+        // Preload metadata
+        loadStats();
+        loadSuspicious();
+        loadReports();
+        loadLookups();
+        setDate();
+        setupC4KurdInputs();
+    } catch(e) {
+        console.error('Init error:', e);
+    }
+}
+init();
+
+function setDate() {
+    const d = new Date();
+    document.getElementById('todayDate').textContent =
+        d.toLocaleDateString('ar-IQ', {weekday:'long', year:'numeric', month:'long', day:'numeric'});
+}
+
+document.getElementById('logoutBtn').addEventListener('click', async () => {
+    await fetch('/api/logout', { method:'POST' });
+    window.location.href = '/login.html';
+});
+
+// ─── C4KURD KEYBOARD NORMALIZER ─────────────────────────────────────────
+function normalizeKurdishText(text) {
+    if (!text) return '';
+    return text
+        .replace(/\u064A/g, '\u06CC') // Arabic Yeh -> Kurdish Yeh (ی)
+        .replace(/\u0649/g, '\u06CC') // Alef Maksura -> Kurdish Yeh (ی)
+        .replace(/\u0643/g, '\u06A9') // Arabic Kaf -> Kurdish Keheh (ک)
+        .replace(/\u0629/g, '\u06D5') // Teh Marbuta -> Kurdish Ae (ە)
+        .replace(/\u0647\u200C/g, '\u06D5'); // Heh + ZWNJ -> Ae (ە)
+}
+
+function setupC4KurdInputs() {
+    document.addEventListener('input', function(e) {
+        if (e.target && e.target.classList.contains('c4-kurd')) {
+            const cursor = e.target.selectionStart;
+            const original = e.target.value;
+            const normalized = normalizeKurdishText(original);
+            if (original !== normalized) {
+                e.target.value = normalized;
+                e.target.setSelectionRange(cursor, cursor);
+            }
+        }
+    });
+}
+
+// ─── LOAD LOOKUPS (COLORS, PROVINCES, USERS, PLACES, BARADS) ────────────
+async function loadLookups() {
+    try {
+        const [colors, provinces, staff, barads] = await Promise.all([
+            fetch('/api/colors').then(r=>r.json()).catch(()=>[]),
+            fetch('/api/provinces').then(r=>r.json()).catch(()=>[]),
+            fetch('/api/staff-list').then(r=>r.json()).catch(()=>({users:[], places:[]})),
+            fetch('/api/barads').then(r=>r.json()).catch(()=>[])
+        ]);
+
+        const colorList = document.getElementById('colorList');
+        if (colorList && Array.isArray(colors)) {
+            colorList.innerHTML = colors.map(c => `<option value="${c}">`).join('');
+        }
+
+        const provList = document.getElementById('provinceList');
+        if (provList && Array.isArray(provinces)) {
+            provList.innerHTML = provinces.map(p => `<option value="${p}">`).join('');
+        }
+
+        const userList = document.getElementById('userList');
+        if (userList && staff.users) {
+            userList.innerHTML = staff.users.map(u => `<option value="${u.User_id}">${u.User_Name ? u.User_Name : ''}</option>`).join('');
+        }
+
+        const placeList = document.getElementById('placeList');
+        if (placeList && staff.places) {
+            placeList.innerHTML = staff.places.map(p => `<option value="${p}">`).join('');
+        }
+
+        const baradList = document.getElementById('baradList');
+        if (baradList && Array.isArray(barads)) {
+            baradList.innerHTML = barads.map(b => `<option value="${b}">`).join('');
+        }
+    } catch(e) {
+        console.error('Lookups error:', e);
+    }
+}
+
+// ─── TOAST NOTIFICATION ────────────────────────────────────────────────
+function showToast(msg, isErr = false) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.style.background = isErr ? '#dc2626' : '#1e293b';
+    t.style.display = 'block';
+    setTimeout(() => { t.style.display = 'none'; }, 3500);
+}
+
+// ─── TAB NAVIGATION ────────────────────────────────────────────────────
+function switchTab(page) {
+    document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    const tab = document.querySelector(`.nav-tab[data-page="${page}"]`);
+    if (tab) tab.classList.add('active');
+    const pg = document.getElementById('page-' + page);
+    if (pg) pg.classList.add('active');
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+document.querySelectorAll('.nav-tab').forEach(tab => {
+    tab.addEventListener('click', function(e) {
+        e.preventDefault();
+        switchTab(this.dataset.page);
+    });
+});
+
+// ─── MODAL OVERLAYS ────────────────────────────────────────────────────
+function openOverlay(id) {
+    document.getElementById(id).classList.add('show');
+}
+function closeOverlay(id) {
+    document.getElementById(id).classList.remove('show');
+}
+document.querySelectorAll('.overlay').forEach(ov => {
+    ov.addEventListener('click', function(e) { if(e.target === this) this.classList.remove('show'); });
+});
+document.addEventListener('keydown', e => {
+    if(e.key === 'Escape') document.querySelectorAll('.overlay.show').forEach(ov => ov.classList.remove('show'));
+});
+
+// ─── 1. MODULE: REGISTER VEHICLE (EXACT C# DESKTOP LOGIC) ───────────────
+let loadedVehicleId = null;
+
+function openRegisterModal() {
+    document.getElementById('regAlert').innerHTML = '';
+    if (currentUser) {
+        document.getElementById('dfUserBadge').textContent = currentUser.username || currentUser.id || '9';
+        if (currentUser.place) {
+            const opt = Array.from(document.getElementById('dfD').options).find(o => o.value === currentUser.place);
+            if (opt) opt.selected = true;
+        }
+    }
+    if (!loadedVehicleId) {
+        dfResetNew();
+    }
+    openOverlay('modalRegister');
+}
+
+function dfResetNew() {
+    loadedVehicleId = null;
+    document.getElementById('dfA').value = '';
+    document.getElementById('dfB').value = 'سلێمانی';
+    document.getElementById('dfC').value = 'تایبەت';
+    document.getElementById('dfTo').value = 'هاتووچۆی پارێزگای سلێمانی';
+    document.getElementById('dfDD').value = new Date().toISOString().slice(0, 10);
+    document.getElementById('dfE').value = '';
+    document.getElementById('dfF').value = '*';
+    document.getElementById('dfH').value = 'تۆماری یەکەم جار';
+    document.getElementById('dfH2').value = '';
+    document.getElementById('dfG').value = '';
+    document.getElementById('dfI').value = '';
+    document.getElementById('dfJ').value = 'صالون';
+    document.getElementById('dfK').value = 'بەنزین';
+    document.getElementById('dfL').value = '';
+    document.getElementById('dfM').value = 'ئۆتۆماتیک';
+    document.getElementById('dfStatusSmall').value = '';
+    document.getElementById('dfN').value = 0;
+    document.getElementById('dfQ').value = 0;
+    document.getElementById('dfP').value = 0;
+    document.getElementById('dfO').value = 0;
+    document.getElementById('dfII').value = 0;
+    document.getElementById('dfJJ').value = 0;
+    document.getElementById('dfR').value = '';
+    document.getElementById('dfS').value = 0;
+    document.getElementById('dfStar').value = '*';
+    document.getElementById('dfT').value = 0;
+    document.getElementById('dfU').value = '';
+    document.getElementById('dfV').value = '';
+    document.getElementById('dfW').value = '*';
+    document.getElementById('dfX').value = '';
+    document.getElementById('dfY').value = 0;
+    document.getElementById('dfZ').value = '';
+    document.getElementById('dfAA').value = '*';
+    document.getElementById('dfBB').value = '';
+    document.getElementById('dfCC').value = 0;
+    document.getElementById('regAlert').innerHTML = '';
+    showToast('✨ فۆرم بۆ تۆماری نوێ ئامادەکرا');
+}
+
+async function dfSearchCar() {
+    const plate = document.getElementById('dfA').value.trim();
+    const chassis = document.getElementById('dfR').value.trim();
+    if (!plate && !chassis) {
+        showToast('⚠️ تکایە تابلۆ یان شاسی بنووسە بۆ گەڕان', true);
+        return;
+    }
+    try {
+        const params = new URLSearchParams();
+        if (plate) params.append('plate', plate);
+        else if (chassis) params.append('chassis', chassis);
+
+        const res = await fetch('/api/register/find?' + params.toString());
+        const r = await res.json();
+        if (!r) {
+            showToast('⚠️ ئەم ئوتومبێلە لە سیستم نەدۆزرایەوە', true);
+            return;
+        }
+
+        // Populate fields
+        loadedVehicleId = r.id;
+        document.getElementById('dfA').value = r.A || '';
+        document.getElementById('dfB').value = r.B || 'سلێمانی';
+        document.getElementById('dfC').value = r.C || 'تایبەت';
+        document.getElementById('dfD').value = r.D || '';
+        document.getElementById('dfE').value = r.E || '';
+        document.getElementById('dfF').value = r.F || '*';
+        document.getElementById('dfG').value = r.G || '';
+        document.getElementById('dfH').value = r.H || 'تۆماری یەکەم جار';
+        document.getElementById('dfI').value = r.I || '';
+        document.getElementById('dfJ').value = r.J || 'صالون';
+        document.getElementById('dfK').value = r.K || 'بەنزین';
+        document.getElementById('dfL').value = r.L || '';
+        document.getElementById('dfM').value = r.M || 'ئۆتۆماتیک';
+        document.getElementById('dfN').value = r.N || 0;
+        document.getElementById('dfO').value = r.O || 0;
+        document.getElementById('dfP').value = r.P || 0;
+        document.getElementById('dfQ').value = r.Q || 0;
+        document.getElementById('dfR').value = r.R || '';
+        document.getElementById('dfS').value = r.S || 0;
+        document.getElementById('dfStar').value = '*';
+        document.getElementById('dfT').value = r.T || 0;
+        document.getElementById('dfU').value = r.U || '';
+        document.getElementById('dfV').value = r.V || '';
+        document.getElementById('dfW').value = r.W || '*';
+        document.getElementById('dfX').value = r.X || '';
+        document.getElementById('dfY').value = r.Y || 0;
+        document.getElementById('dfZ').value = r.Z || '';
+        document.getElementById('dfAA').value = r.AA || '*';
+        document.getElementById('dfBB').value = r.BB || '';
+        document.getElementById('dfCC').value = r.CC || 0;
+        document.getElementById('dfII').value = r.II || 0;
+        document.getElementById('dfJJ').value = r.JJ || 0;
+        if (r.DD) {
+            document.getElementById('dfDD').value = new Date(r.DD).toISOString().slice(0, 10);
+        }
+
+        showToast(`✅ زانیاری ئوتومبێل دۆزرایەوە (ID: ${r.id})`);
+    } catch(err) {
+        showToast('⚠️ کێشەی پەیوەندی بە سێرڤەر', true);
+    }
+}
+
+async function dfSaveVehicle() {
+    const payload = getFormPayload();
+    if (!payload.A && !payload.R) {
+        alert('پێویستە لانی کەم ژمارەی تابلۆ یان شاسی دیاری بکرێت');
+        return;
+    }
+
+    try {
+        const res = await fetch('/api/register', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        });
+        const data = await res.json();
+        if (data.success) {
+            showToast('✅ ' + data.message);
+            if (data.warnings && data.warnings.length > 0) {
+                document.getElementById('regAlert').innerHTML = `
+                    <div class="alert-box alert-warning">${data.warnings.join('<br>')}</div>
+                `;
+            } else {
+                document.getElementById('regAlert').innerHTML = `
+                    <div class="alert-box alert-success">✅ ئوتومبێل بە سەرکەوتوویی تۆمارکرا</div>
+                `;
+            }
+            loadStats();
+        } else {
+            document.getElementById('regAlert').innerHTML = `
+                <div class="alert-box alert-danger">⚠️ ${data.message || 'هەڵە'}</div>
+            `;
+        }
+    } catch(err) {
+        alert('کێشەی پەیوەندی بە سێرڤەر');
+    }
+}
+
+async function dfUpdateVehicle() {
+    if (!loadedVehicleId) {
+        alert('تکایە سەرەتا بە دوگمەی گەڕان ئوتومبێلەکە بدۆزەرەوە، یان ژمارەکەی بنووسە و گەڕان بکە پێش ڕاستکردنەوە.');
+        return;
+    }
+    const payload = getFormPayload();
+    try {
+        const res = await fetch('/api/register/' + loadedVehicleId, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        });
+        const data = await res.json();
+        if (data.success) {
+            showToast('✅ ' + data.message);
+            document.getElementById('regAlert').innerHTML = `
+                <div class="alert-box alert-success">✅ زانیاری ئوتومبێل (ID: ${loadedVehicleId}) بە سەرکەوتوویی نوێکرایەوە</div>
+            `;
+        } else {
+            alert('هەڵە: ' + (data.error || 'نەتوانرا نوێ بکرێتەوە'));
+        }
+    } catch(err) {
+        alert('کێشەی پەیوەندی بە سێرڤەر');
+    }
+}
+
+function getFormPayload() {
+    return {
+        A: document.getElementById('dfA').value.trim(),
+        B: document.getElementById('dfB').value.trim(),
+        C: document.getElementById('dfC').value.trim(),
+        D: document.getElementById('dfD').value.trim(),
+        E: document.getElementById('dfE').value.trim(),
+        F: document.getElementById('dfF').value.trim(),
+        G: document.getElementById('dfG').value.trim(),
+        H: document.getElementById('dfH').value.trim(),
+        I: document.getElementById('dfI').value.trim(),
+        J: document.getElementById('dfJ').value.trim(),
+        K: document.getElementById('dfK').value.trim(),
+        L: document.getElementById('dfL').value.trim(),
+        M: document.getElementById('dfM').value.trim(),
+        N: document.getElementById('dfN').value,
+        O: document.getElementById('dfO').value,
+        P: document.getElementById('dfP').value,
+        Q: document.getElementById('dfQ').value,
+        R: document.getElementById('dfR').value.trim().toUpperCase(),
+        S: document.getElementById('dfS').value.trim(),
+        T: document.getElementById('dfT').value.trim(),
+        U: document.getElementById('dfU').value.trim(),
+        V: document.getElementById('dfV').value.trim(),
+        W: document.getElementById('dfW').value.trim(),
+        X: document.getElementById('dfX').value.trim(),
+        Y: document.getElementById('dfY').value,
+        Z: document.getElementById('dfZ').value.trim(),
+        AA: document.getElementById('dfAA').value.trim(),
+        BB: document.getElementById('dfBB').value.trim(),
+        CC: document.getElementById('dfCC').value,
+        II: document.getElementById('dfII').value.trim(),
+        JJ: document.getElementById('dfJJ').value.trim(),
+        DD: document.getElementById('dfDD').value,
+        GG: currentUser?.name || currentUser?.username || ''
+    };
+}
+
+function dfPrintInspection() {
+    const p = getFormPayload();
+    const win = window.open('', '_blank');
+    win.document.write(`
+        <!DOCTYPE html>
+        <html lang="ku" dir="rtl">
+        <head>
+            <meta charset="UTF-8">
+            <title>فۆرمی پشکنینی ئوتومبێل – ${p.A||p.R}</title>
+            <style>
+                * { font-family: Speda, Tahoma, sans-serif; box-sizing: border-box; }
+                body { padding: 25px; direction: rtl; font-size: 13px; color: #000; }
+                .head { text-align: center; border-bottom: 2px solid #000; padding-bottom: 12px; margin-bottom: 18px; }
+                .title-1 { font-size: 18px; font-weight: 900; color: #0022bb; }
+                .title-2 { font-size: 16px; font-weight: 900; color: #dc2626; margin-top: 4px; }
+                table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+                td, th { border: 1px solid #333; padding: 7px 10px; font-size: 12.5px; }
+                th { background: #f0f0f0; width: 22%; font-weight: 700; }
+                .footer { margin-top: 35px; display: flex; justify-content: space-between; font-size: 13px; font-weight: 700; }
+            </style>
+        </head>
+        <body>
+            <div class="head">
+                <div class="title-1">بەڕێوەبەرایەتی هاتووچۆی پارێزگای سلێمانی</div>
+                <div class="title-2">هۆبەی پشکنین – پەڕەی زانیاری پشکنینی سوارڕەو</div>
+                <div style="margin-top:5px;font-size:11px;">بەروار: ${p.DD} | شوێن: ${p.D}</div>
+            </div>
+            <table>
+                <tr><th>ژمارەی تابلۆ</th><td><strong>${p.A||'-'} (${p.B||''})</strong></td><th>بەش</th><td>${p.C||'-'}</td></tr>
+                <tr><th>ژمارەی شاسی (VIN)</th><td colspan="3"><strong style="font-size:15px;letter-spacing:1px;">${p.R||'-'}</strong></td></tr>
+                <tr><th>ناوی خاوەن سوارڕەو</th><td colspan="3"><strong>${p.G||'-'}</strong></td></tr>
+                <tr><th>جۆری ئوتومبێل</th><td colspan="3">${p.I||'-'}</td></tr>
+                <tr><th>گرووپ</th><td>${p.J||'-'}</td><th>مۆدێل</th><td>${p.P||'-'}</td></tr>
+                <tr><th>ڕەنگ</th><td>${p.L||'-'}</td><th>سووتەمەنی</th><td>${p.K||'-'}</td></tr>
+                <tr><th>گێڕ</th><td>${p.M||'-'}</td><th>ژمارەی بستۆن</th><td>${p.O||'-'}</td></tr>
+                <tr><th>ژمارەی دەرگا</th><td>${p.N||'-'}</td><th>ژمارەی سەرنشین</th><td>${p.Q||'-'}</td></tr>
+                <tr><th>بەڕادی هاتووچۆ</th><td>${p.E||'-'}</td><th>جۆری مامەڵە</th><td>${p.H||'-'}</td></tr>
+                <tr><th>تێبینی</th><td colspan="3">${p.U||'-'}</td></tr>
+            </table>
+            <div class="footer">
+                <div>واژووی ئەفسەری پشکنەر</div>
+                <div>واژووی بەڕاد</div>
+                <div>مۆری هۆبەی پشکنین</div>
+            </div>
+            <script>window.onload = () => { window.print(); };<\/script>
+        </body>
+        </html>
+    `);
+    win.document.close();
+}
+
+function dfPrintCard() {
+    dfPrintInspection();
+}
+
+// ─── 2. MODULE: GOMRG (CUSTOMS) ────────────────────────────────────────
+function openGomrgModal() {
+    openOverlay('modalGomrg');
+    loadGomrg();
+}
+
+async function loadGomrg() {
+    const q = document.getElementById('gomrgQ')?.value?.trim() || '';
+    const wrap = document.getElementById('gomrgTableWrap');
+    wrap.innerHTML = '<div class="spin-box"><div class="spinner"></div></div>';
+    try {
+        const url = '/api/gomrg' + (q ? '?q=' + encodeURIComponent(q) : '');
+        const rows = await fetch(url).then(r=>r.json());
+        if (!rows.length) {
+            wrap.innerHTML = '<div class="empty-box"><div class="eicon">🛃</div><p>هیچ تۆمارێکی گومرگ نەدۆزرایەوە</p></div>';
+            return;
+        }
+        const head = `<thead><tr>
+            <th>ژمارەی ئوتومبێل</th><th>شاسی</th><th>خاوەن</th><th>جۆر و وەسف</th>
+            <th>مۆدێل</th><th>شوێن</th><th>هۆکار</th><th>بەروار</th><th>تۆمارکار</th>
+        </tr></thead>`;
+        const body = rows.map(r => {
+            const date = r.date_insert ? new Date(r.date_insert).toLocaleDateString('ar-IQ') : '-';
+            return `<tr>
+                <td><strong>${r.car_n||'-'}</strong></td>
+                <td><strong style="color:var(--primary);">${r.shassy||'-'}</strong></td>
+                <td>${r.Full_name||'-'}</td>
+                <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;">${r.car_type||'-'}</td>
+                <td>${r.model||'-'}</td>
+                <td>${r.place||'-'}</td>
+                <td style="color:var(--danger);">${r.resoon||'-'}</td>
+                <td>${date}</td>
+                <td>${r.user_||'-'}</td>
+            </tr>`;
+        }).join('');
+        wrap.innerHTML = `<table>${head}<tbody>${body}</tbody></table>`;
+    } catch(e) {
+        wrap.innerHTML = '<div class="empty-box"><div class="eicon">⚠️</div><p>کێشەی پەیوەندی</p></div>';
+    }
+}
+
+function toggleGomrgAdd() {
+    const box = document.getElementById('gomrgAddBox');
+    box.style.display = box.style.display === 'none' ? 'block' : 'none';
+}
+
+async function submitGomrg() {
+    const payload = {
+        car_n: document.getElementById('gCarN').value.trim(),
+        shassy: document.getElementById('gShassy').value.trim().toUpperCase(),
+        Full_name: document.getElementById('gName').value.trim(),
+        car_type: document.getElementById('gType').value.trim(),
+        model: document.getElementById('gModel').value.trim(),
+        place: document.getElementById('gPlace').value.trim(),
+        parezga: document.getElementById('gParezga').value.trim(),
+        bash: document.getElementById('gBash').value.trim(),
+        resoon: document.getElementById('gReason').value.trim()
+    };
+    try {
+        const res = await fetch('/api/gomrg', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        });
+        const d = await res.json();
+        if (d.success) {
+            showToast('✅ ' + d.message);
+            toggleGomrgAdd();
+            loadGomrg();
+        } else {
+            alert('هەڵە: ' + (d.error || 'نەتوانرا پاشەکەوت بکرێت'));
+        }
+    } catch(e) {
+        alert('کێشەی پەیوەندی بە سێرڤەر');
+    }
+}
+
+// ─── 3. MODULE: SET HIJZ ───────────────────────────────────────────────
+function openHijzAddModal() {
+    document.getElementById('hijzAlert').innerHTML = '';
+    document.getElementById('hDate').value = new Date().toISOString().slice(0,10);
+    openOverlay('modalHijzAdd');
+}
+
+async function handleHijzSubmit(e) {
+    e.preventDefault();
+    const payload = {
+        Auto_No: document.getElementById('hPlate').value.trim(),
+        Place_: document.getElementById('hPlace').value.trim(),
+        Car_Plet: document.getElementById('hType').value.trim(),
+        Reg_Name: document.getElementById('hChassis').value.trim().toUpperCase(),
+        Date_Releasing: document.getElementById('hDate').value,
+        car_Note: document.getElementById('hNote').value.trim()
+    };
+    try {
+        const res = await fetch('/api/hijz', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        });
+        const d = await res.json();
+        if (d.success) {
+            showToast('✅ ' + d.message);
+            closeOverlay('modalHijzAdd');
+        } else {
+            document.getElementById('hijzAlert').innerHTML = `<div class="alert-box alert-danger">⚠️ ${d.error || 'هەڵە'}</div>`;
+        }
+    } catch(err) {
+        document.getElementById('hijzAlert').innerHTML = `<div class="alert-box alert-danger">⚠️ کێشەی سێرڤەر</div>`;
+    }
+}
+
+// ─── 4. MODULE: HIJZ LIST & REMOVE ─────────────────────────────────────
+function openHijzListModal() {
+    openOverlay('modalHijzList');
+    loadHijzList();
+}
+
+async function loadHijzList() {
+    const q = document.getElementById('hijzSearchQ')?.value?.trim() || '';
+    const wrap = document.getElementById('hijzTableWrap');
+    wrap.innerHTML = '<div class="spin-box"><div class="spinner"></div></div>';
+    try {
+        const url = '/api/hijz' + (q ? '?q=' + encodeURIComponent(q) : '');
+        const rows = await fetch(url).then(r=>r.json());
+        if (!rows.length) {
+            wrap.innerHTML = '<div class="empty-box"><div class="eicon">✅</div><p>هیچ ئوتومبێلێکی حیجزکراو نەدۆزرایەوە</p></div>';
+            return;
+        }
+        const head = `<thead><tr>
+            <th>تابلۆ / Auto_No</th><th>شاسی (Reg_Name)</th><th>شوێن</th><th>جۆر</th>
+            <th>هۆکاری حیجز و تێبینی</th><th>بەروار</th><th>تۆمارکار</th><th>کردار</th>
+        </tr></thead>`;
+        const body = rows.map(r => {
+            return `<tr>
+                <td><strong>${r.Auto_No||'-'}</strong></td>
+                <td><strong style="color:var(--danger);">${r.Reg_Name||'-'}</strong></td>
+                <td>${r.Place_||'-'}</td>
+                <td>${r.Car_Plet||'-'}</td>
+                <td style="max-width:240px;white-space:normal;color:#b91c1c;font-weight:600;">${r.car_Note||'-'}</td>
+                <td>${r.Date_Releasing||'-'}</td>
+                <td>${r.UUser||'-'}</td>
+                <td>
+                    <button class="btn-danger-sm" onclick="removeHijz(${r.idd})">🗑️ لابردنی حیجز</button>
+                </td>
+            </tr>`;
+        }).join('');
+        wrap.innerHTML = `<table>${head}<tbody>${body}</tbody></table>`;
+    } catch(e) {
+        wrap.innerHTML = '<div class="empty-box"><div class="eicon">⚠️</div><p>کێشەی پەیوەندی</p></div>';
+    }
+}
+
+async function removeHijz(id) {
+    if (!confirm('ئایا دڵنیایت لە لابردنی ئەم نیشانەی حیجزە؟')) return;
+    try {
+        const res = await fetch('/api/hijz/' + id, { method: 'DELETE' });
+        const d = await res.json();
+        if (d.success) {
+            showToast('✅ حیجزەکە بە سەرکەوتوویی لابرا');
+            loadHijzList();
+        } else {
+            alert('هەڵە: ' + (d.error || 'نەتوانرا لاببرێت'));
+        }
+    } catch(e) {
+        alert('کێشەی پەیوەندی بە سێرڤەر');
+    }
+}
+
+// ─── 5. MODULE: ADVANCED SEARCH ────────────────────────────────────────
+function openAdvSearchModal() {
+    openOverlay('modalAdvSearch');
+}
+
+async function runAdvancedSearch() {
+    const wrap = document.getElementById('asResultsWrap');
+    wrap.innerHTML = '<div class="spin-box"><div class="spinner"></div></div>';
+
+    const params = new URLSearchParams();
+    const fields = [
+        ['chassis', 'asChassis'],
+        ['plate', 'asPlate'],
+        ['model', 'asModel'],
+        ['color', 'asColor'],
+        ['fuel', 'asFuel'],
+        ['cylinders', 'asCylinders'],
+        ['year', 'asYear'],
+        ['province', 'asProvince'],
+        ['owner', 'asOwner']
+    ];
+    fields.forEach(([param, id]) => {
+        const val = document.getElementById(id).value.trim();
+        if (val) params.append(param, val);
+    });
+
+    try {
+        const res = await fetch('/api/advanced-search?' + params.toString());
+        const data = await res.json();
+        if (!data.length) {
+            wrap.innerHTML = '<div class="empty-box"><div class="eicon">🚫</div><p>هیچ ئوتومبێلێک بەم مەرجانە نەدۆزرایەوە</p></div>';
+            return;
+        }
+        wrap.innerHTML = buildTable(data);
+    } catch(e) {
+        wrap.innerHTML = '<div class="empty-box"><div class="eicon">⚠️</div><p>کێشەی پەیوەندی</p></div>';
+    }
+}
+
+// ─── 6. MODULE: PERSONAL RECORDS ───────────────────────────────────────
+function openPersonalModal() {
+    openOverlay('modalPersonal');
+    loadPersonalRecords();
+}
+
+async function loadPersonalRecords() {
+    const wrap = document.getElementById('personalTableWrap');
+    wrap.innerHTML = '<div class="spin-box"><div class="spinner"></div></div>';
+    try {
+        const d = await fetch('/api/personal-records').then(r=>r.json());
+        document.getElementById('myToday').textContent = d.stats?.todayEntered || 0;
+        document.getElementById('myTotal').textContent = d.stats?.totalEntered || 0;
+
+        if (!d.records || !d.records.length) {
+            wrap.innerHTML = '<div class="empty-box"><div class="eicon">👤</div><p>هیچ تۆمارێک بۆ ئەم بەکارهێنەرە نییە</p></div>';
+            return;
+        }
+        const head = `<thead><tr>
+            <th>تابلۆ</th><th>پارێزگا</th><th>جۆر</th><th>مۆدێل</th><th>ڕەنگ</th><th>شاسی</th><th>خاوەن</th><th>بەروار</th>
+        </tr></thead>`;
+        const body = d.records.map(r => {
+            const date = r.date ? new Date(r.date).toLocaleDateString('ar-IQ') : '-';
+            return `<tr onclick="showDetail(${r.id})">
+                <td><strong>${r.plateNo||'-'}</strong></td>
+                <td>${r.province||'-'}</td>
+                <td>${r.type||'-'}</td>
+                <td>${r.model||'-'}</td>
+                <td>${r.color||'-'}</td>
+                <td><strong>${r.chassis||'-'}</strong></td>
+                <td>${r.owner||'-'}</td>
+                <td>${date}</td>
+            </tr>`;
+        }).join('');
+        wrap.innerHTML = `<table>${head}<tbody>${body}</tbody></table>`;
+    } catch(e) {
+        wrap.innerHTML = '<div class="empty-box"><div class="eicon">⚠️</div><p>کێشەی پەیوەندی</p></div>';
+    }
+}
+
+// ─── 7. MODULE: STAFF & PLACES ─────────────────────────────────────────
+function openStaffModal() {
+    openOverlay('modalStaff');
+    loadStaffList();
+}
+
+async function loadStaffList() {
+    const wrap = document.getElementById('staffTableWrap');
+    wrap.innerHTML = '<div class="spin-box"><div class="spinner"></div></div>';
+    try {
+        const d = await fetch('/api/staff-list').then(r=>r.json());
+        const users = d.users || [];
+        if (!users.length) {
+            wrap.innerHTML = '<div class="empty-box"><div class="eicon">👥</div><p>هیچ کارمەندێک نەدۆزرایەوە</p></div>';
+            return;
+        }
+        const head = `<thead><tr>
+            <th>#</th><th>ناوی بەکارهێنەر / ئەفسەر</th><th>مۆبایل / ناو</th><th>شوێن / مەکتەب</th><th>دەسەڵات</th><th>دۆخ</th>
+        </tr></thead>`;
+        const body = users.map((u, i) => {
+            return `<tr>
+                <td>${i + 1}</td>
+                <td><strong style="color:var(--primary);">${u.User_id||'-'}</strong></td>
+                <td>${u.User_Name||'-'}</td>
+                <td>${u.Place_||'-'}</td>
+                <td><span class="badge badge-cargo">${u.Permission||'-'}</span></td>
+                <td><span class="badge ${u.AA==='Yes'?'badge-private':'badge-danger'}">${u.AA==='Yes'?'چالاک':'ناچالاک'}</span></td>
+            </tr>`;
+        }).join('');
+        wrap.innerHTML = `<table>${head}<tbody>${body}</tbody></table>`;
+    } catch(e) {
+        wrap.innerHTML = '<div class="empty-box"><div class="eicon">⚠️</div><p>کێشەی پەیوەندی</p></div>';
+    }
+}
+
+// ─── 8. MODULE: DUPLICATES & ERRORS ────────────────────────────────────
+function openDuplicatesModal() {
+    openOverlay('modalDuplicates');
+    loadDuplicates();
+}
+
+async function loadDuplicates() {
+    const chWrap = document.getElementById('dupChassisWrap');
+    const plWrap = document.getElementById('dupPlateWrap');
+    chWrap.innerHTML = '<div class="spin-box"><div class="spinner"></div></div>';
+    plWrap.innerHTML = '<div class="spin-box"><div class="spinner"></div></div>';
+
+    try {
+        const d = await fetch('/api/duplicates').then(r=>r.json());
+        const chDups = d.chassisDuplicates || [];
+        const plDups = d.plateDuplicates || [];
+
+        if (!chDups.length) {
+            chWrap.innerHTML = '<div class="empty-box"><div class="eicon">✅</div><p>هیچ شاسییەکی دووبارە نەدۆزرایەوە</p></div>';
+        } else {
+            const head = `<thead><tr>
+                <th>شاسی</th><th>ژمارەی دووبارەبوونەوە</th><th>مۆدێل</th><th>ڕەنگ</th><th>خاوەن</th><th>کردار</th>
+            </tr></thead>`;
+            const body = chDups.map(r => `<tr>
+                <td><strong style="color:var(--danger);">${r.chassis}</strong></td>
+                <td><span class="badge badge-danger">${r.cnt} جار</span></td>
+                <td>${r.model||'-'}</td>
+                <td>${r.color||'-'}</td>
+                <td>${r.owner||'-'}</td>
+                <td><button class="btn-primary" style="font-size:11px;padding:4px 8px;" onclick="searchExactChassis('${r.chassis}')">گەڕان</button></td>
+            </tr>`).join('');
+            chWrap.innerHTML = `<table>${head}<tbody>${body}</tbody></table>`;
+        }
+
+        if (!plDups.length) {
+            plWrap.innerHTML = '<div class="empty-box"><div class="eicon">✅</div><p>هیچ تابلۆیەکی دووبارە نەدۆزرایەوە</p></div>';
+        } else {
+            const head = `<thead><tr>
+                <th>تابلۆ</th><th>پارێزگا</th><th>ژمارەی دووبارەبوونەوە</th><th>مۆدێل</th><th>خاوەن</th>
+            </tr></thead>`;
+            const body = plDups.map(r => `<tr>
+                <td><strong style="color:var(--danger);">${r.plate}</strong></td>
+                <td>${r.province||'-'}</td>
+                <td><span class="badge badge-danger">${r.cnt} جار</span></td>
+                <td>${r.model||'-'}</td>
+                <td>${r.owner||'-'}</td>
+            </tr>`).join('');
+            plWrap.innerHTML = `<table>${head}<tbody>${body}</tbody></table>`;
+        }
+    } catch(e) {
+        chWrap.innerHTML = '<p style="color:red">کێشەی پەیوەندی</p>';
+    }
+}
+
+function searchExactChassis(ch) {
+    closeOverlay('modalDuplicates');
+    document.getElementById('dashQ').value = ch;
+    document.getElementById('dashField').value = 'chassis';
+    doSearch();
+}
+
+// ─── 9. MODULE: FULL STATS ─────────────────────────────────────────────
+function openStatsModal() {
+    openOverlay('modalStats');
+    loadFullStatsModal();
+}
+
+async function loadFullStatsModal() {
+    const wrap = document.getElementById('statsModalBody');
+    wrap.innerHTML = '<div class="spin-box"><div class="spinner"></div></div>';
+    try {
+        const d = await fetch('/api/stats').then(r=>r.json());
+        let html = `
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:18px;">
+                <div class="stat-card"><div class="sicon">🚗</div><div><div class="sval">${(d.total||0).toLocaleString()}</div><div class="slabel">کۆی ئوتومبێل</div></div></div>
+                <div class="stat-card green"><div class="sicon">📅</div><div><div class="sval">${(d.today||0).toLocaleString()}</div><div class="slabel">ئەمڕۆ تۆمارکراو</div></div></div>
+            </div>
+            <h4 style="color:var(--primary);margin-bottom:10px;font-size:14px;">دابەشبوون بەپێی جۆری ئوتومبێل:</h4>
+            <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:10px;">
+        `;
+        if (d.byType) {
+            d.byType.forEach(row => {
+                html += `
+                    <div class="d-item" style="display:flex;justify-content:space-between;align-items:center;">
+                        <span class="d-label" style="font-size:13px;color:var(--text);font-weight:700;">${row.type_||'نەزانراو'}</span>
+                        <span class="badge badge-cargo">${(row.cnt||0).toLocaleString()}</span>
+                    </div>
+                `;
+            });
+        }
+        html += `</div>`;
+        wrap.innerHTML = html;
+    } catch(e) {
+        wrap.innerHTML = '<div class="empty-box"><p>کێشەی بارکردنی ئامار</p></div>';
+    }
+}
+
+// ─── QUICK & ADV SEARCH IMPLEMENTATION ─────────────────────────────────
+function setChip(el, val) {
+    document.querySelectorAll('.chip').forEach(c => c.classList.remove('active'));
+    el.classList.add('active');
+    document.getElementById('dashField').value = val;
+}
+
+let _st;
+document.getElementById('dashQ').addEventListener('input', function() {
+    clearTimeout(_st);
+    if (this.value.trim().length >= 2) _st = setTimeout(doSearch, 400);
+});
+document.getElementById('dashQ').addEventListener('keydown', e => { if(e.key==='Enter') doSearch(); });
+document.getElementById('advQ').addEventListener('keydown', e  => { if(e.key==='Enter') doAdvSearch(); });
+
+async function doSearch() {
+    const q = document.getElementById('dashQ').value.trim();
+    const f = document.getElementById('dashField').value;
+    if (!q) return;
+    await runSearch(q, f, 'dashTable', 'dashCount');
+    document.getElementById('dashResults').style.display = 'block';
+}
+async function doAdvSearch() {
+    const q = document.getElementById('advQ').value.trim();
+    const f = document.getElementById('advField').value;
+    if (!q) return;
+    await runSearch(q, f, 'advTable', 'advCount');
+}
+
+async function runSearch(q, field, tableId, countId) {
+    document.getElementById(tableId).innerHTML = '<div class="spin-box"><div class="spinner"></div></div>';
+    try {
+        const data = await fetch('/api/search?' + new URLSearchParams({q, field: field||''})).then(r=>r.json());
+        document.getElementById(countId).textContent = data.length;
+        document.getElementById(tableId).innerHTML =
+            data.length ? buildTable(data)
+            : '<div class="empty-box"><div class="eicon">🚫</div><p>هیچ ئوتومبێلێک نەدۆزرایەوە</p></div>';
+    } catch {
+        document.getElementById(tableId).innerHTML =
+            '<div class="empty-box"><div class="eicon">⚠️</div><p>کێشەی پەیوەندی</p></div>';
+    }
+}
+
+function buildTable(rows) {
+    const head = `<thead><tr>
+        <th>پلێت</th><th>جۆر</th><th>مۆدێل</th><th>ڕەنگ</th>
+        <th>ساڵ</th><th>شاسی</th><th>خاوەن</th><th>پارێزگا</th><th>بەروار</th>
+    </tr></thead>`;
+    const body = rows.map(r => {
+        const badge = r.type?.includes('تایبەت') ? `<span class="badge badge-private">${r.type}</span>`
+            : r.type?.includes('بار') ? `<span class="badge badge-cargo">${r.type}</span>`
+            : `<span class="badge badge-sp">${r.type||'-'}</span>`;
+        const date = r.date ? new Date(r.date).toLocaleDateString('ar-IQ') : '-';
+        return `<tr onclick="showDetail(${r.id})">
+            <td><strong>${r.plateNo||'-'}</strong></td>
+            <td>${badge}</td>
+            <td>${r.model||'-'}</td>
+            <td>${r.color||'-'}</td>
+            <td>${r.year||'-'}</td>
+            <td><strong style="color:var(--primary);">${r.chassis||'-'}</strong></td>
+            <td>${r.owner||'-'}</td>
+            <td>${r.province||'-'}</td>
+            <td>${date}</td>
+        </tr>`;
+    }).join('');
+    return `<table>${head}<tbody>${body}</tbody></table>`;
+}
+
+// ─── SUSPICIOUS (RAP) ──────────────────────────────────────────────────
+async function loadSuspicious() {
+    try {
+        const data = await fetch('/api/suspicious').then(r=>r.json());
+        document.getElementById('suspCount').textContent  = data.length;
+        document.getElementById('suspBadge').textContent  = data.length;
+        const wrap = document.getElementById('suspTable');
+        if (!data.length) {
+            wrap.innerHTML = '<div class="empty-box"><div class="eicon">✅</div><p>هیچ ئوتومبێلێکی گومانلێکراو نیە</p></div>';
+            return;
+        }
+        const head = `<thead><tr>
+            <th>پلێت</th><th>جۆر</th><th>مۆدێل</th><th>ڕەنگ</th>
+            <th>ساڵ</th><th>شاسی</th><th>تێبینی</th><th>بەڕاد</th><th>بەروار</th>
+        </tr></thead>`;
+        const body = data.map(r => {
+            const date = r.date ? new Date(r.date).toLocaleDateString('ar-IQ') : '-';
+            return `<tr onclick="showSuspDetail(${JSON.stringify(r).replace(/"/g,'&quot;')})">
+                <td><strong>${r.plateNo||'-'}</strong></td>
+                <td>${r.type||'-'}</td>
+                <td>${r.model||'-'}</td>
+                <td>${r.color||'-'}</td>
+                <td>${r.year||'-'}</td>
+                <td><strong>${r.chassis||'-'}</strong></td>
+                <td style="color:var(--danger);font-weight:700">${r.note||'-'}</td>
+                <td>${r.barad||'-'}</td>
+                <td>${date}</td>
+            </tr>`;
+        }).join('');
+        wrap.innerHTML = `<table>${head}<tbody>${body}</tbody></table>`;
+    } catch {
+        document.getElementById('suspTable').innerHTML =
+            '<div class="empty-box"><div class="eicon">⚠️</div><p>کێشەی بارکردن</p></div>';
+    }
+}
+
+// ─── STATS & REPORTS ───────────────────────────────────────────────────
+async function loadStats() {
+    try {
+        const d = await fetch('/api/stats').then(r => r.json());
+        document.getElementById('statTotal').textContent   = (d.total   || 0).toLocaleString();
+        document.getElementById('statToday').textContent   = (d.today   || 0).toLocaleString();
+        const prv = d.byType?.find(r => r.type_?.includes('تایبەت'));
+        const crg = d.byType?.find(r => r.type_?.includes('بار'));
+        document.getElementById('statPrivate').textContent = (prv?.cnt  || 0).toLocaleString();
+        document.getElementById('statCargo').textContent   = (crg?.cnt  || 0).toLocaleString();
+    } catch(e) {}
+}
+
+async function loadReports() {
+    try {
+        const d = await fetch('/api/stats').then(r=>r.json());
+        let html = `<div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px">`;
+        if (d.byType) {
+            d.byType.forEach(row => {
+                html += `<div class="d-item" style="display:flex;align-items:center;gap:14px">
+                    <div style="font-size:28px">🚗</div>
+                    <div>
+                        <div class="d-val hl">${(row.cnt||0).toLocaleString()}</div>
+                        <div class="d-label">${row.type_||'نەزانراو'}</div>
+                    </div>
+                </div>`;
+            });
+        }
+        html += `</div>`;
+        document.getElementById('reportBody').innerHTML = html;
+    } catch {
+        document.getElementById('reportBody').innerHTML =
+            '<div class="empty-box"><div class="eicon">⚠️</div><p>کێشەی بارکردن</p></div>';
+    }
+}
+
+// ─── DETAIL MODALS ─────────────────────────────────────────────────────
+async function showDetail(id) {
+    document.getElementById('modalTitle').textContent = 'زانیاری ئوتومبێل';
+    openOverlay('detailModal');
+    document.getElementById('modalBody').innerHTML = '<div class="spin-box"><div class="spinner"></div></div>';
+    try {
+        const r = await fetch('/api/vehicle/' + id).then(res=>res.json());
+        const date = r.DD ? new Date(r.DD).toLocaleDateString('ar-IQ') : '-';
+        document.getElementById('modalTitle').textContent = `🚗 ئوتومبێل – ${r.A||''}`;
+        document.getElementById('modalBody').innerHTML = `
+            <div class="d-item"><div class="d-label">ژمارەی پلێت</div><div class="d-val hl">${r.A||'-'}</div></div>
+            <div class="d-item"><div class="d-label">جۆری ئوتومبێل</div><div class="d-val">${r.C||'-'}</div></div>
+            <div class="d-item"><div class="d-label">مۆدێل</div><div class="d-val">${r.I||'-'}</div></div>
+            <div class="d-item"><div class="d-label">کاتێگۆری</div><div class="d-val">${r.J||'-'}</div></div>
+            <div class="d-item"><div class="d-label">ڕەنگ</div><div class="d-val">${r.L||'-'}</div></div>
+            <div class="d-item"><div class="d-label">ساڵی دروستکردن</div><div class="d-val">${r.P||'-'}</div></div>
+            <div class="d-item"><div class="d-label">سووتەمەنی</div><div class="d-val">${r.K||'-'}</div></div>
+            <div class="d-item"><div class="d-label">گێڕ</div><div class="d-val">${r.M||'-'}</div></div>
+            <div class="d-item"><div class="d-label">ژمارەی دەرگا</div><div class="d-val">${r.N||'-'}</div></div>
+            <div class="d-item"><div class="d-label">ژمارەی سیلیندەر</div><div class="d-val">${r.O||'-'}</div></div>
+            <div class="d-item full"><div class="d-label">ژمارەی شاسی</div><div class="d-val hl">${r.R||'-'}</div></div>
+            <div class="d-item"><div class="d-label">ناوی خاوەن</div><div class="d-val">${r.G||'-'}</div></div>
+            <div class="d-item"><div class="d-label">ژمارەی مۆبایل</div><div class="d-val">${r.T||'-'}</div></div>
+            <div class="d-item"><div class="d-label">بەڕاد</div><div class="d-val">${r.E||'-'}</div></div>
+            <div class="d-item"><div class="d-label">مەکتەب / شوێن</div><div class="d-val">${r.D||'-'}</div></div>
+            <div class="d-item"><div class="d-label">پارێزگا</div><div class="d-val">${r.B||'-'}</div></div>
+            <div class="d-item"><div class="d-label">بەروار</div><div class="d-val">${date}</div></div>
+            <div class="d-item"><div class="d-label">تۆمارکەر</div><div class="d-val">${r.FF||'-'}</div></div>
+            <div class="d-item"><div class="d-label">پشکنەر</div><div class="d-val">${r.GG||'-'}</div></div>
+            ${r.U ? `<div class="d-item full" style="background:#fffbeb;border-color:#fef3c7;"><div class="d-label" style="color:#b45309">تێبینی</div><div class="d-val">${r.U}</div></div>` : ''}
+        `;
+    } catch {
+        document.getElementById('modalBody').innerHTML = '<p style="color:red">کێشەی بارکردن</p>';
+    }
+}
+
+function showSuspDetail(data) {
+    const r = typeof data === 'string' ? JSON.parse(data) : data;
+    document.getElementById('modalTitle').textContent = '⚠️ ئوتومبێلی گومانلێکراو – ' + (r.plateNo||'');
+    openOverlay('detailModal');
+    const date = r.date ? new Date(r.date).toLocaleDateString('ar-IQ') : '-';
+    document.getElementById('modalBody').innerHTML = `
+        <div class="d-item"><div class="d-label">پلێت</div><div class="d-val hl">${r.plateNo||'-'}</div></div>
+        <div class="d-item"><div class="d-label">جۆر</div><div class="d-val">${r.type||'-'}</div></div>
+        <div class="d-item"><div class="d-label">مۆدێل</div><div class="d-val">${r.model||'-'}</div></div>
+        <div class="d-item"><div class="d-label">ڕەنگ</div><div class="d-val">${r.color||'-'}</div></div>
+        <div class="d-item"><div class="d-label">شاسی</div><div class="d-val">${r.chassis||'-'}</div></div>
+        <div class="d-item"><div class="d-label">بەڕاد</div><div class="d-val">${r.barad||'-'}</div></div>
+        <div class="d-item"><div class="d-label">بەروار</div><div class="d-val">${date}</div></div>
+        ${r.note ? `<div class="d-item full" style="background:#fee2e2;border-color:#fca5a5;"><div class="d-label" style="color:var(--danger)">⚠️ هۆکار / تێبینی</div><div class="d-val" style="color:var(--danger)">${r.note}</div></div>` : ''}
+    `;
+}
+</script>
+</body>
+</html>
