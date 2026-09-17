@@ -2361,7 +2361,7 @@ function dfPrintInspection() {
     const win = window.open('', '_blank');
     win.document.write(`
         <!DOCTYPE html>
-        <html lang="ku" dir="rtl">
+        <html lang="ku" dir="ltr">
         <head>
             <meta charset="UTF-8">
             <title>فۆڕمی پشکنینی سوار ڕەو - WI - 51 / F1</title>
@@ -2386,7 +2386,7 @@ function dfPrintInspection() {
                 body {
                     background: #fff;
                     color: #000;
-                    direction: rtl;
+                    direction: ltr;
                     padding: 4px;
                     width: 100%;
                     max-width: 1060px;
@@ -2440,6 +2440,7 @@ function dfPrintInspection() {
                     width: 100%;
                     text-align: center;
                     background: #fff;
+                    direction: rtl;
                 }
                 .rdlc-datetime-box {
                     border: 1.5px solid #000;
@@ -2593,6 +2594,7 @@ function dfPrintInspection() {
                     padding: 4px 10px;
                     display: flex;
                     align-items: center;
+                    justify-content: space-between;
                     gap: 10px;
                     font-size: 11.5px;
                     line-height: 1.35;
@@ -2606,12 +2608,13 @@ function dfPrintInspection() {
                     font-weight: 700;
                     text-align: center;
                     flex: 1;
+                    direction: rtl;
                 }
             </style>
         </head>
         <body>
             <div class="rdlc-container">
-                <!-- 1. TOP HEADER (Right: WI-51/F1 | Center: Title & To | Left: Date & Time) -->
+                <!-- 1. TOP HEADER (Left: Date & Time | Center: Title & To | Right: WI-51/F1) -->
                 <div class="rdlc-header-row">
                     <!-- Left: Date / Time -->
                     <div class="rdlc-datetime-box">
@@ -2643,12 +2646,14 @@ function dfPrintInspection() {
 
                 <!-- 2. BARCODE & INSPECTION PLACE -->
                 <div class="rdlc-sub-row">
+                    <!-- Left: Barcode -->
                     <div class="rdlc-barcode-container">
                         <span style="font-size:16px;font-weight:900;">«</span>
                         ${barcodeSvg}
                         <span style="font-size:16px;font-weight:900;">»</span>
                     </div>
 
+                    <!-- Right: Inspection Place -->
                     <div class="rdlc-place-box">
                         <span class="rdlc-border-box">${userName || placeName}</span>
                         <span>شوێنی پشکنین</span>
@@ -2658,12 +2663,12 @@ function dfPrintInspection() {
                 <!-- 3. FEES ROW -->
                 <div class="rdlc-fees-row">
                     <div class="rdlc-fee-item">
-                        <div class="rdlc-fee-val">${p.II || 0}</div>
-                        <div class="rdlc-fee-label">بڕی پارەی پشکنین</div>
-                    </div>
-                    <div class="rdlc-fee-item">
                         <div class="rdlc-fee-val">${p.JJ || 0}</div>
                         <div class="rdlc-fee-label">بڕی پارەی رسومات</div>
+                    </div>
+                    <div class="rdlc-fee-item">
+                        <div class="rdlc-fee-val">${p.II || 0}</div>
+                        <div class="rdlc-fee-label">بڕی پارەی پشکنین</div>
                     </div>
                 </div>
 
@@ -2708,21 +2713,21 @@ function dfPrintInspection() {
                         <td class="rdlc-th">ژمارەی قەمەرە</td>
                     </tr>
 
-                    <!-- Row 7: Specifications Top Sub-row -->
+                    <!-- Row 7: Specifications Top Sub-row ([N] | دەرگا | گێڕ | [L] | ڕەنگ | [O] | سلندەر) -->
                     <tr>
-                        <td style="width: 12%;" class="rdlc-th">ژمارەی دەرگا</td>
-                        <td style="width: 13%;" class="rdlc-val">${p.N || '0'}</td>
-                        <td style="width: 20%;" class="rdlc-th">جۆری گێڕ</td>
-                        <td style="width: 20%;" class="rdlc-val">${p.L || ''}</td>
+                        <td style="width: 8%;" class="rdlc-val">${p.N || '0'}</td>
+                        <td style="width: 14%;" class="rdlc-th">ژمارەی دەرگا</td>
+                        <td style="width: 14%;" class="rdlc-th">جۆری گێڕ</td>
+                        <td style="width: 18%;" class="rdlc-val">${p.L || ''}</td>
                         <td style="width: 18%;" class="rdlc-th">ڕەنگی ئوتومبێل</td>
                         <td style="width: 8%;" class="rdlc-val">${p.O || '0'}</td>
-                        <td style="width: 9%;" class="rdlc-th">ژمارەی سلندەر</td>
+                        <td style="width: 20%;" class="rdlc-th">ژمارەی سلندەر</td>
                     </tr>
 
-                    <!-- Row 8: Specifications Bottom Sub-row -->
+                    <!-- Row 8: Specifications Bottom Sub-row ([Q] | سەرنشین | [M] | [K] | سووتەمەنی | [P] | مۆدێل) -->
                     <tr>
-                        <td class="rdlc-th">ژمارەی سەرنشین</td>
                         <td class="rdlc-val">${p.Q || '0'}</td>
+                        <td class="rdlc-th">ژمارەی سەرنشین</td>
                         <td class="rdlc-val">${p.M || 'ئۆتۆماتیک'}</td>
                         <td class="rdlc-val">${p.K || 'بەنزین'}</td>
                         <td class="rdlc-th">سووتەمەنی</td>
@@ -2732,13 +2737,13 @@ function dfPrintInspection() {
 
                     <!-- Row 9: Trailer 1 -->
                     <tr>
-                        <td class="rdlc-val" style="width:7%;">${p.Y || '0'}</td>
-                        <td class="rdlc-th" style="width:7%;">طن</td>
-                        <td class="rdlc-val" style="width:14%;">${p.X || ''}</td>
-                        <td class="rdlc-th" style="width:7%;">ڕەنگ</td>
-                        <td class="rdlc-val rdlc-mono" style="width:25%;">${p.W || '*'}</td>
-                        <td class="rdlc-val" style="width:23%;">${p.V || ''}</td>
-                        <td class="rdlc-th" style="width:17%;">پاشگر(عەرەبانە)1</td>
+                        <td class="rdlc-val" style="width: 8%;">${p.Y || '0'}</td>
+                        <td class="rdlc-th" style="width: 6%;">طن</td>
+                        <td class="rdlc-val" style="width: 14%;">${p.X || ''}</td>
+                        <td class="rdlc-th" style="width: 6%;">ڕەنگ</td>
+                        <td class="rdlc-val rdlc-mono" style="width: 26%;">${p.W || '*'}</td>
+                        <td class="rdlc-val" style="width: 20%;">${p.V || ''}</td>
+                        <td class="rdlc-th" style="width: 20%;">پاشگر(عەرەبانە)1</td>
                     </tr>
 
                     <!-- Row 10: Trailer 2 -->
@@ -2765,7 +2770,7 @@ function dfPrintInspection() {
 
                     <!-- Row 12: Notes -->
                     <tr>
-                        <td colspan="6" class="rdlc-val" style="text-align: right; padding: 8px 12px; min-height: 45px; font-size: 12.5px;">
+                        <td colspan="6" class="rdlc-val" style="text-align: right; padding: 6px 12px; min-height: 45px; font-size: 12.5px; direction: rtl;">
                             ${p.U || ''}
                         </td>
                         <td class="rdlc-th" style="vertical-align: middle; font-size: 14px;">تێبینی یەکان</td>
@@ -2801,11 +2806,11 @@ function dfPrintInspection() {
 
                 <!-- 7. CITIZEN WARNING BOX -->
                 <div class="rdlc-notice-box">
-                    <div class="rdlc-notice-label">هاوڵاتی بەڕێز /</div>
                     <div class="rdlc-notice-text">
                         <div>تکایە پاش وەرگرتنەوەی ئەم فۆڕمە واژۆی بەڕادی هاتووچۆ و ئەفسەری پشکنین لە بیر مەکە بە پێچەوانەوە خۆت بەرپرسیار ئەبیت</div>
                         <div style="font-size: 11.5px; margin-top: 2px;">يرجى عدم نسيان ختم و توقيع ظابط المرور الكشف و براد المرور في حال استلام وثيقة الكشف للسيارة</div>
                     </div>
+                    <div class="rdlc-notice-label">/ هاوڵاتی بەڕێز</div>
                 </div>
             </div>
 
