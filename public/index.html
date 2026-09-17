@@ -226,17 +226,19 @@
             line-height: 1.3;
         }
         /* Buttons Palettes matching C# App */
-        .mc-yellow { background: linear-gradient(135deg, #f59e0b, #d97706); }
-        .mc-cyan   { background: linear-gradient(135deg, #06b6d4, #0891b2); }
-        .mc-pink   { background: linear-gradient(135deg, #ec4899, #db2777); }
-        .mc-white  { background: linear-gradient(135deg, #475569, #334155); }
-        .mc-peach  { background: linear-gradient(135deg, #f97316, #ea580c); }
-        .mc-blue   { background: linear-gradient(135deg, #2563eb, #1d4ed8); }
-        .mc-green  { background: linear-gradient(135deg, #10b981, #059669); }
-        .mc-purple { background: linear-gradient(135deg, #8b5cf6, #7c3aed); }
-        .mc-red    { background: linear-gradient(135deg, #ef4444, #dc2626); }
-        .mc-teal   { background: linear-gradient(135deg, #14b8a6, #0d9488); }
-        .mc-indigo { background: linear-gradient(135deg, #4f46e5, #4338ca); }
+        .mc-yellow   { background: linear-gradient(135deg, #f59e0b, #d97706); }
+        .mc-cyan     { background: linear-gradient(135deg, #06b6d4, #0891b2); }
+        .mc-pink     { background: linear-gradient(135deg, #ec4899, #db2777); }
+        .mc-white    { background: linear-gradient(135deg, #475569, #334155); }
+        .mc-peach    { background: linear-gradient(135deg, #f97316, #ea580c); }
+        .mc-blue     { background: linear-gradient(135deg, #2563eb, #1d4ed8); }
+        .mc-green    { background: linear-gradient(135deg, #10b981, #059669); }
+        .mc-purple   { background: linear-gradient(135deg, #8b5cf6, #7c3aed); }
+        .mc-red      { background: linear-gradient(135deg, #ef4444, #dc2626); }
+        .mc-teal     { background: linear-gradient(135deg, #14b8a6, #0d9488); }
+        .mc-indigo   { background: linear-gradient(135deg, #4f46e5, #4338ca); }
+        .mc-darkrose { background: linear-gradient(135deg, #e11d48, #9f1239); }
+        .mc-navy     { background: linear-gradient(135deg, #0284c7, #0369a1); }
 
         /* ══ HERO BANNER WITH CAR IMAGE ═════════════════════════════ */
         .hero-banner {
@@ -647,16 +649,22 @@
             .form-group.col-span-2, .form-group.col-span-3 { grid-column: span 1; }
             .module-grid { grid-template-columns: repeat(2, 1fr); }
             .detail-grid { grid-template-columns: 1fr; }
-        /* ══ C# APP REGISTRATION FORM STYLES (ENLARGED SPACIOUS WINDOWS FORM REPLICA) ══ */
+        }
+
+        /* ══ C# APP REGISTRATION FORM STYLES (EXACT 1416x645 LANDSCAPE DESKTOP WINDOW) ══ */
         .modal-desktop {
-            width: 98vw !important;
-            max-width: 1560px !important;
+            width: 1416px !important;
+            max-width: 99vw !important;
+            height: 645px !important;
+            max-height: 98vh !important;
             background: #f0f0f0 !important;
-            border: 2px solid #475569;
-            border-radius: 4px !important;
-            box-shadow: 0 16px 56px rgba(0,0,0,0.6) !important;
+            border: 2px solid #334155;
+            border-radius: 6px !important;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.65) !important;
             overflow: hidden;
-            margin: 12px auto !important;
+            margin: auto !important;
+            display: flex !important;
+            flex-direction: column !important;
         }
         .desktop-window-titlebar {
             background: #e2e8f0;
@@ -664,12 +672,14 @@
             display: flex;
             align-items: center;
             justify-content: space-between;
-            padding: 4px 10px;
+            padding: 3px 10px;
+            height: 28px;
             font-family: var(--ku);
             user-select: none;
+            flex-shrink: 0;
         }
         .desktop-window-title {
-            font-size: 13.5px;
+            font-size: 13px;
             font-weight: 800;
             color: #1e293b;
             letter-spacing: 0.5px;
@@ -678,9 +688,9 @@
             background: #dc2626;
             color: #ffffff;
             border: none;
-            width: 36px;
-            height: 25px;
-            font-size: 14px;
+            width: 34px;
+            height: 22px;
+            font-size: 13px;
             font-weight: 800;
             cursor: pointer;
             display: flex;
@@ -690,22 +700,37 @@
             transition: background 0.15s;
         }
         .desktop-btn-close:hover { background: #b91c1c; }
+        
+        .desktop-body-wrapper {
+            padding: 6px 12px 8px;
+            background: #f0f0f0;
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow-y: auto;
+            min-height: 0;
+        }
         .desktop-form-container {
             background: #ffffff;
             border: 1.5px solid #cbd5e1;
             border-radius: 4px;
-            padding: 16px 24px 18px;
+            padding: 8px 18px 8px;
             font-family: var(--ku);
             box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            min-height: 0;
         }
         .df-user-badge {
             background: #ffff4d;
             border: 1.5px solid #d4d400;
             color: #000000;
-            font-size: 22px;
+            font-size: 20px;
             font-weight: 900;
-            padding: 2px 16px;
-            min-width: 44px;
+            padding: 1px 14px;
+            min-width: 40px;
             text-align: center;
             border-radius: 3px;
             box-shadow: 0 1px 3px rgba(0,0,0,0.15);
@@ -713,12 +738,12 @@
         .df-row {
             display: flex;
             align-items: center;
-            gap: 8px;
-            margin-bottom: 9px;
+            gap: 6px;
+            margin-bottom: 4px;
             flex-wrap: nowrap;
         }
         .df-label {
-            font-size: 14px;
+            font-size: 13px;
             font-weight: 800;
             color: #0f172a;
             white-space: nowrap;
@@ -727,11 +752,11 @@
             margin-left: 2px;
         }
         .df-input {
-            height: 32px;
-            padding: 3px 8px;
+            height: 27px;
+            padding: 2px 7px;
             border: 1.5px solid #94a3b8;
             border-radius: 3px;
-            font-size: 14px;
+            font-size: 13px;
             font-family: var(--ku) !important;
             background: #ffffff;
             outline: none;
@@ -744,14 +769,14 @@
             background: #ffffff;
         }
         .df-select {
-            height: 32px;
-            padding: 3px 22px 3px 8px;
+            height: 27px;
+            padding: 2px 20px 2px 6px;
             border: 1.5px solid #94a3b8;
             border-radius: 3px;
-            font-size: 14px;
+            font-size: 13px;
             font-family: var(--ku) !important;
             background: #ffffff url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2210%22%20height%3D%226%22%20viewBox%3D%220%200%2010%206%22%3E%3Cpath%20d%3D%22M0%200l5%205%205-5z%22%20fill%3D%22%231e293b%22%2F%3E%3C%2Fsvg%3E") no-repeat left 6px center;
-            background-size: 10px 6px;
+            background-size: 9px 5px;
             outline: none;
             color: #000000;
             -webkit-appearance: none;
@@ -769,7 +794,7 @@
             border-bottom: 3px solid #0055d4 !important;
             text-align: center;
             font-weight: 900;
-            font-size: 15px;
+            font-size: 14.5px;
         }
         .df-cyan {
             background: #cbf5fb !important;
@@ -786,30 +811,36 @@
         .df-red-text {
             color: #dc2626 !important;
             font-weight: 900 !important;
-            font-size: 16px !important;
+            font-size: 14.5px !important;
         }
         .df-btn-search {
-            background: #ffff00;
-            border: 1.5px solid #707070;
-            color: #000000;
+            background: linear-gradient(180deg, #fef08a 0%, #facc15 50%, #eab308 100%);
+            border: 1.5px solid #ca8a04;
+            color: #1e293b;
             font-weight: 900;
-            font-size: 14px;
+            font-size: 13px;
             font-family: var(--ku);
-            padding: 3px 18px;
-            height: 32px;
+            padding: 2px 16px;
+            height: 27px;
             border-radius: 3px;
             cursor: pointer;
             white-space: nowrap;
-            transition: background 0.15s;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.12);
+            transition: all 0.15s;
         }
-        .df-btn-search:hover { background: #fff633; }
-        .df-btn-search:active { background: #e6e600; }
+        .df-btn-search:hover {
+            background: linear-gradient(180deg, #fef9c3 0%, #fde047 50%, #facc15 100%);
+            box-shadow: 0 2px 6px rgba(234, 179, 8, 0.4);
+            transform: translateY(-1px);
+        }
+        .df-btn-search:active { transform: translateY(0); }
+        
         .df-actions-row {
             display: flex;
             align-items: center;
             justify-content: space-between;
-            margin-top: 16px;
-            padding-top: 12px;
+            margin-top: 6px;
+            padding-top: 6px;
             border-top: 1.5px solid #e2e8f0;
             gap: 8px;
             flex-wrap: nowrap;
@@ -820,30 +851,84 @@
             gap: 8px;
             flex-wrap: nowrap;
         }
+        
+        /* ══ COLORFUL BUTTONS (ڕەنگاو ڕەنگ) ══ */
         .btn-df {
-            height: 36px;
-            padding: 4px 16px;
-            border-radius: 3px;
-            font-size: 14px;
+            height: 33px;
+            padding: 3px 16px;
+            border-radius: 4px;
+            font-size: 13.5px;
             font-weight: 900;
             font-family: var(--ku);
             cursor: pointer;
             border: 1.5px solid #64748b;
-            transition: opacity 0.1s, transform 0.1s;
+            transition: all 0.15s;
             white-space: nowrap;
-            color: #000000;
+            color: #ffffff;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.15);
+            text-shadow: 0 1px 2px rgba(0,0,0,0.4);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+        }
+        .btn-df:hover {
+            transform: translateY(-1px);
+            filter: brightness(1.08);
         }
         .btn-df:active { transform: translateY(1px); }
-        .btn-df-red { background: #ff4d4d; }
-        .btn-df-red:hover { background: #ff3333; }
-        .btn-df-yellow { background: #ffff00; }
-        .btn-df-yellow:hover { background: #ffff33; }
-        .btn-df-green { background: #00e600; }
-        .btn-df-green:hover { background: #00cc00; }
-        .btn-df-pink { background: #ff9999; }
-        .btn-df-pink:hover { background: #ff8080; }
-        .btn-df-yellow-long { background: #ffff00; padding: 4px 20px; }
-        .btn-df-yellow-long:hover { background: #ffff33; }
+        
+        /* Crimson Red - Save */
+        .btn-df-save, .btn-df-red {
+            background: linear-gradient(180deg, #f43f5e 0%, #e11d48 50%, #be123c 100%);
+            border-color: #9f1239;
+            box-shadow: 0 2px 6px rgba(225, 29, 72, 0.35);
+        }
+        .btn-df-save:hover, .btn-df-red:hover {
+            box-shadow: 0 4px 12px rgba(225, 29, 72, 0.5);
+        }
+        
+        /* Sky Blue - Print Form 1 */
+        .btn-df-blue, .btn-df-yellow {
+            background: linear-gradient(180deg, #38bdf8 0%, #0284c7 50%, #0369a1 100%);
+            border-color: #075985;
+            box-shadow: 0 2px 6px rgba(2, 132, 199, 0.35);
+        }
+        .btn-df-blue:hover, .btn-df-yellow:hover {
+            box-shadow: 0 4px 12px rgba(2, 132, 199, 0.5);
+        }
+        
+        /* Emerald Green - Print Form 2 */
+        .btn-df-green {
+            background: linear-gradient(180deg, #34d399 0%, #059669 50%, #047857 100%);
+            border-color: #065f46;
+            box-shadow: 0 2px 6px rgba(5, 150, 105, 0.35);
+        }
+        .btn-df-green:hover {
+            box-shadow: 0 4px 12px rgba(5, 150, 105, 0.5);
+        }
+        
+        /* Vivid Purple / Violet - New Record */
+        .btn-df-purple, .btn-df-pink {
+            background: linear-gradient(180deg, #c084fc 0%, #9333ea 50%, #7e22ce 100%);
+            border-color: #6b21a8;
+            box-shadow: 0 2px 6px rgba(147, 51, 234, 0.35);
+        }
+        .btn-df-purple:hover, .btn-df-pink:hover {
+            box-shadow: 0 4px 12px rgba(147, 51, 234, 0.5);
+        }
+        
+        /* Golden Warm Amber - Update / Correction */
+        .btn-df-orange, .btn-df-yellow-long {
+            background: linear-gradient(180deg, #fbbf24 0%, #f59e0b 50%, #d97706 100%);
+            border-color: #b45309;
+            color: #0f172a !important;
+            text-shadow: none !important;
+            box-shadow: 0 2px 6px rgba(245, 158, 11, 0.35);
+            padding: 3px 20px;
+        }
+        .btn-df-orange:hover, .btn-df-yellow-long:hover {
+            box-shadow: 0 4px 12px rgba(245, 158, 11, 0.5);
+        }
     </style>
 </head>
 <body>
@@ -921,7 +1006,7 @@
         <div class="module-grid">
 
             <!-- 1. تۆمار کردن -->
-            <div class="mod-card mc-yellow" onclick="openRegisterModal()">
+            <div class="mod-card mc-blue" onclick="openRegisterModal()">
                 <div class="mod-icon">📝</div>
                 <div class="mod-label">تۆمار کردن</div>
             </div>
@@ -933,7 +1018,7 @@
             </div>
 
             <!-- 3. دانانی نیشانەی حیجز -->
-            <div class="mod-card mc-pink" onclick="openHijzAddModal()">
+            <div class="mod-card mc-red" onclick="openHijzAddModal()">
                 <div class="mod-icon">🔖</div>
                 <div class="mod-label">دانانی نیشانەی حیجز</div>
             </div>
@@ -945,7 +1030,7 @@
             </div>
 
             <!-- 5. گەڕانی وورد -->
-            <div class="mod-card mc-white" onclick="openAdvSearchModal()">
+            <div class="mod-card mc-green" onclick="openAdvSearchModal()">
                 <div class="mod-icon">🔎</div>
                 <div class="mod-label">گەڕانی وورد</div>
             </div>
@@ -957,31 +1042,31 @@
             </div>
 
             <!-- 7. کارمەند و بەشەکان -->
-            <div class="mod-card mc-cyan" onclick="openStaffModal()">
+            <div class="mod-card mc-purple" onclick="openStaffModal()">
                 <div class="mod-icon">👥</div>
                 <div class="mod-label">کارمەند و بەشەکان</div>
             </div>
 
             <!-- 8. هەڵەکان و دووبارە -->
-            <div class="mod-card mc-white" onclick="openDuplicatesModal()">
+            <div class="mod-card mc-yellow" onclick="openDuplicatesModal()">
                 <div class="mod-icon">⚠️</div>
                 <div class="mod-label">هەڵەکان و دووبارە</div>
             </div>
 
             <!-- 9. تۆماری لێدراوی -->
-            <div class="mod-card mc-yellow" onclick="switchTab('suspicious')">
+            <div class="mod-card mc-darkrose" onclick="switchTab('suspicious')">
                 <div class="mod-icon">🚫</div>
                 <div class="mod-label">تۆماری لێدراوی</div>
             </div>
 
             <!-- 10. ئامارەکان -->
-            <div class="mod-card mc-purple" onclick="openStatsModal()">
+            <div class="mod-card mc-navy" onclick="openStatsModal()">
                 <div class="mod-icon">📈</div>
                 <div class="mod-label">ئامارەکان</div>
             </div>
 
             <!-- 11. ڕاپۆرت -->
-            <div class="mod-card mc-peach" onclick="switchTab('reports')">
+            <div class="mod-card mc-indigo" onclick="switchTab('reports')">
                 <div class="mod-icon">📋</div>
                 <div class="mod-label">ڕاپۆرت</div>
             </div>
@@ -1088,16 +1173,16 @@
             <button class="desktop-btn-close" onclick="closeOverlay('modalRegister')" title="داخستن">✕</button>
         </div>
 
-        <div style="padding:10px 14px 14px;background:#f0f0f0;">
+        <div class="desktop-body-wrapper">
             <div id="regAlert"></div>
             
             <div class="desktop-form-container">
                 <!-- TOP BANNER: PEACH ICON, CENTER BILINGUAL TITLE, USER BADGE 9 (ROW 0) -->
-                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:10px;">
+                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:5px;">
                     <div style="display:flex;align-items:center;gap:6px;">
-                        <div style="width:34px;height:34px;background:#fed7aa;border:1px solid #fdba74;border-radius:2px;"></div>
+                        <div style="width:30px;height:30px;background:#fed7aa;border:1px solid #fdba74;border-radius:2px;"></div>
                     </div>
-                    <div style="text-align:center;font-size:23px;font-weight:900;letter-spacing:0.5px;">
+                    <div style="text-align:center;font-size:21px;font-weight:900;letter-spacing:0.5px;">
                         <span style="color:#0033cc;">بەڕێوەبەرایەتی هاتووچۆی پارێزگای سلێمانی</span>
                         &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
                         <span style="color:#e60000;">هۆبەی پشکنین</span>
@@ -1288,11 +1373,11 @@
                 <!-- BOTTOM ACTIONS & BARCODE (Right to Left: Barcode -> Yellow long -> Pink -> Green -> Yellow -> Red) -->
                 <div class="df-actions-row">
                     <div class="df-actions-group">
-                        <button type="button" class="btn-df btn-df-red" onclick="dfSaveVehicle()">تۆمار کردنی زانیاری</button>
-                        <button type="button" class="btn-df btn-df-yellow" onclick="dfPrintInspection()">چاپ کردنی فۆرم</button>
+                        <button type="button" class="btn-df btn-df-save" onclick="dfSaveVehicle()">تۆمار کردنی زانیاری</button>
+                        <button type="button" class="btn-df btn-df-blue" onclick="dfPrintInspection()">چاپ کردنی فۆرم</button>
                         <button type="button" class="btn-df btn-df-green" onclick="dfPrintCard()">چاپ کردنی فۆرم</button>
-                        <button type="button" class="btn-df btn-df-pink" onclick="dfResetNew()">تۆماری نوێ</button>
-                        <button type="button" class="btn-df btn-df-yellow-long" onclick="dfUpdateVehicle()">ڕاست کردنەوەی زانیاری لە کاتی ڕاکێشان و کەم و کورتی</button>
+                        <button type="button" class="btn-df btn-df-purple" onclick="dfResetNew()">تۆماری نوێ</button>
+                        <button type="button" class="btn-df btn-df-orange" onclick="dfUpdateVehicle()">ڕاست کردنەوەی زانیاری لە کاتی ڕاکێشان و کەم و کورتی</button>
                     </div>
 
                     <!-- Barcode graphic exactly on the right -->
