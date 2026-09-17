@@ -185,14 +185,31 @@ app.get('/api/colors', requireAuth, async (req, res) => {
     }
 });
 
+// ─── GET TABLO / PLATES LIST (Tbl_Tablo) ─────────────────────────────
+app.get('/api/tablo', requireAuth, async (req, res) => {
+    try {
+        const pool = await getPool();
+        const result = await pool.request().query(`SELECT Tablo_Name FROM Tbl_Tablo ORDER BY id`);
+        res.json(result.recordset.map(r => r.Tablo_Name));
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
 // ─── GET PROVINCES LIST ──────────────────────────────────────────────
 app.get('/api/provinces', requireAuth, async (req, res) => {
     try {
         const pool = await getPool();
-        const result = await pool.request().query(`SELECT par FROM parz ORDER BY par`);
+        const result = await pool.request().query(`SELECT Tablo_Name as par FROM Tbl_Tablo ORDER BY id`);
         res.json(result.recordset.map(r => r.par));
     } catch (err) {
-        res.status(500).json({ error: err.message });
+        try {
+            const pool = await getPool();
+            const result = await pool.request().query(`SELECT par FROM parz ORDER BY par`);
+            res.json(result.recordset.map(r => r.par));
+        } catch (e2) {
+            res.status(500).json({ error: err.message });
+        }
     }
 });
 

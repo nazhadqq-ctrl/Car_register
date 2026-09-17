@@ -1190,38 +1190,37 @@
                     <div class="df-user-badge" id="dfUserBadge">9</div>
                 </div>
 
-                <!-- ROW 1 (Plate, Province, Dept, Office, Search, To, Date) -->
+                <!-- ROW 1 (Plate, Tablo/Province, Dept, Inspection Place, Search, To, Date) -->
                 <div class="df-row">
                     <span class="df-label">ژمارەی ئوتومبێل</span>
-                    <input type="text" id="dfA" class="df-input df-plate c4-kurd" style="width:160px;" placeholder="">
+                    <input type="text" id="dfA" class="df-input df-plate c4-kurd" style="width:150px;" placeholder="">
                     
                     <span class="df-label">تابلۆی</span>
-                    <input type="text" id="dfB" list="provinceList" class="df-input c4-kurd" style="width:110px;text-align:center;" value="سلێمانی">
+                    <input type="text" id="dfB" list="tabloList" class="df-input c4-kurd" style="width:115px;text-align:center;" value="سلێمانی">
                     
                     <span class="df-label">بەش</span>
-                    <select id="dfC" class="df-select" style="width:120px;">
+                    <select id="dfC" class="df-select" style="width:115px;">
                         <option value="تایبەت" selected>تایبەت</option>
                         <option value="بار">بار</option>
-                        <option value="باص">باص</option>
                         <option value="بیناسازی">بیناسازی</option>
                         <option value="کرێ">کرێ</option>
-                        <option value="تراکتۆر">تراکتۆر</option>
+                        <option value="ماتۆڕ">ماتۆڕ</option>
+                        <option value="میری">میری</option>
+                        <option value="جۆری تر">جۆری تر</option>
+                        <option value="ناوخۆ">ناوخۆ</option>
+                        <option value="هاتووچۆ">هاتووچۆ</option>
+                        <option value="کشتوکاڵی">کشتوکاڵی</option>
                     </select>
                     
-                    <select id="dfD" class="df-select" style="width:150px;">
-                        <option value="عمر عوسمان">عمر عوسمان</option>
-                        <option value="بێستون">بێستون</option>
-                        <option value="کاروان">کاروان</option>
-                        <option value="گشتی هاتووچۆ">گشتی هاتووچۆ</option>
-                        <option value="چەرموو">چەرموو</option>
-                    </select>
+                    <span class="df-label">شوێنی پشکنین</span>
+                    <input type="text" id="dfD" class="df-input" style="width:140px;background:#f1f5f9;font-weight:900;color:#0f172a;cursor:not-allowed;text-align:center;" readonly disabled value="عمر عوسمان">
                     
                     <button type="button" class="df-btn-search" onclick="dfSearchCar()">گەڕان</button>
                     
                     <span class="df-label">بۆ</span>
-                    <input type="text" id="dfTo" class="df-input df-pink c4-kurd" style="width:260px;" value="هاتووچۆی پارێزگای سلێمانی">
+                    <input type="text" id="dfTo" class="df-input df-pink c4-kurd" style="width:250px;" value="هاتووچۆی پارێزگای سلێمانی">
                     
-                    <input type="date" id="dfDD" class="df-input" style="width:145px;margin-right:auto;">
+                    <input type="date" id="dfDD" class="df-input" style="width:140px;margin-right:auto;">
                 </div>
 
                 <!-- ROW 2 (Barad 1, Barad 2, Transaction Type) -->
@@ -1276,9 +1275,9 @@
                     </select>
                     
                     <span class="df-label">ڕەنگ</span>
-                    <input type="text" id="dfL" list="colorList" class="df-input c4-kurd" style="width:125px;" placeholder="">
-                    
-                    <input type="text" id="dfColorExtra" list="colorList" class="df-input c4-kurd" style="flex:1;" placeholder="">
+                    <select id="dfL" class="df-select" style="flex:1;min-width:240px;font-weight:700;">
+                        <option value="">-- هەڵبژاردنی ڕەنگ --</option>
+                    </select>
                     
                     <span class="df-label">گێڕ</span>
                     <select id="dfM" class="df-select" style="width:95px;">
@@ -1626,6 +1625,7 @@
 </div>
 
 <!-- DATALISTS FOR AUTOCOMPLETE & C4KURD COMBOBOXES -->
+<datalist id="tabloList"></datalist>
 <datalist id="provinceList"></datalist>
 <datalist id="placeList"></datalist>
 <datalist id="userList"></datalist>
@@ -1727,26 +1727,39 @@ function setupC4KurdInputs() {
     });
 }
 
-// ─── LOAD LOOKUPS (COLORS, PROVINCES, USERS, PLACES, BARADS) ────────────
+// ─── LOAD LOOKUPS (COLORS, TABLO/PROVINCES, USERS, PLACES, BARADS) ────────────
 async function loadLookups() {
     try {
-        const [colors, provinces, staff, barads] = await Promise.all([
+        const [colors, tabloList, staff, barads] = await Promise.all([
             fetch('/api/colors').then(r=>r.json()).catch(()=>[]),
-            fetch('/api/provinces').then(r=>r.json()).catch(()=>[]),
+            fetch('/api/tablo').then(r=>r.json()).catch(()=>fetch('/api/provinces').then(r=>r.json()).catch(()=>[])),
             fetch('/api/staff-list').then(r=>r.json()).catch(()=>({users:[], places:[]})),
             fetch('/api/barads').then(r=>r.json()).catch(()=>[])
         ]);
 
+        // 1. Populate Color Combobox (#dfL) and datalist (#colorList) from Tbl_Color
+        const dfL = document.getElementById('dfL');
+        if (dfL && Array.isArray(colors) && colors.length > 0) {
+            let colorOpts = '<option value="">-- هەڵبژاردنی ڕەنگ --</option>';
+            colorOpts += colors.map(c => `<option value="${c}">${c}</option>`).join('');
+            dfL.innerHTML = colorOpts;
+        }
         const colorList = document.getElementById('colorList');
         if (colorList && Array.isArray(colors)) {
             colorList.innerHTML = colors.map(c => `<option value="${c}">`).join('');
         }
 
+        // 2. Populate Tablo / Plates (#tabloList and #provinceList) from Tbl_Tablo
+        const tabloDatalist = document.getElementById('tabloList');
+        if (tabloDatalist && Array.isArray(tabloList)) {
+            tabloDatalist.innerHTML = tabloList.map(p => `<option value="${p}">`).join('');
+        }
         const provList = document.getElementById('provinceList');
-        if (provList && Array.isArray(provinces)) {
-            provList.innerHTML = provinces.map(p => `<option value="${p}">`).join('');
+        if (provList && Array.isArray(tabloList)) {
+            provList.innerHTML = tabloList.map(p => `<option value="${p}">`).join('');
         }
 
+        // 3. Staff users & places
         const userList = document.getElementById('userList');
         if (userList && staff.users) {
             userList.innerHTML = staff.users.map(u => `<option value="${u.User_id}">${u.User_Name ? u.User_Name : ''}</option>`).join('');
@@ -1858,12 +1871,11 @@ function openRegisterModal() {
         if (currentUser) {
             const badge = document.getElementById('dfUserBadge');
             if (badge) badge.textContent = currentUser.username || currentUser.id || '9';
-            if (currentUser.place) {
-                const dfD = document.getElementById('dfD');
-                if (dfD && dfD.options) {
-                    const opt = Array.from(dfD.options).find(o => o.value === currentUser.place);
-                    if (opt) opt.selected = true;
-                }
+            const userPlace = currentUser.place || currentUser.Place_ || 'عمر عوسمان';
+            const dfD = document.getElementById('dfD');
+            if (dfD) {
+                dfD.value = userPlace;
+                dfD.disabled = true;
             }
         }
         if (!loadedVehicleId) {
@@ -1892,6 +1904,13 @@ function dfResetNew() {
     setVal('dfA', '');
     setVal('dfB', 'سلێمانی');
     setVal('dfC', 'تایبەت');
+    
+    // Set inspection place based on logged in user and disable it
+    const userPlace = (currentUser && (currentUser.place || currentUser.Place_)) ? (currentUser.place || currentUser.Place_) : 'عمر عوسمان';
+    setVal('dfD', userPlace);
+    const dfDEl = document.getElementById('dfD');
+    if (dfDEl) dfDEl.disabled = true;
+
     setVal('dfTo', 'هاتووچۆی پارێزگای سلێمانی');
     setVal('dfDD', new Date().toISOString().slice(0, 10));
     setVal('dfE', '');
@@ -1902,7 +1921,6 @@ function dfResetNew() {
     setVal('dfJ', 'صالون');
     setVal('dfK', 'بەنزین');
     setVal('dfL', '');
-    setVal('dfColorExtra', '');
     setVal('dfM', 'ئۆتۆماتیک');
     setVal('dfStatusSmall', '');
     setVal('dfExtraLeft', '');
@@ -1953,12 +1971,25 @@ async function dfSearchCar() {
         loadedVehicleId = r.id;
         const set = (id, v) => {
             const el = document.getElementById(id);
-            if (el) el.value = (v !== null && v !== undefined) ? v : '';
+            if (!el) return;
+            const val = (v !== null && v !== undefined) ? String(v).trim() : '';
+            if (el.tagName === 'SELECT') {
+                let opt = Array.from(el.options).find(o => o.value === val);
+                if (!opt && val) {
+                    opt = document.createElement('option');
+                    opt.value = val;
+                    opt.textContent = val;
+                    el.appendChild(opt);
+                }
+                el.value = val;
+            } else {
+                el.value = val;
+            }
         };
         set('dfA', r.A || '');
         set('dfB', r.B || 'سلێمانی');
         set('dfC', r.C || 'تایبەت');
-        set('dfD', r.D || '');
+        set('dfD', r.D || (currentUser && (currentUser.place || currentUser.Place_)) || 'عمر عوسمان');
         set('dfE', r.E || '');
         set('dfF', r.F || '*');
         set('dfG', r.G || '');
@@ -2072,7 +2103,7 @@ function getFormPayload() {
         A: val('dfA'),
         B: val('dfB'),
         C: val('dfC'),
-        D: val('dfD'),
+        D: val('dfD') || (currentUser && (currentUser.place || currentUser.Place_)) || 'عمر عوسمان',
         E: val('dfE'),
         F: val('dfF'),
         G: val('dfG'),
