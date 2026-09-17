@@ -2397,6 +2397,14 @@ function dfPrintInspection() {
                 }
                 .rdlc-container {
                     width: 100%;
+                    min-height: 195mm;
+                    display: flex;
+                    flex-direction: column;
+                    justify-content: space-between;
+                }
+                .rdlc-footer-section {
+                    margin-top: auto;
+                    width: 100%;
                 }
 
                 /* 1. TOP HEADER ROW */
@@ -2798,40 +2806,43 @@ function dfPrintInspection() {
                     </tr>
                 </table>
 
-                <!-- 5. SIGNATURES ROW -->
-                <div class="rdlc-signatures-row">
-                    <div class="rdlc-sig-box">
-                        ئەفسەری پشکنین
-                    </div>
-                    <div class="rdlc-sig-box">
-                        بەڕادی هاتووچۆ
-                    </div>
-                </div>
-
-                <!-- 6. VERIFICATION LINE -->
-                <div class="rdlc-verify-line">
-                    <div class="rdlc-verify-sub">
-                        <span class="rdlc-border-box">${p.F || '*'}</span>
+                <!-- FOOTER SECTION (PUSHED ALL THE WAY DOWN TO PAGE FOOTER) -->
+                <div class="rdlc-footer-section">
+                    <!-- 5. SIGNATURES ROW -->
+                    <div class="rdlc-signatures-row">
+                        <div class="rdlc-sig-box">
+                            ئەفسەری پشکنین
+                        </div>
+                        <div class="rdlc-sig-box">
+                            بەڕادی هاتووچۆ
+                        </div>
                     </div>
 
-                    <div class="rdlc-verify-sub">
-                        <span class="rdlc-border-box">${p.E || ''}</span>
-                        <span style="font-weight:800;font-size:13px;">پشکنینی بۆ کراوە لە لایەن بەڕادی هاتووچۆ</span>
+                    <!-- 6. VERIFICATION LINE -->
+                    <div class="rdlc-verify-line">
+                        <div class="rdlc-verify-sub">
+                            <span class="rdlc-border-box">${p.F || '*'}</span>
+                        </div>
+
+                        <div class="rdlc-verify-sub">
+                            <span class="rdlc-border-box">${p.E || ''}</span>
+                            <span style="font-weight:800;font-size:13px;">پشکنینی بۆ کراوە لە لایەن بەڕادی هاتووچۆ</span>
+                        </div>
+
+                        <div class="rdlc-verify-sub">
+                            <span class="rdlc-border-box">${userName || placeName}</span>
+                            <span style="font-weight:800;font-size:13px;">ڕێکخەری فۆڕم</span>
+                        </div>
                     </div>
 
-                    <div class="rdlc-verify-sub">
-                        <span class="rdlc-border-box">${userName || placeName}</span>
-                        <span style="font-weight:800;font-size:13px;">ڕێکخەری فۆڕم</span>
+                    <!-- 7. CITIZEN WARNING BOX -->
+                    <div class="rdlc-notice-box">
+                        <div class="rdlc-notice-text">
+                            <div>تکایە پاش وەرگرتنەوەی ئەم فۆڕمە واژۆی بەڕادی هاتووچۆ و ئەفسەری پشکنین لە بیر مەکە بە پێچەوانەوە خۆت بەرپرسیار ئەبیت</div>
+                            <div style="font-size: 11px; margin-top: 2px;">يرجى عدم نسيان ختم و توقيع ظابط المرور الكشف و براد المرور في حال استلام وثيقة الكشف للسيارة</div>
+                        </div>
+                        <div class="rdlc-notice-label">/ هاوڵاتی بەڕێز</div>
                     </div>
-                </div>
-
-                <!-- 7. CITIZEN WARNING BOX -->
-                <div class="rdlc-notice-box">
-                    <div class="rdlc-notice-text">
-                        <div>تکایە پاش وەرگرتنەوەی ئەم فۆڕمە واژۆی بەڕادی هاتووچۆ و ئەفسەری پشکنین لە بیر مەکە بە پێچەوانەوە خۆت بەرپرسیار ئەبیت</div>
-                        <div style="font-size: 11px; margin-top: 2px;">يرجى عدم نسيان ختم و توقيع ظابط المرور الكشف و براد المرور في حال استلام وثيقة الكشف للسيارة</div>
-                    </div>
-                    <div class="rdlc-notice-label">/ هاوڵاتی بەڕێز</div>
                 </div>
             </div>
 
