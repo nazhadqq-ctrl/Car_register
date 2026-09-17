@@ -1177,29 +1177,35 @@
             <div id="regAlert"></div>
             
             <div class="desktop-form-container">
-                <!-- TOP BANNER: PEACH ICON, CENTER BILINGUAL TITLE, USER BADGE 9 (ROW 0) -->
-                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:5px;">
-                    <div style="display:flex;align-items:center;gap:6px;">
-                        <div style="width:30px;height:30px;background:#fed7aa;border:1px solid #fdba74;border-radius:2px;"></div>
+                <!-- TOP BANNER: INSPECTION PLACE IN RIGHT CORNER, CENTER BILINGUAL TITLE, USER BADGE 9 (ROW 0) -->
+                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;padding:2px 4px;">
+                    <!-- RIGHT CORNER: شوێنی پشکنین (Inspection Place) -->
+                    <div style="display:flex;align-items:center;gap:6px;background:#f8fafc;border:1.5px solid #64748b;padding:2px 8px;border-radius:4px;box-shadow:0 1px 3px rgba(0,0,0,0.08);">
+                        <span style="font-size:12.5px;font-weight:800;color:#1e293b;white-space:nowrap;">شوێنی پشکنین:</span>
+                        <input type="text" id="dfD" style="width:130px;background:#ffffff;font-weight:900;font-size:13px;color:#0f172a;border:1.5px solid #94a3b8;border-radius:3px;padding:2px 6px;text-align:center;cursor:not-allowed;outline:none;" readonly disabled value="عمر عوسمان">
                     </div>
-                    <div style="text-align:center;font-size:21px;font-weight:900;letter-spacing:0.5px;">
+
+                    <!-- CENTER TITLE -->
+                    <div style="text-align:center;font-size:20px;font-weight:900;letter-spacing:0.5px;">
                         <span style="color:#0033cc;">بەڕێوەبەرایەتی هاتووچۆی پارێزگای سلێمانی</span>
                         &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
                         <span style="color:#e60000;">هۆبەی پشکنین</span>
                     </div>
+
+                    <!-- LEFT CORNER: USER BADGE -->
                     <div class="df-user-badge" id="dfUserBadge">9</div>
                 </div>
 
-                <!-- ROW 1 (Plate, Tablo/Province, Dept, Inspection Place, Search, To, Date) -->
+                <!-- ROW 1 (Plate, Tablo/Province, Dept, Search, To Combobox, Date) -->
                 <div class="df-row">
                     <span class="df-label">ژمارەی ئوتومبێل</span>
-                    <input type="text" id="dfA" class="df-input df-plate c4-kurd" style="width:150px;" placeholder="">
+                    <input type="text" id="dfA" class="df-input df-plate c4-kurd" style="width:170px;" placeholder="">
                     
                     <span class="df-label">تابلۆی</span>
-                    <input type="text" id="dfB" list="tabloList" class="df-input c4-kurd" style="width:115px;text-align:center;" value="سلێمانی">
+                    <input type="text" id="dfB" list="tabloList" class="df-input c4-kurd" style="width:125px;text-align:center;" value="سلێمانی">
                     
                     <span class="df-label">بەش</span>
-                    <select id="dfC" class="df-select" style="width:115px;">
+                    <select id="dfC" class="df-select" style="width:125px;">
                         <option value="تایبەت" selected>تایبەت</option>
                         <option value="بار">بار</option>
                         <option value="بیناسازی">بیناسازی</option>
@@ -1212,15 +1218,18 @@
                         <option value="کشتوکاڵی">کشتوکاڵی</option>
                     </select>
                     
-                    <span class="df-label">شوێنی پشکنین</span>
-                    <input type="text" id="dfD" class="df-input" style="width:140px;background:#f1f5f9;font-weight:900;color:#0f172a;cursor:not-allowed;text-align:center;" readonly disabled value="عمر عوسمان">
-                    
                     <button type="button" class="df-btn-search" onclick="dfSearchCar()">گەڕان</button>
                     
                     <span class="df-label">بۆ</span>
-                    <input type="text" id="dfTo" class="df-input df-pink c4-kurd" style="width:250px;" value="هاتووچۆی پارێزگای سلێمانی">
+                    <select id="dfTo" class="df-select df-pink" style="width:250px;font-weight:800;">
+                        <option value="هاتووچۆی پارێزگای سلێمانی" selected>هاتووچۆی پارێزگای سلێمانی</option>
+                        <option value="هاتووچۆی پارێزگای هەولێر">هاتووچۆی پارێزگای هەولێر</option>
+                        <option value="هاتووچۆی پارێزگای دهۆک">هاتووچۆی پارێزگای دهۆک</option>
+                        <option value="هاتووچۆی پارێزگای هەڵەبجە">هاتووچۆی پارێزگای هەڵەبجە</option>
+                        <option value="گشتی هاتووچۆ">گشتی هاتووچۆ</option>
+                    </select>
                     
-                    <input type="date" id="dfDD" class="df-input" style="width:140px;margin-right:auto;">
+                    <input type="date" id="dfDD" class="df-input" style="width:145px;margin-right:auto;">
                 </div>
 
                 <!-- ROW 2 (Barad 1, Barad 2, Transaction Type) -->
@@ -1311,18 +1320,20 @@
                     <input type="text" id="dfJJ" class="df-input" style="width:110px;text-align:center;" value="">
                 </div>
 
-                <!-- ROW 7 (Chassis/VIN, Cabin, Star, Mobile) -->
+                <!-- ROW 7 (Chassis/VIN, Key Length, Cabin, Star, Mobile) -->
                 <div class="df-row">
                     <span class="df-label">ژمارەی شاسی</span>
-                    <input type="text" id="dfR" class="df-input df-cyan" style="width:340px;text-transform:uppercase;letter-spacing:1px;font-weight:800;font-size:15px;" placeholder="" required>
+                    <input type="text" id="dfR" class="df-input df-cyan auto-en-upper" style="width:315px;text-transform:uppercase;letter-spacing:1px;font-weight:900;font-size:15px;direction:ltr;font-family:Consolas, monospace, sans-serif;" placeholder="" required>
+                    
+                    <input type="text" id="dfKeyLength" class="df-input" style="width:45px;text-align:center;background:#fef08a;border:1.5px solid #ca8a04;color:#854d0e;font-weight:900;font-size:14px;cursor:default;" readonly value="0" title="Key Length (ژمارەی پیتەکان)">
                     
                     <span class="df-label">ژ.قەمەرە</span>
-                    <input type="text" id="dfS" class="df-input df-cyan" style="width:70px;text-align:center;color:#0284c7;font-weight:800;" value="0">
+                    <input type="text" id="dfS" class="df-input df-cyan auto-en-upper" style="width:75px;text-align:center;color:#0284c7;font-weight:900;direction:ltr;font-family:Consolas, monospace, sans-serif;" value="0">
                     
-                    <input type="text" id="dfStar" class="df-input" style="width:280px;text-align:center;font-weight:bold;font-size:17px;" value="*">
+                    <input type="text" id="dfStar" class="df-input" style="width:260px;text-align:center;font-weight:bold;font-size:17px;" value="*">
                     
                     <span class="df-label">ژ.مۆبایل</span>
-                    <input type="text" id="dfT" class="df-input df-red-text" style="width:180px;text-align:center;" value="0">
+                    <input type="text" id="dfT" class="df-input df-red-text" style="width:170px;text-align:center;" value="0">
                 </div>
 
                 <!-- ROW 8 (Notes) -->
@@ -1338,7 +1349,7 @@
                 </div>
                 <div class="df-row">
                     <span class="df-label">ژمارەی شاسی عەرەبانە</span>
-                    <input type="text" id="dfW" class="df-input" style="width:280px;text-align:center;" value="*">
+                    <input type="text" id="dfW" class="df-input auto-en-upper" style="width:280px;text-align:center;text-transform:uppercase;direction:ltr;font-family:Consolas, monospace, sans-serif;font-weight:800;" value="*">
                     
                     <span class="df-label">ڕەنگی</span>
                     <input type="text" id="dfX" class="df-input c4-kurd" style="width:100px;">
@@ -1357,7 +1368,7 @@
                 </div>
                 <div class="df-row">
                     <span class="df-label">ژمارەی شاسی عەرەبانە</span>
-                    <input type="text" id="dfAA" class="df-input" style="width:280px;text-align:center;" value="*">
+                    <input type="text" id="dfAA" class="df-input auto-en-upper" style="width:280px;text-align:center;text-transform:uppercase;direction:ltr;font-family:Consolas, monospace, sans-serif;font-weight:800;" value="*">
                     
                     <span class="df-label">ڕەنگی</span>
                     <input type="text" id="dfBB" class="df-input c4-kurd" style="width:100px;">
@@ -1685,6 +1696,7 @@ async function init() {
         loadLookups();
         setDate();
         setupC4KurdInputs();
+        setupAutoEnglishUpper();
     } catch(e) {
         console.error('Init error:', e);
     }
@@ -1722,6 +1734,65 @@ function setupC4KurdInputs() {
             if (original !== normalized) {
                 e.target.value = normalized;
                 e.target.setSelectionRange(cursor, cursor);
+            }
+        }
+    });
+}
+
+// ─── AUTO ENGLISH UPPERCASE & KEY LENGTH CALCULATOR ─────────────────────
+function toEnglishUppercase(text) {
+    if (!text) return '';
+    const map = {
+        'ض':'Q','ص':'W','ث':'E','ق':'R','ف':'T','غ':'Y','ع':'U','ه':'I','ھ':'I','خ':'O','ح':'P',
+        'ش':'A','س':'S','ی':'D','ي':'D','ێ':'D','ب':'F','ل':'G','ڵ':'L','ا':'H','أ':'H','إ':'H','آ':'H',
+        'ت':'J','ن':'K','م':'L','ئ':'Z','ء':'X','ۆ':'C','ؤ':'C','ر':'V','ڕ':'R','لا':'B','ى':'N','ة':'M',
+        'پ':'P','چ':'C','ژ':'J','گ':'G','ڤ':'V','ك':'K','ک':'K','و':'W','د':'D','ز':'Z','ط':'T','ظ':'Z',
+        '٠':'0','١':'1','٢':'2','٣':'3','٤':'4','٥':'5','٦':'6','٧':'7','٨':'8','٩':'9',
+        '۰':'0','۱':'1','۲':'2','۳':'3','۴':'4','۵':'5','۶':'6','۷':'7','۸':'8','۹':'9'
+    };
+    let out = '';
+    for (let i = 0; i < text.length; i++) {
+        const ch = text[i];
+        if (map[ch] !== undefined) {
+            out += map[ch];
+        } else {
+            out += ch.toUpperCase();
+        }
+    }
+    return out;
+}
+
+function updateKeyLength() {
+    const dfR = document.getElementById('dfR');
+    const keyLenEl = document.getElementById('dfKeyLength');
+    if (dfR && keyLenEl) {
+        const cleanVal = dfR.value.replace(/\s+/g, '');
+        const count = cleanVal.length;
+        keyLenEl.value = count;
+        if (count === 17) {
+            keyLenEl.style.background = '#dcfce7';
+            keyLenEl.style.color = '#15803d';
+            keyLenEl.style.borderColor = '#22c55e';
+        } else {
+            keyLenEl.style.background = '#fef08a';
+            keyLenEl.style.color = '#854d0e';
+            keyLenEl.style.borderColor = '#ca8a04';
+        }
+    }
+}
+
+function setupAutoEnglishUpper() {
+    document.addEventListener('input', function(e) {
+        if (e.target && e.target.classList.contains('auto-en-upper')) {
+            const cursor = e.target.selectionStart;
+            const original = e.target.value;
+            const converted = toEnglishUppercase(original);
+            if (original !== converted) {
+                e.target.value = converted;
+                e.target.setSelectionRange(cursor, cursor);
+            }
+            if (e.target.id === 'dfR') {
+                updateKeyLength();
             }
         }
     });
@@ -1943,6 +2014,8 @@ function dfResetNew() {
     setVal('dfAA', '*');
     setVal('dfBB', '');
     setVal('dfCC', 0);
+    setVal('dfKeyLength', 0);
+    updateKeyLength();
     const regAlert = document.getElementById('regAlert');
     if (regAlert) regAlert.innerHTML = '';
 }
@@ -1966,7 +2039,6 @@ async function dfSearchCar() {
             return;
         }
 
-        // Populate fields
         // Populate fields safely
         loadedVehicleId = r.id;
         const set = (id, v) => {
@@ -1990,6 +2062,7 @@ async function dfSearchCar() {
         set('dfB', r.B || 'سلێمانی');
         set('dfC', r.C || 'تایبەت');
         set('dfD', r.D || (currentUser && (currentUser.place || currentUser.Place_)) || 'عمر عوسمان');
+        set('dfTo', r.Place_ || r.To || 'هاتووچۆی پارێزگای سلێمانی');
         set('dfE', r.E || '');
         set('dfF', r.F || '*');
         set('dfG', r.G || '');
@@ -2004,6 +2077,7 @@ async function dfSearchCar() {
         set('dfP', r.P || 0);
         set('dfQ', r.Q || 0);
         set('dfR', r.R || '');
+        updateKeyLength();
         set('dfS', r.S || 0);
         set('dfStar', '*');
         set('dfT', r.T || 0);
@@ -2104,6 +2178,7 @@ function getFormPayload() {
         B: val('dfB'),
         C: val('dfC'),
         D: val('dfD') || (currentUser && (currentUser.place || currentUser.Place_)) || 'عمر عوسمان',
+        To: val('dfTo') || 'هاتووچۆی پارێزگای سلێمانی',
         E: val('dfE'),
         F: val('dfF'),
         G: val('dfG'),
