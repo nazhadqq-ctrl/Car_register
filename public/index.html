@@ -2372,10 +2372,27 @@ function dfPrintInspection() {
                 }
                 @media print {
                     html, body {
+                        width: 297mm !important;
+                        height: 210mm !important;
+                        max-height: 210mm !important;
                         margin: 0 !important;
-                        padding: 5mm 8mm 5mm 8mm !important;
+                        padding: 4mm 8mm !important;
+                        overflow: hidden !important;
+                        box-sizing: border-box !important;
+                        page-break-inside: avoid !important;
+                        page-break-after: avoid !important;
+                        break-after: avoid !important;
                         -webkit-print-color-adjust: exact !important;
                         print-color-adjust: exact !important;
+                    }
+                    .rdlc-container {
+                        height: 202mm !important;
+                        max-height: 202mm !important;
+                        overflow: hidden !important;
+                        box-sizing: border-box !important;
+                        page-break-inside: avoid !important;
+                        page-break-after: avoid !important;
+                        break-after: avoid !important;
                     }
                     .no-print { display: none !important; }
                 }
@@ -2389,22 +2406,27 @@ function dfPrintInspection() {
                     background: #fff;
                     color: #000;
                     direction: ltr;
-                    padding: 5mm 8mm 5mm 8mm;
+                    padding: 4mm 8mm;
                     width: 100%;
                     max-width: 1080px;
                     margin: 0 auto;
                     font-size: 12.5px;
+                    box-sizing: border-box;
                 }
                 .rdlc-container {
                     width: 100%;
-                    min-height: 195mm;
+                    height: 198mm;
+                    max-height: 200mm;
                     display: flex;
                     flex-direction: column;
                     justify-content: space-between;
+                    box-sizing: border-box;
                 }
                 .rdlc-footer-section {
                     margin-top: auto;
                     width: 100%;
+                    page-break-inside: avoid;
+                    break-inside: avoid;
                 }
 
                 /* 1. TOP HEADER ROW */
