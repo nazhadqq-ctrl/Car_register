@@ -2681,59 +2681,69 @@ function dfPrintInspection() {
                     </div>
                 </div>
 
-                <!-- 4. MAIN DATA TABLE (EXACT 1:1 RDLC GRID) -->
+                <!-- 4. MAIN DATA TABLE (EXACT 1:1 RDLC GRID - STRICT 7 COLUMNS) -->
                 <table class="rdlc-table">
-                    <!-- Row 1: جۆری مامەڵە -->
+                    <colgroup>
+                        <col style="width: 8%;">
+                        <col style="width: 13%;">
+                        <col style="width: 14%;">
+                        <col style="width: 16%;">
+                        <col style="width: 16%;">
+                        <col style="width: 15%;">
+                        <col style="width: 18%;">
+                    </colgroup>
+
+                    <!-- Row 1: جۆری مامەڵە (6 cols value + 1 col header = 7) -->
                     <tr>
-                        <td colspan="4" class="rdlc-val" style="font-size:14.5px;">${p.H || 'تۆماری یەکەم جار'}</td>
-                        <td class="rdlc-th" style="width: 17%;">جۆری مامەڵە</td>
+                        <td colspan="6" class="rdlc-val" style="font-size:14.5px;">${p.H || 'تۆماری یەکەم جار'}</td>
+                        <td class="rdlc-th">جۆری مامەڵە</td>
                     </tr>
 
-                    <!-- Row 2: ژمارەی ئوتومبێل (T, C, B, A) -->
+                    <!-- Row 2: ژمارەی ئوتومبێل (T, C, B, A + Header = 2 + 1 + 1 + 2 + 1 = 7) -->
                     <tr>
-                        <td style="width: 25%;" class="rdlc-val rdlc-mono">${p.T || ''}</td>
-                        <td style="width: 18%;" class="rdlc-val">${p.C || 'تایبەت'}</td>
-                        <td style="width: 18%;" class="rdlc-val">${p.B || 'سلێمانی'}</td>
-                        <td style="width: 22%; font-size: 16.5px;" class="rdlc-val">${p.A || ''}</td>
-                        <td class="rdlc-th" style="width: 17%;">ژمارەی ئوتومبێل</td>
+                        <td colspan="2" class="rdlc-val rdlc-mono">${p.T || ''}</td>
+                        <td class="rdlc-val">${p.C || 'تایبەت'}</td>
+                        <td class="rdlc-val">${p.B || 'سلێمانی'}</td>
+                        <td colspan="2" class="rdlc-val" style="font-size: 16.5px;">${p.A || ''}</td>
+                        <td class="rdlc-th">ژمارەی ئوتومبێل</td>
                     </tr>
 
-                    <!-- Row 3: ناوی خاوەن ساڵانە -->
+                    <!-- Row 3: ناوی خاوەن ساڵانە (6 cols value + 1 col header = 7) -->
                     <tr>
-                        <td colspan="4" class="rdlc-val" style="font-size:15px;">${p.G || ''}</td>
+                        <td colspan="6" class="rdlc-val" style="font-size:15px;">${p.G || ''}</td>
                         <td class="rdlc-th">ناوی خاوەن ساڵانە</td>
                     </tr>
 
-                    <!-- Row 4: جۆری ئوتومبێل -->
+                    <!-- Row 4: جۆری ئوتومبێل (6 cols value + 1 col header = 7) -->
                     <tr>
-                        <td colspan="4" class="rdlc-val">${p.I || ''}</td>
+                        <td colspan="6" class="rdlc-val">${p.I || ''}</td>
                         <td class="rdlc-th">جۆری ئوتومبێل</td>
                     </tr>
 
-                    <!-- Row 5: ژمارەی شاسی -->
+                    <!-- Row 5: ژمارەی شاسی (6 cols value + 1 col header = 7) -->
                     <tr>
-                        <td colspan="4" class="rdlc-val rdlc-mono" style="font-size: 16.5px; letter-spacing: 2px;">${p.R || ''}</td>
+                        <td colspan="6" class="rdlc-val rdlc-mono" style="font-size: 16.5px; letter-spacing: 2px;">${p.R || ''}</td>
                         <td class="rdlc-th">ژمارەی شاسی</td>
                     </tr>
 
-                    <!-- Row 6: ژمارەی قەمەرە -->
+                    <!-- Row 6: ژمارەی قەمەرە (6 cols value + 1 col header = 7) -->
                     <tr>
-                        <td colspan="4" class="rdlc-val rdlc-mono">${p.S || '0'}</td>
+                        <td colspan="6" class="rdlc-val rdlc-mono">${p.S || '0'}</td>
                         <td class="rdlc-th">ژمارەی قەمەرە</td>
                     </tr>
 
-                    <!-- Row 7: Specifications Top Sub-row ([N] | دەرگا | گێڕ | [L] | ڕەنگ | [O] | سلندەر) -->
+                    <!-- Row 7: Specifications Top Sub-row ([N] | دەرگا | گێڕ | [L] | ڕەنگ | [O] | سلندەر = 7 cols) -->
                     <tr>
-                        <td style="width: 8%;" class="rdlc-val">${p.N || '0'}</td>
-                        <td style="width: 14%;" class="rdlc-th">ژمارەی دەرگا</td>
-                        <td style="width: 14%;" class="rdlc-th">جۆری گێڕ</td>
-                        <td style="width: 18%;" class="rdlc-val">${p.L || ''}</td>
-                        <td style="width: 18%;" class="rdlc-th">ڕەنگی ئوتومبێل</td>
-                        <td style="width: 8%;" class="rdlc-val">${p.O || '0'}</td>
-                        <td style="width: 20%;" class="rdlc-th">ژمارەی سلندەر</td>
+                        <td class="rdlc-val">${p.N || '0'}</td>
+                        <td class="rdlc-th">ژمارەی دەرگا</td>
+                        <td class="rdlc-th">جۆری گێڕ</td>
+                        <td class="rdlc-val">${p.L || ''}</td>
+                        <td class="rdlc-th">ڕەنگی ئوتومبێل</td>
+                        <td class="rdlc-val">${p.O || '0'}</td>
+                        <td class="rdlc-th">ژمارەی سلندەر</td>
                     </tr>
 
-                    <!-- Row 8: Specifications Bottom Sub-row ([Q] | سەرنشین | [M] | [K] | سووتەمەنی | [P] | مۆدێل) -->
+                    <!-- Row 8: Specifications Bottom Sub-row ([Q] | سەرنشین | [M] | [K] | سووتەمەنی | [P] | مۆدێل = 7 cols) -->
                     <tr>
                         <td class="rdlc-val">${p.Q || '0'}</td>
                         <td class="rdlc-th">ژمارەی سەرنشین</td>
@@ -2744,40 +2754,40 @@ function dfPrintInspection() {
                         <td class="rdlc-th">مۆدێل</td>
                     </tr>
 
-                    <!-- Row 9: Trailer 1 -->
+                    <!-- Row 9: Trailer 1 (7 cols) -->
                     <tr>
-                        <td class="rdlc-val" style="width: 8%;">${p.Y || '0'}</td>
-                        <td class="rdlc-th" style="width: 6%;">طن</td>
-                        <td class="rdlc-val" style="width: 14%;">${p.X || ''}</td>
-                        <td class="rdlc-th" style="width: 6%;">ڕەنگ</td>
-                        <td class="rdlc-val rdlc-mono" style="width: 26%;">${p.W || '*'}</td>
-                        <td class="rdlc-val" style="width: 20%;">${p.V || ''}</td>
-                        <td class="rdlc-th" style="width: 20%;">پاشگر(عەرەبانە)1</td>
+                        <td class="rdlc-val">${p.Y || '0'}</td>
+                        <td class="rdlc-th">طن</td>
+                        <td class="rdlc-val">${p.X || '*'}</td>
+                        <td class="rdlc-th">ڕەنگ</td>
+                        <td class="rdlc-val rdlc-mono">${p.W || '*'}</td>
+                        <td class="rdlc-val">${p.V || '*'}</td>
+                        <td class="rdlc-th">پاشگر(عەرەبانە)1</td>
                     </tr>
 
-                    <!-- Row 10: Trailer 2 -->
+                    <!-- Row 10: Trailer 2 (7 cols) -->
                     <tr>
                         <td class="rdlc-val">${p.CC || '0'}</td>
                         <td class="rdlc-th">طن</td>
-                        <td class="rdlc-val">${p.BB || ''}</td>
+                        <td class="rdlc-val">${p.BB || '*'}</td>
                         <td class="rdlc-th">ڕەنگ</td>
                         <td class="rdlc-val rdlc-mono">${p.AA || '*'}</td>
-                        <td class="rdlc-val">${p.Z || ''}</td>
+                        <td class="rdlc-val">${p.Z || '*'}</td>
                         <td class="rdlc-th">پاشگر(عەرەبانە)2</td>
                     </tr>
 
-                    <!-- Row 11: Trailer 3 -->
+                    <!-- Row 11: Trailer 3 (7 cols) -->
                     <tr>
                         <td class="rdlc-val">0</td>
                         <td class="rdlc-th">طن</td>
                         <td class="rdlc-val">*</td>
                         <td class="rdlc-th">ڕەنگ</td>
                         <td class="rdlc-val rdlc-mono">*</td>
-                        <td class="rdlc-val"></td>
+                        <td class="rdlc-val">*</td>
                         <td class="rdlc-th">پاشگر(عەرەبانە)3</td>
                     </tr>
 
-                    <!-- Row 12: Notes -->
+                    <!-- Row 12: Notes (6 cols value + 1 col header = 7) -->
                     <tr>
                         <td colspan="6" class="rdlc-val" style="text-align: right; padding: 6px 12px; min-height: 45px; font-size: 13px; direction: rtl;">
                             ${p.U || ''}
