@@ -792,9 +792,17 @@
         }
         .df-plate {
             border-bottom: 3px solid #0055d4 !important;
-            text-align: center;
-            font-weight: 900;
-            font-size: 14.5px;
+            text-align: center !important;
+            font-weight: 900 !important;
+            font-size: 15.5px !important;
+            direction: ltr !important;
+            font-family: 'Courier New', Courier, monospace !important;
+            letter-spacing: 1px !important;
+        }
+        .c4-kurd {
+            direction: rtl !important;
+            text-align: right !important;
+            font-family: var(--ku) !important;
         }
         .df-cyan {
             background: #cbf5fb !important;
@@ -1199,7 +1207,7 @@
                 <!-- ROW 1 (Plate, Tablo/Province, Dept, Search, To Combobox, Date) -->
                 <div class="df-row">
                     <span class="df-label">ژمارەی ئوتومبێل</span>
-                    <input type="text" id="dfA" class="df-input df-plate c4-kurd" style="width:170px;" placeholder="">
+                    <input type="text" id="dfA" class="df-input df-plate auto-en-upper" style="width:170px;text-align:center;text-transform:uppercase;direction:ltr;font-family:'Courier New', Courier, monospace;font-weight:900;font-size:15.5px;letter-spacing:1px;" placeholder="" title="تەنها ژمارە و پیتی ئینگلیزی کەپیتال">
                     
                     <span class="df-label">تابلۆی</span>
                     <input type="text" id="dfB" list="tabloList" class="df-input c4-kurd" style="width:125px;text-align:center;" value="سلێمانی">
@@ -1727,10 +1735,18 @@ function normalizeKurdishText(text) {
         .replace(/\u0649/g, '\u06CC') // Alef Maksura -> Kurdish Yeh (ی)
         .replace(/\u0643/g, '\u06A9') // Arabic Kaf -> Kurdish Keheh (ک)
         .replace(/\u0629/g, '\u06D5') // Teh Marbuta -> Kurdish Ae (ە)
-        .replace(/\u0647\u200C/g, '\u06D5'); // Heh + ZWNJ -> Ae (ە)
+        .replace(/\u0647\u200C/g, '\u06D5') // Heh + ZWNJ -> Ae (ە)
+        .replace(/\u0640/g, '');     // Tatweel removal
 }
 
 function setupC4KurdInputs() {
+    document.addEventListener('focusin', function(e) {
+        if (e.target && e.target.classList.contains('c4-kurd')) {
+            e.target.setAttribute('lang', 'ku');
+            e.target.setAttribute('dir', 'rtl');
+        }
+    });
+
     document.addEventListener('input', function(e) {
         if (e.target && e.target.classList.contains('c4-kurd')) {
             const cursor = e.target.selectionStart;
@@ -1832,7 +1848,15 @@ function setupAutoEnglishUpper() {
         if (e.target && e.target.classList.contains('auto-en-upper')) {
             const cursor = e.target.selectionStart;
             const original = e.target.value;
-            const converted = toEnglishUppercase(original);
+            let converted = toEnglishUppercase(original);
+
+            // For vehicle plate (dfA) and chassis (dfR): only numbers and uppercase English letters!
+            if (e.target.id === 'dfA') {
+                converted = converted.replace(/[^A-Z0-9 ]/g, '');
+            } else if (e.target.id === 'dfR') {
+                converted = converted.replace(/[^A-Z0-9]/g, '');
+            }
+
             if (original !== converted) {
                 e.target.value = converted;
                 e.target.setSelectionRange(cursor, cursor);
@@ -2101,7 +2125,21 @@ async function dfSearchCar() {
         const res = await fetch('/api/register/find?' + params.toString());
         const r = await res.json();
         if (!r) {
-            showToast('⚠️ ئەم ئوتومبێلە لە سیستم یان تاقیگە نەدۆزرایەوە', true);
+            // 100% exact match not found: clear all textboxes completely as requested
+            loadedVehicleId = null;
+            dfResetNew();
+            const elA = document.getElementById('dfA');
+            if (elA) elA.value = '';
+
+            showToast('⚠️ بەم (ژمارەیە + پارێزگا + بەش) لە ١٠٠٪ نەدۆزرایەوە، هەموو خانەکان بەتاڵ کرانەوە', true);
+            const regAlert = document.getElementById('regAlert');
+            if (regAlert) {
+                regAlert.innerHTML = `
+                    <div class="alert-box alert-warning">
+                        ⚠️ لەسەدا سەد ئەم زانیارییە نەدۆزرایەوە (ژمارە: ${plate || '-'} - پارێزگا: ${tablo || '-'} - بەش: ${bash || '-'}). هەموو خانەکان بەتاڵ کرانەوە بۆ تۆماری نوێ.
+                    </div>
+                `;
+            }
             return;
         }
 

@@ -392,15 +392,14 @@ app.get('/api/register/find', requireAuth, async (req, res) => {
         const pool = await getPool();
 
         // 1. FIRST PRIORITY: SEARCH IN [Taqega].[dbo].[VA]
-        // Condition: (ژمارەی ئوتومبێل + تابلۆ یان پارێزگا + بەش)
+        // 1. SEARCH BY VEHICLE (PLATE + PROVINCE + BASH) - 100% STRICT EXACT MATCH
         if (plate && plate.trim()) {
             const cleanPlate = plate.trim();
             const cleanTablo = (tablo || '').trim();
             const cleanBash = (bash || '').trim();
 
-            const reqVa = pool.request()
-                .input('plate', sql.NVarChar, cleanPlate);
-
+            // A. Search in [Taqega].[dbo].[VA]
+            const reqVa = pool.request().input('plate', sql.NVarChar, cleanPlate);
             let vaQuery = `
                 SELECT TOP 1 * FROM [Taqega].[dbo].[VA]
                 WHERE (auto_no = @plate OR REPLACE(auto_no, ' ', '') = @plate)
@@ -410,24 +409,17 @@ app.get('/api/register/find', requireAuth, async (req, res) => {
                 reqVa.input('tablo', sql.NVarChar, cleanTablo);
                 const normTablo = cleanTablo.replace(/ى/g, 'ی').replace(/ك/g, 'ک');
                 reqVa.input('normTablo', sql.NVarChar, normTablo);
-                const coreTablo = cleanTablo.length > 4 ? cleanTablo.slice(0, 5) : cleanTablo;
-                reqVa.input('coreTablo', sql.NVarChar, `%${coreTablo}%`);
-
-                vaQuery += ` AND (plet = @tablo OR REPLACE(plet, N'ى', N'ی') = @normTablo OR plet LIKE @coreTablo) `;
+                vaQuery += ` AND (plet = @tablo OR REPLACE(plet, N'ى', N'ی') = @normTablo) `;
             }
 
             if (cleanBash) {
                 reqVa.input('bash', sql.NVarChar, cleanBash);
                 const normBash = cleanBash.replace(/ى/g, 'ی').replace(/ك/g, 'ک');
                 reqVa.input('normBash', sql.NVarChar, normBash);
-                const coreBash = cleanBash.length > 3 ? cleanBash.slice(0, 4) : cleanBash;
-                reqVa.input('coreBash', sql.NVarChar, `%${coreBash}%`);
-
-                vaQuery += ` AND (bash = @bash OR REPLACE(bash, N'ى', N'ی') = @normBash OR bash LIKE @coreBash) `;
+                vaQuery += ` AND (bash = @bash OR REPLACE(bash, N'ى', N'ی') = @normBash) `;
             }
 
             vaQuery += ` ORDER BY id DESC `;
-
             const vaResult = await reqVa.query(vaQuery);
 
             if (vaResult.recordset.length > 0) {
@@ -472,9 +464,36 @@ app.get('/api/register/find', requireAuth, async (req, res) => {
                     Barcod: r.Barcod || ''
                 });
             }
+
+            // B. Search in [T1] with exact 100% match on (Plate + Province + Bash)
+            const reqT1 = pool.request().input('plate', sql.NVarChar, cleanPlate);
+            let t1Query = `SELECT TOP 1 * FROM T1 WHERE (A = @plate OR REPLACE(A, ' ', '') = @plate) `;
+            if (cleanTablo) {
+                reqT1.input('tablo', sql.NVarChar, cleanTablo);
+                const normTablo = cleanTablo.replace(/ى/g, 'ی').replace(/ك/g, 'ک');
+                reqT1.input('normTablo', sql.NVarChar, normTablo);
+                t1Query += ` AND (B = @tablo OR REPLACE(B, N'ى', N'ی') = @normTablo) `;
+            }
+            if (cleanBash) {
+                reqT1.input('bash', sql.NVarChar, cleanBash);
+                const normBash = cleanBash.replace(/ى/g, 'ی').replace(/ك/g, 'ک');
+                reqT1.input('normBash', sql.NVarChar, normBash);
+                t1Query += ` AND (C = @bash OR REPLACE(C, N'ى', N'ی') = @normBash) `;
+            }
+            t1Query += ` ORDER BY id DESC `;
+
+            const t1Result = await reqT1.query(t1Query);
+            if (t1Result.recordset.length > 0) {
+                const row = t1Result.recordset[0];
+                row.source = 'T1';
+                return res.json(row);
+            }
+
+            // If plate search does not find 100% exact match on plate+province+bash, return null!
+            return res.json(null);
         }
 
-        // If not found in VA by plate+tablo+bash, but chassis provided:
+        // 2. SEARCH BY CHASSIS (ONLY WHEN NO PLATE WAS ENTERED)
         if (chassis && chassis.trim()) {
             const cleanChassis = chassis.trim().toUpperCase();
             const chRes = await pool.request()
@@ -521,24 +540,15 @@ app.get('/api/register/find', requireAuth, async (req, res) => {
                     resulat: r.resulat || ''
                 });
             }
-        }
 
-        // 2. FALLBACK: SEARCH IN [T1]
-        const request = pool.request();
-        let query = 'SELECT TOP 1 * FROM T1 WHERE ';
-        if (plate && plate.trim()) {
-            query += 'A = @plate ';
-            request.input('plate', sql.NVarChar, plate.trim());
-        } else if (chassis && chassis.trim()) {
-            query += 'R = @chassis ';
-            request.input('chassis', sql.NVarChar, chassis.trim().toUpperCase());
-        }
-        query += 'ORDER BY id DESC';
-        const result = await request.query(query);
-        if (result.recordset.length > 0) {
-            const row = result.recordset[0];
-            row.source = 'T1';
-            return res.json(row);
+            const t1Ch = await pool.request()
+                .input('chassis', sql.NVarChar, cleanChassis)
+                .query(`SELECT TOP 1 * FROM T1 WHERE R = @chassis ORDER BY id DESC`);
+            if (t1Ch.recordset.length > 0) {
+                const row = t1Ch.recordset[0];
+                row.source = 'T1';
+                return res.json(row);
+            }
         }
 
         return res.json(null);
