@@ -1383,12 +1383,16 @@
 
                 <!-- BOTTOM ACTIONS & BARCODE (Right to Left: Barcode -> Yellow long -> Pink -> Green -> Yellow -> Red) -->
                 <div class="df-actions-row">
-                    <div class="df-actions-group">
+                    <div class="df-actions-group" style="align-items:center;flex-wrap:wrap;">
                         <button type="button" class="btn-df btn-df-save" onclick="dfSaveVehicle()">تۆمار کردنی زانیاری</button>
                         <button type="button" class="btn-df btn-df-blue" onclick="dfPrintInspection()">چاپ کردنی فۆرم</button>
                         <button type="button" class="btn-df btn-df-green" onclick="dfPrintCard()">چاپ کردنی فۆرم</button>
                         <button type="button" class="btn-df btn-df-purple" onclick="dfResetNew()">تۆماری نوێ</button>
                         <button type="button" class="btn-df btn-df-orange" onclick="dfUpdateVehicle()">ڕاست کردنەوەی زانیاری لە کاتی ڕاکێشان و کەم و کورتی</button>
+                        <label style="display:inline-flex;align-items:center;gap:6px;cursor:pointer;font-size:12.5px;font-weight:bold;color:#0f172a;background:#f8fafc;padding:5px 12px;border-radius:4px;border:1.5px solid #cbd5e1;user-select:none;margin-right:4px;" title="لە کاتی کارپێکردن بە دۆخی بێ دایالۆگ (Silent Print) یەکسەر پەڕەکە لە پرنتەرەوە دێتە دەرەوە">
+                            <input type="checkbox" id="dfAutoPrintCheck" checked style="width:17px;height:17px;cursor:pointer;accent-color:#0284c7;">
+                            <span>🖨️ چاپی ڕاستەوخۆ لەکاتی تۆمارکردن</span>
+                        </label>
                     </div>
 
                     <!-- Barcode graphic exactly on the right -->
@@ -2222,6 +2226,14 @@ async function dfSaveVehicle() {
                 `;
             }
             loadStats();
+
+            // Auto-print inspection form immediately upon registration
+            const autoPrintCheck = document.getElementById('dfAutoPrintCheck');
+            if (!autoPrintCheck || autoPrintCheck.checked) {
+                setTimeout(() => {
+                    dfPrintInspection();
+                }, 300);
+            }
         } else {
             document.getElementById('regAlert').innerHTML = `
                 <div class="alert-box alert-danger">⚠️ ${data.message || 'هەڵە'}</div>
@@ -2358,8 +2370,7 @@ function dfPrintInspection() {
     const placeName = p.D || (currentUser && (currentUser.place || currentUser.Place_)) || 'عمر عوسمان';
     const userName = p.GG || currentUser?.name || currentUser?.username || '';
 
-    const win = window.open('', '_blank');
-    win.document.write(`
+    const reportHtml = `
         <!DOCTYPE html>
         <html lang="ku" dir="ltr">
         <head>
@@ -2868,17 +2879,45 @@ function dfPrintInspection() {
                 </div>
             </div>
 
-            <script>
-                window.onload = () => {
-                    setTimeout(() => {
-                        window.print();
-                    }, 200);
-                };
-            <\/script>
         </body>
         </html>
-    `);
-    win.document.close();
+    `;
+
+    // ─── SILENT & DIRECT PRINTING VIA HIDDEN IFRAME ────────────────────────
+    let printFrame = document.getElementById('rdlcPrintFrame');
+    if (!printFrame) {
+        printFrame = document.createElement('iframe');
+        printFrame.id = 'rdlcPrintFrame';
+        printFrame.style.position = 'fixed';
+        printFrame.style.top = '-9999px';
+        printFrame.style.left = '-9999px';
+        printFrame.style.width = '0px';
+        printFrame.style.height = '0px';
+        printFrame.style.border = 'none';
+        document.body.appendChild(printFrame);
+    }
+
+    const frameDoc = printFrame.contentWindow.document;
+    frameDoc.open();
+    frameDoc.write(reportHtml);
+    frameDoc.close();
+
+    // Trigger silent print (immediately captured by --kiosk-printing without any dialogs)
+    setTimeout(() => {
+        try {
+            printFrame.contentWindow.focus();
+            printFrame.contentWindow.print();
+        } catch (err) {
+            console.error('Silent iframe print fallback:', err);
+            const fallbackWin = window.open('', '_blank');
+            if (fallbackWin) {
+                fallbackWin.document.write(reportHtml);
+                fallbackWin.document.close();
+                fallbackWin.focus();
+                fallbackWin.print();
+            }
+        }
+    }, 250);
 }
 
 function dfPrintCard() {
