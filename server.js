@@ -327,43 +327,49 @@ app.get('/api/gomrg/search-va', requireAuth, async (req, res) => {
         if (!car_n || !car_n.trim()) {
             return res.status(400).json({ success: false, message: 'تکایە ژمارەی ئۆتۆمبێل بنووسە' });
         }
+        if (!plet || !plet.trim()) {
+            return res.status(400).json({ success: false, message: 'تکایە تابلۆ (پارێزگا) دیاری بکە' });
+        }
+        if (!bash || !bash.trim()) {
+            return res.status(400).json({ success: false, message: 'تکایە بەشی ئۆتۆمبێل دیاری بکە' });
+        }
+
         const pool = await getPool();
         const cleanCarN = car_n.trim();
+        const cleanPlet = plet.trim();
+        const cleanBash = bash.trim();
 
-        // ONLY Search in Taqega.dbo.VA (Database Taqega)
-        let vaQuery = `
+        // ONLY Search in Taqega.dbo.VA (Database Taqega) by car_n + plet + bash
+        const vaQuery = `
             SELECT TOP 1 * FROM [Taqega].[dbo].[VA]
             WHERE (
                 REPLACE(auto_no, ' ', '') = REPLACE(@car_n, ' ', '') 
                 OR auto_no = @car_n
                 OR shassy = @car_n
             )
+            AND (
+                plet = @plet
+                OR REPLACE(REPLACE(plet, N'ى', N'ی'), N'ك', N'ک') = REPLACE(REPLACE(@plet, N'ى', N'ی'), N'ك', N'ک')
+                OR plet LIKE @pletLike
+                OR REPLACE(plet, N'ى', N'ی') LIKE @pletLikeClean
+            )
+            AND (
+                bash = @bash
+                OR REPLACE(REPLACE(bash, N'ى', N'ی'), N'ك', N'ک') = REPLACE(REPLACE(@bash, N'ى', N'ی'), N'ك', N'ک')
+                OR bash LIKE @bashLike
+            )
+            ORDER BY id DESC
         `;
-        const reqVA = pool.request().input('car_n', sql.NVarChar, cleanCarN);
-        
-        if (plet && plet.trim()) {
-            vaQuery += ` AND (plet LIKE @plet OR REPLACE(plet, N'ى', N'ی') LIKE @pletClean)`;
-            reqVA.input('plet', sql.NVarChar, `%${plet.trim()}%`);
-            reqVA.input('pletClean', sql.NVarChar, `%${plet.trim().replace(/ى/g, 'ی')}%`);
-        }
-        if (bash && bash.trim()) {
-            vaQuery += ` AND (bash LIKE @bash OR bash = @bash)`;
-            reqVA.input('bash', sql.NVarChar, `%${bash.trim()}%`);
-        }
-        vaQuery += ` ORDER BY id DESC`;
 
-        let result = await reqVA.query(vaQuery);
-        
-        // If not found with plet/bash filters, search VA by auto_no directly within VA
-        if (!result.recordset || result.recordset.length === 0) {
-            result = await pool.request()
-                .input('car_n', sql.NVarChar, cleanCarN)
-                .query(`
-                    SELECT TOP 1 * FROM [Taqega].[dbo].[VA]
-                    WHERE (REPLACE(auto_no, ' ', '') = REPLACE(@car_n, ' ', '') OR auto_no = @car_n OR shassy = @car_n)
-                    ORDER BY id DESC
-                `);
-        }
+        const reqVA = pool.request()
+            .input('car_n', sql.NVarChar, cleanCarN)
+            .input('plet', sql.NVarChar, cleanPlet)
+            .input('pletLike', sql.NVarChar, `%${cleanPlet}%`)
+            .input('pletLikeClean', sql.NVarChar, `%${cleanPlet.replace(/ى/g, 'ی')}%`)
+            .input('bash', sql.NVarChar, cleanBash)
+            .input('bashLike', sql.NVarChar, `%${cleanBash}%`);
+
+        const result = await reqVA.query(vaQuery);
 
         if (result.recordset && result.recordset.length > 0) {
             const row = result.recordset[0];
@@ -371,9 +377,9 @@ app.get('/api/gomrg/search-va', requireAuth, async (req, res) => {
                 success: true,
                 source: 'VA',
                 data: {
-                    car_n: row.auto_no || '',
-                    bash: row.bash || '',
-                    parezga: row.plet || '',
+                    car_n: row.auto_no || cleanCarN,
+                    bash: row.bash || cleanBash,
+                    parezga: row.plet || cleanPlet,
                     car_type: row.car_type || '',
                     model: row.Model || row.model || '',
                     color: row.color || '',
@@ -384,7 +390,10 @@ app.get('/api/gomrg/search-va', requireAuth, async (req, res) => {
             });
         }
 
-        return res.json({ success: false, message: 'هیچ داتایەک نەدۆزرایەوە لە خشتەی تاقیگە (VA)' });
+        return res.json({ 
+            success: false, 
+            message: `هیچ داتایەک نەدۆزرایەوە بۆ ژمارەی (${cleanCarN}) - تابلۆی (${cleanPlet}) - بەشی (${cleanBash}) لە خشتەی تاقیگە (VA)` 
+        });
     } catch (err) {
         console.error('Search VA error:', err);
         res.status(500).json({ success: false, error: err.message });

@@ -1712,57 +1712,32 @@
                 <div style="background: #fff0f3; border: 1.5px solid #fecdd3; border-radius: 4px; padding: 6px 12px; margin-bottom: 10px; display: flex; align-items: center; justify-content: space-between; gap: 10px;">
                     <div style="display: flex; align-items: center; gap: 10px; flex: 1;">
                         <span class="df-label" style="font-size: 14px; font-weight: 800;">ژمارەی ئۆتۆمبێل</span>
-                        <input type="text" id="gomrgSearchCarN" class="df-input auto-en-upper df-vin-font" style="width: 170px; font-size: 16px; text-align: center; border-color: #f472b6;" placeholder="" onkeydown="if(event.key==='Enter')gomrgSearchVA()">
+                        <input type="text" id="gomrgSearchCarN" class="df-input auto-en-upper df-vin-font" style="width: 170px; font-size: 16px; text-align: center; border-color: #f472b6;" placeholder="" autocomplete="off">
 
                         <span class="df-label" style="font-size: 14px; font-weight: 800; margin-right: 8px;">تابلۆی</span>
-                        <input type="text" id="gomrgSearchPlet" class="df-input c4-kurd" style="width: 130px; text-align: center; font-weight: 800; border-color: #f472b6;" value="سلێمانی">
+                        <input list="gomrgTabloList" id="gomrgSearchPlet" class="df-input c4-kurd" style="width: 150px; text-align: center; font-weight: 800; border-color: #f472b6;" value="سلێمانی" placeholder="تابلۆ..." autocomplete="off">
 
                         <span class="df-label" style="font-size: 14px; font-weight: 800; margin-right: 8px;">بەش</span>
-                        <select id="gomrgSearchBash" class="df-select" style="width: 130px; font-weight: 800; border-color: #f472b6;">
-                            <option value="بار" selected>بار</option>
-                            <option value="تایبەت">تایبەت</option>
-                            <option value="کرێ">کرێ</option>
-                            <option value="کشتوکاڵی">کشتوکاڵی</option>
-                            <option value="بیناسازی">بیناسازی</option>
-                            <option value="پاص">پاص</option>
-                            <option value="میری">میری</option>
-                            <option value="ماتۆڕ">ماتۆڕ</option>
-                        </select>
+                        <input list="gomrgBashList" id="gomrgSearchBash" class="df-input c4-kurd" style="width: 130px; text-align: center; font-weight: 800; border-color: #f472b6;" value="بار" placeholder="بەش..." autocomplete="off">
                     </div>
 
                     <!-- Yellow Search Button -->
                     <button type="button" id="gomrgBtnSearch" class="df-btn-search" style="background: #ffff00; border: 1.5px solid #d4d400; color: #000000; font-size: 14.5px; font-weight: 900; padding: 2px 28px; height: 30px; border-radius: 3px;" onclick="gomrgSearchVA()">بگەڕێ</button>
                 </div>
 
+                <datalist id="gomrgTabloList"></datalist>
+                <datalist id="gomrgBashList"></datalist>
+
                 <!-- ROW 3: CAR NUMBER, BASH, PAREZGA -->
                 <div class="df-row" style="margin-bottom: 8px;">
                     <span class="df-label" style="width: 125px; font-size: 14px;">ژمارەی ئۆتۆمبێل</span>
-                    <input type="text" id="gomrgCarN" class="df-input auto-en-upper df-vin-font" style="width: 160px; font-size: 16px; text-align: center; font-weight: 900; border-bottom: 2.5px solid #0055d4;" placeholder="">
+                    <input type="text" id="gomrgCarN" class="df-input auto-en-upper df-vin-font" style="width: 160px; font-size: 16px; text-align: center; font-weight: 900; border-bottom: 2.5px solid #0055d4;" placeholder="" autocomplete="off">
 
                     <span class="df-label" style="margin-right: 16px; font-size: 14px;">بەشی ئۆتۆمبێل</span>
-                    <select id="gomrgBash" class="df-select" style="width: 200px; font-weight: 800;">
-                        <option value="بار" selected>بار</option>
-                        <option value="تایبەت">تایبەت</option>
-                        <option value="کرێ">کرێ</option>
-                        <option value="کشتوکاڵی">کشتوکاڵی</option>
-                        <option value="بیناسازی">بیناسازی</option>
-                        <option value="پاص">پاص</option>
-                        <option value="میری">میری</option>
-                        <option value="ماتۆڕ">ماتۆڕ</option>
-                        <option value="بێ ژمارە">بێ ژمارە</option>
-                    </select>
+                    <input list="gomrgBashList" id="gomrgBash" class="df-input c4-kurd" style="width: 190px; font-weight: 800; text-align: center;" value="بار" placeholder="بەش..." autocomplete="off">
 
                     <span class="df-label" style="margin-right: 16px; font-size: 14px;">پاریزگای ئۆتۆمبێل</span>
-                    <select id="gomrgParezga" class="df-select" style="width: 220px; font-weight: 800;">
-                        <option value="سلێمانى" selected>سلێمانى</option>
-                        <option value="هەولێر">هەولێر</option>
-                        <option value="دهۆک">دهۆک</option>
-                        <option value="کاتى سلێمانى">کاتى سلێمانى</option>
-                        <option value="کاتى دهۆک">کاتى دهۆک</option>
-                        <option value="کاتى هەولێر">کاتى هەولێر</option>
-                        <option value="بغداد">بغداد</option>
-                        <option value="فحص مؤقت بغداد">فحص مؤقت بغداد</option>
-                    </select>
+                    <input list="gomrgTabloList" id="gomrgParezga" class="df-input c4-kurd" style="width: 210px; font-weight: 800; text-align: center;" value="سلێمانی" placeholder="تابلۆ..." autocomplete="off">
                 </div>
 
                 <!-- ROW 4: CAR TYPE (WIDE) -->
@@ -4158,8 +4133,26 @@ function initGomrgEnterAsTab() {
             const target = e.target;
             if (!target) return;
 
-            // In search car number, Enter triggers search!
+            // Sequential Enter navigation in the pink search row: car_n -> plet -> bash -> search
             if (target.id === 'gomrgSearchCarN') {
+                e.preventDefault();
+                const pletInput = document.getElementById('gomrgSearchPlet');
+                if (pletInput) {
+                    pletInput.focus();
+                    if (pletInput.select) pletInput.select();
+                }
+                return;
+            }
+            if (target.id === 'gomrgSearchPlet') {
+                e.preventDefault();
+                const bashInput = document.getElementById('gomrgSearchBash');
+                if (bashInput) {
+                    bashInput.focus();
+                    if (bashInput.select) bashInput.select();
+                }
+                return;
+            }
+            if (target.id === 'gomrgSearchBash') {
                 e.preventDefault();
                 gomrgSearchVA();
                 return;
@@ -4189,7 +4182,7 @@ function initGomrgEnterAsTab() {
                     const nextEl = document.getElementById(nextId);
                     if (nextEl) {
                         nextEl.focus();
-                        if (nextEl.select && typeof nextEl.select === 'function' && nextEl.tagName === 'INPUT') {
+                        if (nextEl.select && typeof nextEl.select === 'function' && (nextEl.tagName === 'INPUT' || nextEl.tagName === 'SELECT')) {
                             nextEl.select();
                         }
                     }
@@ -4198,17 +4191,42 @@ function initGomrgEnterAsTab() {
                     const saveBtn = modal.querySelector('button[onclick="gomrgSaveRecord()"]');
                     if (saveBtn) saveBtn.focus();
                 }
-            } else if (target.id === 'gomrgSearchPlet' || target.id === 'gomrgSearchBash') {
-                e.preventDefault();
-                gomrgSearchVA();
             }
         }
     });
 }
 
+async function populateGomrgCombos() {
+    try {
+        let tabloList = PARZ_ITEMS;
+        if (!tabloList || tabloList.length === 0) {
+            tabloList = await fetch('/api/tablo').then(r => r.json()).catch(() => []);
+            if (Array.isArray(tabloList) && tabloList.length > 0) {
+                PARZ_ITEMS = tabloList;
+            }
+        }
+        const dlTablo = document.getElementById('gomrgTabloList');
+        if (dlTablo && Array.isArray(tabloList) && tabloList.length > 0) {
+            dlTablo.innerHTML = tabloList.map(t => `<option value="${t}">`).join('');
+        }
+
+        const bashItems = [
+            'بار', 'تایبەت', 'کرێ', 'کشتوکاڵی', 'بیناسازی', 'پاص', 
+            'میری', 'ماتۆڕ', 'ناوخۆ', 'هاتووچۆ', 'بار-پاشگر', 'بار-پاشگر2', 'بار-پاشگر3', 'بێ ژمارە'
+        ];
+        const dlBash = document.getElementById('gomrgBashList');
+        if (dlBash) {
+            dlBash.innerHTML = bashItems.map(b => `<option value="${b}">`).join('');
+        }
+    } catch(e) {
+        console.warn('Error populating Gomrg comboboxes:', e);
+    }
+}
+
 async function openGomrgModal() {
     try {
         initGomrgEnterAsTab();
+        populateGomrgCombos();
 
         const gomrgAlert = document.getElementById('gomrgAlert');
         if (gomrgAlert) gomrgAlert.innerHTML = '';
@@ -4279,6 +4297,16 @@ async function gomrgSearchVA() {
         if (searchCarN) searchCarN.focus();
         return;
     }
+    if (!plet) {
+        alert('تکایە تابلۆ (پارێزگا) دیاری بکە یان بنووسە');
+        if (pletSel) pletSel.focus();
+        return;
+    }
+    if (!bash) {
+        alert('تکایە بەشی ئۆتۆمبێل دیاری بکە یان بنووسە');
+        if (bashSel) bashSel.focus();
+        return;
+    }
 
     if (btn) {
         btn.disabled = true;
@@ -4299,8 +4327,8 @@ async function gomrgSearchVA() {
             };
 
             setVal('gomrgCarN', d.car_n || car_n);
-            setVal('gomrgBash', d.bash || 'بار');
-            setVal('gomrgParezga', d.parezga || 'سلێمانى');
+            setVal('gomrgBash', d.bash || bash);
+            setVal('gomrgParezga', d.parezga || plet);
             setVal('gomrgCarType', d.car_type || '');
             setVal('gomrgModel', d.model || ''); // سالی دەرچوونی مۆدێلی ئۆتۆمبێل
             setVal('gomrgColor', d.color || '');
