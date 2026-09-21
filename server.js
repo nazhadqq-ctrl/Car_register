@@ -372,9 +372,9 @@ app.get('/api/gomrg/search-va', requireAuth, async (req, res) => {
             .input('car_n', sql.NVarChar, car_n.trim())
             .query(`
                 SELECT TOP 1 A AS car_n, C AS bash, B AS parezga, I AS car_type, 
-                             M AS model, L AS color, K AS shassy, G AS Full_name, D AS place
+                             P AS model, L AS color, R AS shassy, G AS Full_name, D AS place
                 FROM T1 
-                WHERE (A = @car_n OR K = @car_n)
+                WHERE (A = @car_n OR R = @car_n)
                 ORDER BY id DESC
             `);
 

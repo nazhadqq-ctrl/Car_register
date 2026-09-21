@@ -1703,25 +1703,9 @@
                     <span class="df-label" style="font-size: 14.5px; font-weight: 800; margin-right: 16px;">بەروار</span>
                     <input type="date" id="gomrgDate" class="df-input" style="width: 160px; font-weight: 700; text-align: center; border-color: #94a3b8;">
 
-                    <!-- لە تاقیکەی -->
+                    <!-- لە تاقیکەی (لە لۆگین بە هەمیشەیی ناچالاک / Disabled) -->
                     <span class="df-label" style="font-size: 14.5px; font-weight: 800; margin-right: 20px;">لە تاقیکەی</span>
-                    <select id="gomrgPlace" class="df-select" style="width: 260px; font-weight: 800; border-color: #94a3b8;">
-                        <option value="عمر عوسمان" selected>عمر عوسمان</option>
-                        <option value="پێشەنگ">پێشەنگ</option>
-                        <option value="بێستون">بێستون</option>
-                        <option value="کاروان">کاروان</option>
-                        <option value="عەربەت">عەربەت</option>
-                        <option value="ســارا">ســارا</option>
-                        <option value="دیاکۆ">دیاکۆ</option>
-                        <option value="شادی">شادی</option>
-                        <option value="شاره‌زوور">شاره‌زوور</option>
-                        <option value="عصام">عصام</option>
-                        <option value="مۆدێرن">مۆدێرن</option>
-                        <option value="هیمەت">هیمەت</option>
-                        <option value="بازیان">بازیان</option>
-                        <option value="ئاسۆ">ئاسۆ</option>
-                        <option value="گۆڕەپانی گشتی پشکنین">گۆڕەپانی گشتی پشکنین</option>
-                    </select>
+                    <input type="text" id="gomrgPlace" class="df-input c4-kurd" style="width: 260px; font-weight: 900; font-size: 14px; text-align: center; background: #f8fafc; color: #0f172a; border: 1.5px solid #94a3b8; cursor: not-allowed;" readonly disabled value="عمر عوسمان">
                 </div>
 
                 <!-- ROW 2: SEARCH SECTION (HIGHLIGHTED PINK/SALMON BORDER) -->
@@ -1789,13 +1773,13 @@
 
                 <!-- ROW 5: MODEL, COLOR, SHASSY -->
                 <div class="df-row" style="margin-bottom: 8px;">
-                    <span class="df-label" style="width: 125px; font-size: 14px;">مۆدێل</span>
-                    <input type="text" id="gomrgModel" class="df-input" style="width: 120px; text-align: center; font-weight: 800; font-size: 14.5px;" placeholder="" maxlength="4">
+                    <span class="df-label" style="width: 225px; font-size: 13.5px; font-weight: 800;" title="ساڵی دەرچوونی مۆدێلی ئۆتۆمبێل">مۆدێلی ئۆتۆمبێل (ساڵی دەرچوون)</span>
+                    <input type="text" id="gomrgModel" class="df-input" style="width: 110px; text-align: center; font-weight: 800; font-size: 14.5px;" placeholder="2024" maxlength="4">
 
-                    <span class="df-label" style="margin-right: 16px; font-size: 14px;">ڕەنگی</span>
+                    <span class="df-label" style="margin-right: 14px; font-size: 14px;">ڕەنگی</span>
                     <input type="text" id="gomrgColor" class="df-input c4-kurd" style="flex: 1; font-weight: 700; font-size: 14px;" placeholder="">
 
-                    <span class="df-label" style="margin-right: 16px; font-size: 14px;">ژمارەی شاسی</span>
+                    <span class="df-label" style="margin-right: 14px; font-size: 14px;">ژمارەی شاسی</span>
                     <input type="text" id="gomrgShassy" class="df-input df-vin-font" style="width: 320px; background: #c8f7c5; border: 1.5px solid #86efac; font-weight: 900; text-align: center; font-size: 16px; color: #000000;" value="*">
                 </div>
 
@@ -4146,18 +4130,96 @@ function dfPrintCard() {
 
 // ─── 2. MODULE: GOMRG (CUSTOMS) ────────────────────────────────────────
 // ─── 2. MODULE: GOMRG (CUSTOMS FORM - WINDOWS FORM CLONE) ──────────────
+// ─── 2. MODULE: GOMRG (CUSTOMS FORM - WINDOWS FORM CLONE) ──────────────
+function initGomrgEnterAsTab() {
+    const modal = document.getElementById('modalGomrg');
+    if (!modal || modal._enterTabInit) return;
+    modal._enterTabInit = true;
+
+    // Define strict linear order for Tab/Enter key navigation
+    const fieldOrder = [
+        'gomrgCarN',
+        'gomrgBash',
+        'gomrgParezga',
+        'gomrgCarType',
+        'gomrgModel',
+        'gomrgColor',
+        'gomrgShassy',
+        'gomrgName',
+        'gomrgQamara',
+        'gomrgAShassy',
+        'gomrgBB',
+        'gomrgCC',
+        'gomrgDD',
+        'gomrgReasonCode',
+        'gomrgReason'
+    ];
+
+    modal.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter') {
+            const target = e.target;
+            if (!target) return;
+
+            // In search car number, Enter triggers search!
+            if (target.id === 'gomrgSearchCarN') {
+                e.preventDefault();
+                gomrgSearchVA();
+                return;
+            }
+
+            // In buttons, default Enter triggers click
+            if (target.tagName === 'BUTTON') return;
+
+            // In linear fields, move to next field
+            const idx = fieldOrder.indexOf(target.id);
+            if (idx > -1) {
+                e.preventDefault();
+                const nextIdx = e.shiftKey ? idx - 1 : idx + 1;
+                if (nextIdx >= 0 && nextIdx < fieldOrder.length) {
+                    const nextId = fieldOrder[nextIdx];
+                    const nextEl = document.getElementById(nextId);
+                    if (nextEl) {
+                        nextEl.focus();
+                        if (nextEl.select && typeof nextEl.select === 'function' && nextEl.tagName === 'INPUT') {
+                            nextEl.select();
+                        }
+                    }
+                } else if (nextIdx >= fieldOrder.length) {
+                    // Reached the end (gomrgReason), focus the save button
+                    const saveBtn = modal.querySelector('button[onclick="gomrgSaveRecord()"]');
+                    if (saveBtn) saveBtn.focus();
+                }
+            } else if (target.id === 'gomrgSearchPlet' || target.id === 'gomrgSearchBash') {
+                e.preventDefault();
+                gomrgSearchVA();
+            }
+        }
+    });
+}
+
 async function openGomrgModal() {
     try {
+        initGomrgEnterAsTab();
+
         const gomrgAlert = document.getElementById('gomrgAlert');
         if (gomrgAlert) gomrgAlert.innerHTML = '';
         
-        // Update user badge
+        // 1. Update user badge
         if (currentUser) {
             const badge = document.getElementById('gomrgBadge');
             if (badge) badge.textContent = currentUser.username || currentUser.id || '9';
         }
 
-        // Set date to today
+        // 2. Set user's place from login as readonly / disabled
+        const userPlace = (currentUser && (currentUser.place || currentUser.Place_)) || 'عمر عوسمان';
+        const placeInput = document.getElementById('gomrgPlace');
+        if (placeInput) {
+            placeInput.value = userPlace;
+            placeInput.disabled = true;
+            placeInput.readOnly = true;
+        }
+
+        // 3. Set date to today
         const dateInput = document.getElementById('gomrgDate');
         if (dateInput) {
             const today = new Date();
@@ -4167,29 +4229,12 @@ async function openGomrgModal() {
             dateInput.value = `${yyyy}-${mm}-${dd}`;
         }
 
-        // Fetch Next IDD and Places
+        // 4. Fetch Next IDD from Gomrg table
         try {
             const res = await fetch('/api/gomrg/next-id').then(r => r.json());
             if (res.success) {
                 const iddInput = document.getElementById('gomrgIDD');
                 if (iddInput && res.nextIDD) iddInput.value = res.nextIDD;
-
-                if (res.places && res.places.length > 0) {
-                    const placeSel = document.getElementById('gomrgPlace');
-                    if (placeSel) {
-                        const currentVal = placeSel.value;
-                        const defaultPlaces = ['عمر عوسمان', 'پێشەنگ', 'بێستون', 'کاروان', 'عەربەت', 'ســارا', 'دیاکۆ', 'شادی', 'شاره‌زوور', 'عصام', 'مۆدێرن', 'هیمەت', 'بازیان', 'ئاسۆ', 'گۆڕەپانی گشتی پشکنین'];
-                        const allPlaces = Array.from(new Set([...defaultPlaces, ...res.places]));
-                        placeSel.innerHTML = allPlaces.map(p => `<option value="${p}">${p}</option>`).join('');
-                        if (currentVal && allPlaces.includes(currentVal)) {
-                            placeSel.value = currentVal;
-                        } else if (currentUser && currentUser.place) {
-                            placeSel.value = currentUser.place;
-                        } else {
-                            placeSel.value = 'عمر عوسمان';
-                        }
-                    }
-                }
             }
         } catch(e) {
             console.warn('Could not fetch next IDD:', e);
@@ -4248,31 +4293,14 @@ async function gomrgSearchVA() {
             setVal('gomrgBash', d.bash || 'بار');
             setVal('gomrgParezga', d.parezga || 'سلێمانى');
             setVal('gomrgCarType', d.car_type || '');
-            setVal('gomrgModel', d.model || '');
+            setVal('gomrgModel', d.model || ''); // سالی دهرچوونی مۆدیلی ئوتومبیل
             setVal('gomrgColor', d.color || '');
-            setVal('gomrgShassy', d.shassy && d.shassy !== '' ? d.shassy : '*');
+            // شاسی ڕاستەقینەی ئۆتۆمبێل نەک جۆری سوتەمەنی
+            setVal('gomrgShassy', (d.shassy && d.shassy.trim() !== '') ? d.shassy.trim() : '*');
             setVal('gomrgName', d.Full_name || '');
             setVal('gomrgQamara', '*');
             setVal('gomrgAShassy', '*');
             setVal('gomrgCC', '*');
-
-            if (d.place) {
-                const placeEl = document.getElementById('gomrgPlace');
-                if (placeEl) {
-                    let matched = false;
-                    for (let opt of placeEl.options) {
-                        if (opt.value === d.place || d.place.includes(opt.value)) {
-                            placeEl.value = opt.value;
-                            matched = true;
-                            break;
-                        }
-                    }
-                    if (!matched) {
-                        const newOpt = new Option(d.place, d.place, true, true);
-                        placeEl.add(newOpt);
-                    }
-                }
-            }
 
             if (alertBox) {
                 const srcName = res.source === 'VA' ? 'تاقیگە (VA)' : 'تۆماری گشتی (T1)';
@@ -4283,6 +4311,16 @@ async function gomrgSearchVA() {
                     </div>
                 `;
             }
+
+            // Automatically move focus to first editable field after search
+            setTimeout(() => {
+                const carNEl = document.getElementById('gomrgCarN');
+                if (carNEl) {
+                    carNEl.focus();
+                    if (carNEl.select) carNEl.select();
+                }
+            }, 60);
+
         } else {
             if (alertBox) {
                 alertBox.innerHTML = `
@@ -4293,7 +4331,10 @@ async function gomrgSearchVA() {
                 `;
             }
             const carNEl = document.getElementById('gomrgCarN');
-            if (carNEl && !carNEl.value) carNEl.value = car_n;
+            if (carNEl) {
+                if (!carNEl.value) carNEl.value = car_n;
+                carNEl.focus();
+            }
         }
     } catch(err) {
         console.error('Gomrg search error:', err);
