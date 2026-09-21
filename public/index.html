@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>هۆبەی پشکنین – هاتووچۆی سلێمانی</title>
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@500;600;700;800;900&family=Libre+Barcode+128&family=Libre+Barcode+128+Text&display=swap">
     <style>
         :root {
             --ku: Speda, Tahoma, sans-serif;
@@ -768,6 +769,248 @@
             box-shadow: 0 0 0 2px rgba(37,99,235,0.25);
             background: #ffffff;
         }
+        /* ══ TABLO COMBOBOX (parz) ══════════════════════════════════ */
+        .df-combobox {
+            position: relative;
+            display: inline-flex;
+            align-items: center;
+            vertical-align: middle;
+        }
+        .df-combo-input {
+            width: 100% !important;
+            height: 27px;
+            padding: 2px 22px 2px 6px !important;
+            text-align: center;
+            font-weight: 700 !important;
+            cursor: text;
+        }
+        .df-combo-btn {
+            position: absolute;
+            left: 2px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            width: 18px;
+            height: 22px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #475569;
+            font-size: 10px;
+            cursor: pointer;
+            padding: 0;
+            z-index: 2;
+        }
+        .df-combo-btn:hover {
+            color: #1e3a8a;
+        }
+        .df-combo-menu {
+            position: absolute;
+            top: calc(100% + 2px);
+            right: 0;
+            min-width: 190px;
+            max-width: 280px;
+            max-height: 240px;
+            overflow-y: auto;
+            background: #ffffff;
+            border: 1.5px solid #2563eb;
+            border-radius: 4px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.18);
+            z-index: 1000;
+            display: none;
+            direction: rtl;
+        }
+        .df-combo-item {
+            padding: 6px 10px;
+            font-size: 13px;
+            font-weight: 600;
+            color: #1e293b;
+            cursor: pointer;
+            border-bottom: 1px solid #f1f5f9;
+            text-align: right;
+            transition: background 0.12s, color 0.12s;
+            font-family: var(--ku) !important;
+        }
+        .df-combo-item:hover, .df-combo-item.active {
+            background: #2563eb;
+            color: #ffffff;
+        }
+        .df-combo-item mark {
+            background: #fef08a;
+            color: #854d0e;
+            font-weight: 800;
+            border-radius: 2px;
+            padding: 0 2px;
+        }
+        .df-combo-item:hover mark, .df-combo-item.active mark {
+            background: transparent;
+            color: #fde047;
+        }
+        .df-combo-empty {
+            padding: 10px 12px;
+            font-size: 12px;
+            color: #ef4444;
+            font-weight: 700;
+            text-align: center;
+            font-family: var(--ku);
+            background: #fef2f2;
+        }
+        .df-invalid-shake {
+            animation: comboShake 0.35s ease-in-out;
+            border-color: #ef4444 !important;
+            box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.35) !important;
+        }
+        @keyframes comboShake {
+            0%, 100% { transform: translateX(0); }
+            20%, 60% { transform: translateX(-4px); }
+            40%, 80% { transform: translateX(4px); }
+        }
+
+        /* ══ HIJZ RED SCREEN ALERT ═════════════════════════════════ */
+        .df-screen-hijz-red {
+            background-color: #7f1d1d !important;
+            animation: hijzScreenPulse 1.2s ease-in-out infinite alternate !important;
+        }
+        .df-screen-hijz-red .df-card {
+            border: 3.5px solid #ef4444 !important;
+            box-shadow: 0 0 45px rgba(239, 68, 68, 0.85) !important;
+            background: #fff5f5 !important;
+        }
+        .df-screen-hijz-red .df-header {
+            background: linear-gradient(135deg, #7f1d1d 0%, #991b1b 100%) !important;
+            border-bottom: 2px solid #ef4444 !important;
+        }
+        @keyframes hijzScreenPulse {
+            0% { box-shadow: inset 0 0 60px rgba(220, 38, 38, 0.5); }
+            100% { box-shadow: inset 0 0 120px rgba(185, 28, 28, 0.95); }
+        }
+        .df-hijz-banner {
+            background: linear-gradient(135deg, #b91c1c 0%, #991b1b 100%);
+            color: #ffffff;
+            border: 2.5px solid #f87171;
+            border-radius: 8px;
+            padding: 16px 20px;
+            margin-bottom: 16px;
+            box-shadow: 0 10px 30px rgba(185, 28, 28, 0.55);
+            animation: hijzBannerBounce 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            direction: rtl;
+            font-family: var(--ku);
+        }
+        @keyframes hijzBannerBounce {
+            0% { transform: scale(0.92); opacity: 0; }
+            60% { transform: scale(1.02); opacity: 1; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+        .df-hijz-banner-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-size: 17px;
+            font-weight: 900;
+            border-bottom: 1.5px solid rgba(255,255,255,0.25);
+            padding-bottom: 8px;
+            margin-bottom: 12px;
+        }
+        .df-hijz-banner-title {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: #fef08a;
+            font-size: 19px;
+            font-weight: 900;
+        }
+        .df-hijz-banner-msg {
+            font-size: 16.5px;
+            font-weight: 900;
+            line-height: 1.7;
+            margin-bottom: 12px;
+            color: #ffffff;
+            background: rgba(0,0,0,0.3);
+            padding: 12px 16px;
+            border-radius: 6px;
+            border-right: 5px solid #fde047;
+            letter-spacing: 0.2px;
+        }
+        .df-hijz-banner-details {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+            gap: 8px;
+            font-size: 13.5px;
+            background: rgba(255,255,255,0.12);
+            padding: 10px 14px;
+            border-radius: 6px;
+            font-weight: 700;
+        }
+        .df-hijz-banner-details div {
+            display: flex;
+            gap: 6px;
+        }
+        .df-hijz-banner-details strong {
+            color: #fecaca;
+        }
+
+        /* ══ DYNAMIC SCANNABLE BARCODE (CODE 128) ══════════════════ */
+        .df-barcode-card {
+            display: inline-flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: #ffffff;
+            padding: 3px 12px 2px 12px;
+            border: 1.5px solid #334155;
+            border-radius: 4px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+            cursor: pointer;
+            user-select: none;
+            transition: all 0.2s ease;
+            height: 48px;
+            min-width: 175px;
+            box-sizing: border-box;
+        }
+        .df-barcode-card:hover {
+            border-color: #2563eb;
+            box-shadow: 0 4px 12px rgba(37,99,235,0.22);
+            transform: translateY(-1px);
+        }
+        .df-barcode-svg-wrap {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 28px;
+            background: #ffffff;
+        }
+        .df-barcode-code-text {
+            font-family: 'Courier New', Courier, monospace;
+            font-size: 11px;
+            font-weight: 900;
+            letter-spacing: 1.5px;
+            color: #0f172a;
+            direction: ltr;
+            line-height: 1;
+            margin-top: 2px;
+            text-align: center;
+        }
+        .barcode-font-rendered {
+            font-family: 'Libre Barcode 128 Text', 'Libre Barcode 128', monospace !important;
+            font-size: 32px !important;
+            line-height: 1 !important;
+            letter-spacing: 0 !important;
+        }
+        /* ══ MODERN JETBRAINS MONO FOR VIN & CHASSIS (Aligned Baseline & Tabular) ══ */
+        .df-vin-font {
+            font-family: 'JetBrains Mono', 'Fira Code', Consolas, 'Courier New', monospace !important;
+            font-weight: 800 !important;
+            font-size: 14.5px !important;
+            letter-spacing: 1.2px !important;
+            text-transform: uppercase !important;
+            direction: ltr !important;
+            text-align: center !important;
+            font-variant-numeric: tabular-nums lining-nums !important;
+            font-feature-settings: "zero" 1, "tnum" 1, "lnum" 1 !important;
+            line-height: 1.2 !important;
+            vertical-align: middle !important;
+        }
         .df-select {
             height: 27px;
             padding: 2px 20px 2px 6px;
@@ -1207,26 +1450,23 @@
                 <!-- ROW 1 (Plate, Tablo/Province, Dept, Search, To Combobox, Date) -->
                 <div class="df-row">
                     <span class="df-label">ژمارەی ئوتومبێل</span>
-                    <input type="text" id="dfA" class="df-input df-plate auto-en-upper" style="width:170px;text-align:center;text-transform:uppercase;direction:ltr;font-family:'Courier New', Courier, monospace;font-weight:900;font-size:15.5px;letter-spacing:1px;" placeholder="" title="تەنها ژمارە و پیتی ئینگلیزی کەپیتال">
+                    <input type="text" id="dfA" class="df-input df-plate auto-en-upper df-vin-font" style="width:175px;font-size:16px;" placeholder="" title="تەنها ژمارە و پیتی ئینگلیزی کەپیتال">
                     
                     <span class="df-label">تابلۆی</span>
-                    <input type="text" id="dfB" list="tabloList" class="df-input c4-kurd" style="width:125px;text-align:center;" value="سلێمانی">
+                    <div class="df-combobox" id="dfBWrapper" style="width:130px;">
+                        <input type="text" id="dfB" class="df-input c4-kurd df-combo-input" autocomplete="off" value="سلێمانی" placeholder="تابلۆ..." title="تەنها لە لیستی فەرمی (parz) قبوڵ دەکرێت">
+                        <button type="button" class="df-combo-btn" id="dfBBtn" tabindex="-1" title="بینینی هەموو تابلۆکان">▼</button>
+                        <div class="df-combo-menu" id="dfBMenu"></div>
+                    </div>
                     
                     <span class="df-label">بەش</span>
-                    <select id="dfC" class="df-select" style="width:125px;">
-                        <option value="تایبەت" selected>تایبەت</option>
-                        <option value="بار">بار</option>
-                        <option value="بیناسازی">بیناسازی</option>
-                        <option value="کرێ">کرێ</option>
-                        <option value="ماتۆڕ">ماتۆڕ</option>
-                        <option value="میری">میری</option>
-                        <option value="جۆری تر">جۆری تر</option>
-                        <option value="ناوخۆ">ناوخۆ</option>
-                        <option value="هاتووچۆ">هاتووچۆ</option>
-                        <option value="کشتوکاڵی">کشتوکاڵی</option>
-                    </select>
+                    <div class="df-combobox" id="dfCWrapper" style="width:125px;">
+                        <input type="text" id="dfC" class="df-input c4-kurd df-combo-input" autocomplete="off" value="تایبەت" placeholder="بەش..." title="هەڵبژاردنی بەش">
+                        <button type="button" class="df-combo-btn" id="dfCBtn" tabindex="-1" title="بینینی هەموو بەشەکان">▼</button>
+                        <div class="df-combo-menu" id="dfCMenu"></div>
+                    </div>
                     
-                    <button type="button" class="df-btn-search" onclick="dfSearchCar()">گەڕان</button>
+                    <button type="button" class="df-btn-search" id="dfBtnSearch" onclick="dfSearchCar()">گەڕان</button>
                     
                     <span class="df-label">بۆ</span>
                     <select id="dfTo" class="df-select df-pink" style="width:250px;font-weight:800;">
@@ -1306,43 +1546,54 @@
                     </select>
                 </div>
 
-                <!-- ROW 6 (Doors, Passengers, Model, Cylinders, Inspection Fee, Fees) -->
-                <div class="df-row">
-                    <span class="df-label">ژ.دەرگا</span>
-                    <input type="number" id="dfN" class="df-input" style="width:70px;text-align:center;" value="0">
+                <!-- ROW 6 (Doors, Passengers, Model, Cylinders, Inspection Fee, Fees - Aligned & Full Width) -->
+                <div class="df-row" style="width:100%;gap:10px;">
+                    <div style="display:flex;align-items:center;gap:6px;flex:1;">
+                        <span class="df-label">ژ.دەرگا</span>
+                        <input type="number" id="dfN" class="df-input df-vin-font" style="flex:1;min-width:55px;text-align:center;" value="0">
+                    </div>
                     
-                    <span class="df-label">ژ.سەرنشین</span>
-                    <input type="number" id="dfQ" class="df-input" style="width:70px;text-align:center;" value="0">
+                    <div style="display:flex;align-items:center;gap:6px;flex:1.1;">
+                        <span class="df-label">ژ.سەرنشین</span>
+                        <input type="number" id="dfQ" class="df-input df-vin-font" style="flex:1;min-width:55px;text-align:center;" value="0">
+                    </div>
                     
-                    <span class="df-label">مۆدێل</span>
-                    <input type="number" id="dfP" class="df-input" style="width:85px;text-align:center;" value="0">
+                    <div style="display:flex;align-items:center;gap:6px;flex:1.2;">
+                        <span class="df-label">مۆدێل</span>
+                        <input type="number" id="dfP" class="df-input df-vin-font" style="flex:1;min-width:70px;text-align:center;" value="0">
+                    </div>
                     
-                    <span class="df-label">ژ.بستۆن</span>
-                    <input type="number" id="dfO" class="df-input" style="width:70px;text-align:center;" value="0">
+                    <div style="display:flex;align-items:center;gap:6px;flex:1;">
+                        <span class="df-label">ژ.بستۆن</span>
+                        <input type="number" id="dfO" class="df-input df-vin-font" style="flex:1;min-width:55px;text-align:center;" value="0">
+                    </div>
                     
-                    <span class="df-label">اجور كشف</span>
-                    <input type="text" id="dfII" class="df-input" style="width:85px;text-align:center;" value="0">
+                    <div style="display:flex;align-items:center;gap:6px;flex:1.3;">
+                        <span class="df-label">اجور كشف</span>
+                        <input type="text" id="dfII" class="df-input df-vin-font" style="flex:1;min-width:80px;text-align:center;" value="0">
+                    </div>
                     
-                    <span class="df-label">پارەی رسومات</span>
-                    <input type="text" id="dfJJ" class="df-input" style="width:110px;text-align:center;" value="">
+                    <div style="display:flex;align-items:center;gap:6px;flex:1.5;">
+                        <span class="df-label">پارەی رسومات</span>
+                        <input type="text" id="dfJJ" class="df-input df-vin-font" style="flex:1;min-width:95px;text-align:center;" value="">
+                    </div>
                 </div>
 
-                <!-- ROW 7 (Chassis/VIN, Key Length, Cabin, Barcode, Mobile) -->
-                <div class="df-row">
+                <!-- ROW 7 (Chassis/VIN: 17, Key Length, Cabin: 17, Barcode, Mobile: 11) -->
+                <div class="df-row" style="width:100%;gap:8px;">
                     <span class="df-label">ژمارەی شاسی</span>
-                    <input type="text" id="dfR" class="df-input df-cyan auto-en-upper" style="width:315px;text-transform:uppercase;letter-spacing:1px;font-weight:900;font-size:15px;direction:ltr;font-family:'Courier New', Courier, monospace;text-align:center;" placeholder="" required>
+                    <input type="text" id="dfR" class="df-input df-cyan auto-en-upper df-vin-font" style="flex:2.8;min-width:380px;height:28px;" maxlength="17" placeholder="VIN (17 پیت/ژمارە)" required>
                     
-                    <input type="text" id="dfKeyLength" class="df-input" style="width:45px;text-align:center;background:#fef08a;border:1.5px solid #ca8a04;color:#854d0e;font-weight:900;font-size:14px;cursor:default;" readonly value="0" title="Key Length (ژمارەی پیتەکان)">
+                    <input type="text" id="dfKeyLength" class="df-input df-vin-font" style="width:48px;height:28px;text-align:center;background:#fef08a;border:1.5px solid #ca8a04;color:#854d0e;cursor:default;" readonly value="0" title="Key Length (ژمارەی پیتەکان - دەبێت 17 بێت)">
                     
-                    <span class="df-label">ژ.قەمەرە</span>
-                    <input type="text" id="dfS" class="df-input df-cyan auto-en-upper" style="width:75px;text-align:center;color:#0284c7;font-weight:900;direction:ltr;font-family:'Courier New', Courier, monospace;" value="0">
+                    <span class="df-label">ژمارەی قەمەرە</span>
+                    <input type="text" id="dfS" class="df-input df-cyan auto-en-upper df-vin-font" style="flex:1.2;min-width:130px;height:28px;color:#0284c7;" maxlength="17" placeholder="قەمەرە (17 پیت)" value="*">
                     
-                    <span class="df-label">بارکۆد</span>
-                    <input type="text" id="dfBarcode" class="df-input auto-en-upper" style="width:250px;text-align:center;font-weight:900;font-size:14px;direction:ltr;font-family:'Courier New', Courier, monospace;letter-spacing:1px;color:#1e3a8a;background:#f1f5f9;border:1.5px solid #cbd5e1;" placeholder="چاوەڕوانی شاسی..." disabled>
+                    <input type="hidden" id="dfBarcode" value="">
                     <input type="hidden" id="dfStar" value="*">
                     
                     <span class="df-label">ژ.مۆبایل</span>
-                    <input type="text" id="dfT" class="df-input df-red-text" style="width:170px;text-align:center;" value="0">
+                    <input type="text" id="dfT" class="df-input df-red-text df-vin-font" style="flex:1.4;min-width:170px;height:28px;color:#dc2626;" maxlength="11" placeholder="07XXXXXXXXX (11 ژمارە)" value="0">
                 </div>
 
                 <!-- ROW 8 (Notes) -->
@@ -1358,7 +1609,7 @@
                 </div>
                 <div class="df-row">
                     <span class="df-label">ژمارەی شاسی عەرەبانە</span>
-                    <input type="text" id="dfW" class="df-input auto-en-upper" style="width:280px;text-align:center;text-transform:uppercase;direction:ltr;font-family:'Courier New', Courier, monospace;font-weight:900;font-size:14px;letter-spacing:1px;" value="*">
+                    <input type="text" id="dfW" class="df-input auto-en-upper df-vin-font" style="width:280px;height:28px;" value="*">
                     
                     <span class="df-label">ڕەنگی</span>
                     <input type="text" id="dfX" class="df-input c4-kurd" style="width:100px;">
@@ -1377,7 +1628,7 @@
                 </div>
                 <div class="df-row">
                     <span class="df-label">ژمارەی شاسی عەرەبانە</span>
-                    <input type="text" id="dfAA" class="df-input auto-en-upper" style="width:280px;text-align:center;text-transform:uppercase;direction:ltr;font-family:'Courier New', Courier, monospace;font-weight:900;font-size:14px;letter-spacing:1px;" value="*">
+                    <input type="text" id="dfAA" class="df-input auto-en-upper df-vin-font" style="width:280px;height:28px;" value="*">
                     
                     <span class="df-label">ڕەنگی</span>
                     <input type="text" id="dfBB" class="df-input c4-kurd" style="width:100px;">
@@ -1393,8 +1644,7 @@
                 <div class="df-actions-row">
                     <div class="df-actions-group" style="align-items:center;flex-wrap:wrap;">
                         <button type="button" class="btn-df btn-df-save" onclick="dfSaveVehicle()">تۆمار کردنی زانیاری</button>
-                        <button type="button" class="btn-df btn-df-blue" onclick="dfPrintInspection()">چاپ کردنی فۆرم</button>
-                        <button type="button" class="btn-df btn-df-green" onclick="dfPrintCard()">چاپ کردنی فۆرم</button>
+                        <button type="button" id="dfBtnPrint" class="btn-df btn-df-blue" onclick="dfPrintInspection()" disabled style="opacity:0.45;cursor:not-allowed;" title="دوای خەزنکردن و تۆمارکردنی زانیاری، ئەم دوگمەیە چالاک دەبێت">چاپ کردنی فۆرم</button>
                         <button type="button" class="btn-df btn-df-purple" onclick="dfResetNew()">تۆماری نوێ</button>
                         <button type="button" class="btn-df btn-df-orange" onclick="dfUpdateVehicle()">ڕاست کردنەوەی زانیاری لە کاتی ڕاکێشان و کەم و کورتی</button>
                         <label style="display:inline-flex;align-items:center;gap:6px;cursor:pointer;font-size:12.5px;font-weight:bold;color:#0f172a;background:#f8fafc;padding:5px 12px;border-radius:4px;border:1.5px solid #cbd5e1;user-select:none;margin-right:4px;" title="لە کاتی کارپێکردن بە دۆخی بێ دایالۆگ (Silent Print) یەکسەر پەڕەکە لە پرنتەرەوە دێتە دەرەوە">
@@ -1403,32 +1653,12 @@
                         </label>
                     </div>
 
-                    <!-- Barcode graphic exactly on the right -->
-                    <div style="display:flex;align-items:center;background:white;padding:3px 10px;border:1.5px solid #64748b;border-radius:2px;height:36px;">
-                        <svg width="115" height="28" viewBox="0 0 115 28">
-                            <rect x="2" y="1" width="3" height="26" fill="#000"/>
-                            <rect x="7" y="1" width="2" height="26" fill="#000"/>
-                            <rect x="11" y="1" width="4" height="26" fill="#000"/>
-                            <rect x="17" y="1" width="2" height="26" fill="#000"/>
-                            <rect x="21" y="1" width="5" height="26" fill="#000"/>
-                            <rect x="28" y="1" width="2" height="26" fill="#000"/>
-                            <rect x="32" y="1" width="3" height="26" fill="#000"/>
-                            <rect x="37" y="1" width="5" height="26" fill="#000"/>
-                            <rect x="44" y="1" width="2" height="26" fill="#000"/>
-                            <rect x="48" y="1" width="4" height="26" fill="#000"/>
-                            <rect x="54" y="1" width="2" height="26" fill="#000"/>
-                            <rect x="58" y="1" width="5" height="26" fill="#000"/>
-                            <rect x="65" y="1" width="3" height="26" fill="#000"/>
-                            <rect x="70" y="1" width="2" height="26" fill="#000"/>
-                            <rect x="74" y="1" width="4" height="26" fill="#000"/>
-                            <rect x="80" y="1" width="3" height="26" fill="#000"/>
-                            <rect x="85" y="1" width="2" height="26" fill="#000"/>
-                            <rect x="89" y="1" width="5" height="26" fill="#000"/>
-                            <rect x="96" y="1" width="2" height="26" fill="#000"/>
-                            <rect x="100" y="1" width="3" height="26" fill="#000"/>
-                            <rect x="105" y="1" width="4" height="26" fill="#000"/>
-                            <rect x="111" y="1" width="2" height="26" fill="#000"/>
-                        </svg>
+                    <!-- The ONE Real Dynamic Scannable Barcode (Code 128) -->
+                    <div class="df-barcode-card" id="dfBarcodeCard" onclick="copyBarcodeToClipboard()" title="بارکۆدی فەرمی ئۆتۆمبێل (Code 128) - شیاوی خوێندنەوە بە بارکۆد ڕیدەر یان مۆبایل - کلیک بکە بۆ کۆپیکردن">
+                        <div class="df-barcode-svg-wrap" id="dfBarcodeSvgWrap">
+                            <!-- Dynamic Code 128 SVG generated here -->
+                        </div>
+                        <div class="df-barcode-code-text" id="dfBarcodeCodeText">*TC00000000*</div>
                     </div>
                 </div>
             </div>
@@ -1710,6 +1940,8 @@ async function init() {
         setDate();
         setupC4KurdInputs();
         setupAutoEnglishUpper();
+        renderLiveBarcode('TC00000000');
+        setupBarcodeScannerListener();
     } catch(e) {
         console.error('Init error:', e);
     }
@@ -1802,59 +2034,127 @@ function updateKeyLength() {
     }
 }
 
-// ─── UNIQUE BARCODE GENERATOR & ACTIVATION ──────────────────────────────
+// ─── UNIQUE BARCODE GENERATOR & LIVE CODE 128 RENDERING ─────────────────
 function generateUniqueBarcode() {
-    const dfR = document.getElementById('dfR');
-    const ch = dfR ? dfR.value.trim().toUpperCase().replace(/[^A-Z0-9]/g, '') : '';
-    const lastCh = ch.length >= 6 ? ch.slice(-6) : (ch ? ch.padStart(6, '0') : '000000');
-    const now = new Date();
-    const yy = String(now.getFullYear()).slice(-2);
-    const mm = String(now.getMonth() + 1).padStart(2, '0');
-    const dd = String(now.getDate()).padStart(2, '0');
-    const rand = Math.floor(1000 + Math.random() * 9000);
-    return `TC${yy}${mm}${dd}${lastCh}${rand}`;
+    // Strictly <= 10 characters: 'TC' + 8 uppercase chars (length = 10)
+    const chars = '23456789ABCDEFGHJKLMNPQRSTUVWXYZ';
+    let rand = '';
+    for (let i = 0; i < 8; i++) {
+        rand += chars.charAt(Math.floor(Math.random() * chars.length));
+    }
+    return ('TC' + rand).substring(0, 10);
 }
 
-function updateBarcodeState() {
+function setPrintButtonState(enabled) {
+    const btn = document.getElementById('dfBtnPrint');
+    if (!btn) return;
+    btn.disabled = !enabled;
+    btn.style.opacity = enabled ? '1' : '0.45';
+    btn.style.cursor = enabled ? 'pointer' : 'not-allowed';
+    btn.title = enabled ? 'چاپ کردنی فۆرمی پشکنین' : 'دوای خەزنکردن و تۆمارکردنی زانیاری ئەمڕۆ، ئەم دوگمەیە چالاک دەبێت';
+}
+
+function renderLiveBarcode(code) {
+    const bEl = document.getElementById('dfBarcode');
+    if (code) {
+        if (bEl) bEl.value = code;
+    } else {
+        code = bEl ? bEl.value : '';
+    }
+    if (!code || code === '*' || code === '0') code = 'TC00000000';
+
+    const wrap = document.getElementById('dfBarcodeSvgWrap');
+    const textEl = document.getElementById('dfBarcodeCodeText');
+    if (wrap) {
+        wrap.innerHTML = generateCode128SVG(code, 26);
+    }
+    if (textEl) {
+        textEl.textContent = '*' + code + '*';
+    }
+}
+
+function copyBarcodeToClipboard() {
+    const bEl = document.getElementById('dfBarcode');
+    const code = bEl ? bEl.value : '';
+    if (code && code !== 'TC00000000') {
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+            navigator.clipboard.writeText(code).then(() => {
+                showToast(`📋 بارکۆد کۆپیکرا: ${code}`);
+            }).catch(() => {
+                showToast(`کۆدی بارکۆد: ${code}`);
+            });
+        } else {
+            showToast(`کۆدی بارکۆد: ${code}`);
+        }
+    }
+}
+
+async function updateBarcodeState(forceRegenerate = false) {
     const dfR = document.getElementById('dfR');
     const bEl = document.getElementById('dfBarcode');
     if (!dfR || !bEl) return;
     const cleanCh = dfR.value.replace(/\s+/g, '');
-    if (cleanCh.length >= 5) {
-        bEl.disabled = false;
-        bEl.style.background = '#ffffff';
-        bEl.style.borderColor = '#2563eb';
-        bEl.style.color = '#1e3a8a';
-        bEl.style.cursor = 'text';
-        if (!bEl.value || bEl.value === '*' || bEl.dataset.autoGen === 'true') {
-            bEl.value = generateUniqueBarcode();
+    if (cleanCh.length >= 3) {
+        if (forceRegenerate || !bEl.value || bEl.value === '*' || bEl.dataset.autoGen === 'true') {
+            let newCode = '';
+            try {
+                const res = await fetch('/api/barcode/generate');
+                if (res.ok) {
+                    const data = await res.json();
+                    if (data && data.barcode) newCode = data.barcode;
+                }
+            } catch (e) {}
+            if (!newCode) newCode = generateUniqueBarcode();
+            bEl.value = newCode.substring(0, 10);
             bEl.dataset.autoGen = 'true';
+            renderLiveBarcode(bEl.value);
+        } else {
+            renderLiveBarcode(bEl.value.substring(0, 10));
         }
+        // When chassis is edited, it is unsaved until saved in database
+        setPrintButtonState(false);
     } else {
         if (bEl.dataset.autoGen === 'true') {
             bEl.value = '';
         }
-        bEl.disabled = true;
-        bEl.style.background = '#f1f5f9';
-        bEl.style.borderColor = '#cbd5e1';
-        bEl.style.color = '#94a3b8';
-        bEl.style.cursor = 'not-allowed';
-        bEl.placeholder = 'چاوەڕوانی شاسی...';
+        renderLiveBarcode('TC00000000');
+        setPrintButtonState(false);
     }
 }
 
 function setupAutoEnglishUpper() {
     document.addEventListener('input', function(e) {
-        if (e.target && e.target.classList.contains('auto-en-upper')) {
+        if (!e.target) return;
+
+        // Mobile input (dfT): only digits, strictly max 11 chars
+        if (e.target.id === 'dfT') {
+            const cursor = e.target.selectionStart;
+            const original = e.target.value;
+            const digits = toEnglishUppercase(original).replace(/[^0-9]/g, '').slice(0, 11);
+            if (original !== digits) {
+                e.target.value = digits;
+                e.target.setSelectionRange(cursor, cursor);
+            }
+            return;
+        }
+
+        if (e.target.classList.contains('auto-en-upper')) {
             const cursor = e.target.selectionStart;
             const original = e.target.value;
             let converted = toEnglishUppercase(original);
 
-            // For vehicle plate (dfA) and chassis (dfR): only numbers and uppercase English letters!
+            // For vehicle plate (dfA)
             if (e.target.id === 'dfA') {
                 converted = converted.replace(/[^A-Z0-9 ]/g, '');
             } else if (e.target.id === 'dfR') {
-                converted = converted.replace(/[^A-Z0-9]/g, '');
+                // Chassis: strictly max 17 uppercase alphanumeric chars!
+                converted = converted.replace(/[^A-Z0-9]/g, '').slice(0, 17);
+            } else if (e.target.id === 'dfS') {
+                // Cabin: strictly max 17 uppercase alphanumeric chars!
+                converted = converted.replace(/[^A-Z0-9*]/g, '').slice(0, 17);
+            } else if (e.target.id === 'dfW' || e.target.id === 'dfAA') {
+                // Trailer chassis: strictly max 17 uppercase alphanumeric chars!
+                converted = converted.replace(/[^A-Z0-9*]/g, '').slice(0, 17);
             }
 
             if (original !== converted) {
@@ -1863,7 +2163,7 @@ function setupAutoEnglishUpper() {
             }
             if (e.target.id === 'dfR') {
                 updateKeyLength();
-                updateBarcodeState();
+                updateBarcodeState(true);
             }
             if (e.target.id === 'dfBarcode') {
                 delete e.target.dataset.autoGen;
@@ -1872,14 +2172,624 @@ function setupAutoEnglishUpper() {
     });
 }
 
-// ─── LOAD LOOKUPS (COLORS, TABLO/PROVINCES, USERS, PLACES, BARADS) ────────────
+// ─── HARDWARE & APP BARCODE SCANNER DETECTOR ───────────────────────
+function setupBarcodeScannerListener() {
+    let scanBuffer = '';
+    let lastKeyTime = 0;
+
+    document.addEventListener('keydown', function(e) {
+        const now = Date.now();
+        const diff = now - lastKeyTime;
+        lastKeyTime = now;
+
+        if (e.key === 'Enter') {
+            if (scanBuffer.length >= 6) {
+                const code = scanBuffer.trim();
+                scanBuffer = '';
+                onBarcodeScanned(code);
+            } else {
+                scanBuffer = '';
+            }
+            return;
+        }
+
+        if (e.key && e.key.length === 1) {
+            if (diff > 80) {
+                scanBuffer = e.key;
+            } else {
+                scanBuffer += e.key;
+            }
+        }
+    });
+}
+
+async function onBarcodeScanned(barcode) {
+    if (!barcode) return;
+    showToast(`📷 بارکۆد خوێندرایەوە: ${barcode}`);
+    
+    try {
+        const res = await fetch('/api/register/find?barcode=' + encodeURIComponent(barcode));
+        const car = await res.json();
+        if (car) {
+            if (car.isHijz) {
+                switchTab('register');
+                loadedVehicleId = null;
+                dfResetNew();
+                ['dfA', 'dfB', 'dfC', 'dfR', 'dfBarcode'].forEach(id => {
+                    const el = document.getElementById(id);
+                    if (el) el.value = '';
+                });
+                renderLiveBarcode('TC00000000');
+                showHijzRedAlert(car);
+                return;
+            }
+            switchTab('register');
+            showToast(`✅ داتای ئوتومبێل بە بارکۆدی (${barcode}) بە سەرکەوتوویی دۆزرایەوە!`);
+            if (car.A) {
+                const dfA = document.getElementById('dfA');
+                if (dfA) dfA.value = car.A;
+            }
+            if (car.B && typeof setTabloValue === 'function') {
+                setTabloValue(car.B);
+            }
+            if (car.C) {
+                const dfC = document.getElementById('dfC');
+                if (dfC) dfC.value = car.C;
+                if (typeof setBashValue === 'function') setBashValue(car.C);
+            }
+            if (car.R) {
+                const dfR = document.getElementById('dfR');
+                if (dfR) dfR.value = car.R;
+                updateKeyLength();
+            }
+            dfSearchCar();
+        } else {
+            showToast(`⚠️ هیچ ئوتومبێلێک بەم بارکۆدە (${barcode}) نەدۆزرایەوە`, true);
+        }
+    } catch(err) {
+        console.error('Barcode lookup error:', err);
+    }
+}
+
+// ─── COMBOBOX CONTROLLER FOR TABLO (parz) ──────────────────────────
+let PARZ_ITEMS = [];
+let lastValidTablo = 'سلێمانی';
+let activeComboIndex = -1;
+
+function setTabloValue(val) {
+    const input = document.getElementById('dfB');
+    if (!input) return;
+    if (val && PARZ_ITEMS.length > 0) {
+        const found = PARZ_ITEMS.find(p => normKu(p) === normKu(val));
+        if (found) {
+            input.value = found;
+            lastValidTablo = found;
+            return;
+        }
+    }
+    input.value = val || 'سلێمانی';
+    lastValidTablo = input.value;
+}
+
+function normKu(str) {
+    if (!str) return '';
+    return str.toString().trim()
+        .replace(/[يى]/g, 'ی')
+        .replace(/[ك]/g, 'ک')
+        .replace(/[ة]/g, 'ە')
+        .replace(/[\u200B-\u200D\uFEFF]/g, '')
+        .replace(/\s+/g, ' ');
+}
+
+function initTabloCombobox(items) {
+    PARZ_ITEMS = Array.isArray(items) ? items : [];
+    const input = document.getElementById('dfB');
+    const btn = document.getElementById('dfBBtn');
+    const menu = document.getElementById('dfBMenu');
+    if (!input || !menu) return;
+
+    function renderMenu(filterText = '', showAll = false) {
+        const query = normKu(filterText);
+        let matches = [];
+        if (showAll || !query) {
+            matches = PARZ_ITEMS;
+        } else {
+            const startsWith = [];
+            const contains = [];
+            PARZ_ITEMS.forEach(item => {
+                const n = normKu(item);
+                if (n.startsWith(query)) startsWith.push(item);
+                else if (n.includes(query)) contains.push(item);
+            });
+            matches = [...startsWith, ...contains];
+        }
+
+        if (matches.length === 0) {
+            menu.innerHTML = `<div class="df-combo-empty">⚠️ هیچ تابلۆیەک بەم پیتانە لە (parz) نەدۆزرایەوە</div>`;
+            activeComboIndex = -1;
+        } else {
+            menu.innerHTML = matches.map((item, idx) => {
+                let textHtml = item;
+                if (query) {
+                    const regex = new RegExp(`(${query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
+                    textHtml = item.replace(regex, '<mark>$1</mark>');
+                }
+                return `<div class="df-combo-item" data-value="${item}" data-index="${idx}">${textHtml}</div>`;
+            }).join('');
+            activeComboIndex = matches.length > 0 ? 0 : -1;
+            updateActiveItem();
+        }
+        menu.style.display = 'block';
+    }
+
+    function hideMenu() {
+        menu.style.display = 'none';
+        activeComboIndex = -1;
+    }
+
+    function updateActiveItem() {
+        const items = menu.querySelectorAll('.df-combo-item');
+        items.forEach((it, idx) => {
+            if (idx === activeComboIndex) {
+                it.classList.add('active');
+                it.scrollIntoView({ block: 'nearest' });
+            } else {
+                it.classList.remove('active');
+            }
+        });
+    }
+
+    function selectItem(val) {
+        if (PARZ_ITEMS.includes(val)) {
+            input.value = val;
+            lastValidTablo = val;
+            hideMenu();
+            input.classList.remove('df-invalid-shake');
+
+            // Automatically advance focus to (بەش) without needing Tab!
+            setTimeout(() => {
+                const dfC = document.getElementById('dfC');
+                if (dfC) {
+                    dfC.focus();
+                    dfC.select();
+                    if (typeof openBashMenu === 'function') openBashMenu();
+                }
+            }, 60);
+        }
+    }
+
+    function validateAndEnforce() {
+        const currentVal = input.value.trim();
+        if (!currentVal) {
+            input.value = lastValidTablo || 'سلێمانی';
+            return;
+        }
+
+        // Exact match?
+        const exactMatch = PARZ_ITEMS.find(p => normKu(p) === normKu(currentVal));
+        if (exactMatch) {
+            input.value = exactMatch;
+            lastValidTablo = exactMatch;
+            input.classList.remove('df-invalid-shake');
+            return;
+        }
+
+        // Single unique prefix match?
+        const prefixMatches = PARZ_ITEMS.filter(p => normKu(p).startsWith(normKu(currentVal)));
+        if (prefixMatches.length === 1) {
+            input.value = prefixMatches[0];
+            lastValidTablo = prefixMatches[0];
+            input.classList.remove('df-invalid-shake');
+            return;
+        }
+
+        // NOT ALLOWED: User typed custom arbitrary text not in parz!
+        input.classList.add('df-invalid-shake');
+        showToast(`⚠️ تابلۆی "${currentVal}" لە لیستی فەرمی (parz) نییە و قبوڵ ناکرێت!`, true);
+        input.value = lastValidTablo || 'سلێمانی';
+        setTimeout(() => {
+            input.classList.remove('df-invalid-shake');
+        }, 600);
+    }
+
+    // Input events
+    input.addEventListener('input', () => {
+        renderMenu(input.value, false);
+    });
+
+    input.addEventListener('focus', () => {
+        renderMenu(input.value, true);
+    });
+
+    if (btn) {
+        btn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            if (menu.style.display === 'block') {
+                hideMenu();
+            } else {
+                renderMenu('', true);
+                input.focus();
+            }
+        });
+    }
+
+    menu.addEventListener('mousedown', (e) => {
+        const target = e.target.closest('.df-combo-item');
+        if (target) {
+            const val = target.getAttribute('data-value');
+            selectItem(val);
+        }
+    });
+
+    input.addEventListener('keydown', (e) => {
+        if (menu.style.display === 'block') {
+            const items = menu.querySelectorAll('.df-combo-item');
+            if (e.key === 'ArrowDown') {
+                e.preventDefault();
+                if (items.length > 0) {
+                    activeComboIndex = (activeComboIndex + 1) % items.length;
+                    updateActiveItem();
+                }
+            } else if (e.key === 'ArrowUp') {
+                e.preventDefault();
+                if (items.length > 0) {
+                    activeComboIndex = (activeComboIndex - 1 + items.length) % items.length;
+                    updateActiveItem();
+                }
+            } else if (e.key === 'Enter') {
+                e.preventDefault();
+                if (activeComboIndex >= 0 && items[activeComboIndex]) {
+                    const val = items[activeComboIndex].getAttribute('data-value');
+                    selectItem(val);
+                } else {
+                    validateAndEnforce();
+                    hideMenu();
+                    setTimeout(() => {
+                        const dfC = document.getElementById('dfC');
+                        if (dfC) {
+                            dfC.focus();
+                            dfC.select();
+                            if (typeof openBashMenu === 'function') openBashMenu();
+                        }
+                    }, 60);
+                }
+            } else if (e.key === 'Tab') {
+                if (activeComboIndex >= 0 && items[activeComboIndex]) {
+                    const val = items[activeComboIndex].getAttribute('data-value');
+                    selectItem(val);
+                } else {
+                    validateAndEnforce();
+                    hideMenu();
+                }
+            } else if (e.key === 'Escape') {
+                hideMenu();
+            }
+        } else {
+            if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+                renderMenu(input.value, true);
+            } else if (e.key === 'Enter') {
+                e.preventDefault();
+                validateAndEnforce();
+                setTimeout(() => {
+                    const dfC = document.getElementById('dfC');
+                    if (dfC) {
+                        dfC.focus();
+                        dfC.select();
+                        if (typeof openBashMenu === 'function') openBashMenu();
+                    }
+                }, 60);
+            }
+        }
+    });
+
+    input.addEventListener('blur', () => {
+        setTimeout(() => {
+            hideMenu();
+            validateAndEnforce();
+        }, 220);
+    });
+
+    document.addEventListener('click', (e) => {
+        if (!e.target.closest('#dfBWrapper')) {
+            hideMenu();
+        }
+    });
+}
+
+// ─── COMBOBOX CONTROLLER FOR BASH (بەش) ─────────────────────────────
+let BASH_ITEMS = ['تایبەت', 'بار', 'کرێ', 'بیناسازی', 'ماتۆڕ', 'میری', 'کشتوکاڵی', 'ناوخۆ', 'هاتووچۆ', 'جۆری تر', 'باص', 'پاص', 'انشائی', 'تراکتۆر'];
+let lastValidBash = 'تایبەت';
+let activeBashIndex = -1;
+let openBashMenu = null;
+
+function setBashValue(val) {
+    const input = document.getElementById('dfC');
+    if (!input) return;
+    if (val && BASH_ITEMS.length > 0) {
+        const found = BASH_ITEMS.find(b => normKu(b) === normKu(val));
+        if (found) {
+            input.value = found;
+            lastValidBash = found;
+            return;
+        }
+    }
+    input.value = val || 'تایبەت';
+    lastValidBash = input.value;
+}
+
+function initBashCombobox(items) {
+    if (Array.isArray(items) && items.length > 0) {
+        BASH_ITEMS = items;
+    }
+    const input = document.getElementById('dfC');
+    const btn = document.getElementById('dfCBtn');
+    const menu = document.getElementById('dfCMenu');
+    if (!input || !menu) return;
+
+    function renderMenu(filterText = '', showAll = false) {
+        const query = normKu(filterText);
+        let matches = [];
+        if (showAll || !query) {
+            matches = BASH_ITEMS;
+        } else {
+            const startsWith = [];
+            const contains = [];
+            BASH_ITEMS.forEach(item => {
+                const n = normKu(item);
+                if (n.startsWith(query)) startsWith.push(item);
+                else if (n.includes(query)) contains.push(item);
+            });
+            matches = [...startsWith, ...contains];
+        }
+
+        if (matches.length === 0) {
+            menu.innerHTML = `<div class="df-combo-empty">⚠️ هیچ بەشێک بەم پیتانە نەدۆزرایەوە</div>`;
+            activeBashIndex = -1;
+        } else {
+            menu.innerHTML = matches.map((item, idx) => {
+                let textHtml = item;
+                if (query) {
+                    const regex = new RegExp(`(${query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
+                    textHtml = item.replace(regex, '<mark>$1</mark>');
+                }
+                return `<div class="df-combo-item" data-value="${item}" data-index="${idx}">${textHtml}</div>`;
+            }).join('');
+            activeBashIndex = matches.length > 0 ? 0 : -1;
+            updateActiveItem();
+        }
+        menu.style.display = 'block';
+    }
+
+    function hideMenu() {
+        menu.style.display = 'none';
+        activeBashIndex = -1;
+    }
+
+    openBashMenu = function() {
+        renderMenu(input.value, true);
+    };
+
+    function updateActiveItem() {
+        const items = menu.querySelectorAll('.df-combo-item');
+        items.forEach((it, idx) => {
+            if (idx === activeBashIndex) {
+                it.classList.add('active');
+                it.scrollIntoView({ block: 'nearest' });
+            } else {
+                it.classList.remove('active');
+            }
+        });
+    }
+
+    function selectBashItem(val) {
+        input.value = val;
+        lastValidBash = val;
+        hideMenu();
+        input.classList.remove('df-invalid-shake');
+
+        // Immediately focus Search button and trigger Search event!
+        const btnSearch = document.getElementById('dfBtnSearch') || document.querySelector('.df-btn-search');
+        if (btnSearch) {
+            btnSearch.focus();
+        }
+        dfSearchCar();
+    }
+
+    function validateAndEnforce() {
+        const currentVal = input.value.trim();
+        if (!currentVal) {
+            input.value = lastValidBash || 'تایبەت';
+            return;
+        }
+
+        const exactMatch = BASH_ITEMS.find(b => normKu(b) === normKu(currentVal));
+        if (exactMatch) {
+            input.value = exactMatch;
+            lastValidBash = exactMatch;
+            return;
+        }
+
+        const prefixMatches = BASH_ITEMS.filter(b => normKu(b).startsWith(normKu(currentVal)));
+        if (prefixMatches.length >= 1) {
+            input.value = prefixMatches[0];
+            lastValidBash = prefixMatches[0];
+            return;
+        }
+
+        lastValidBash = currentVal;
+    }
+
+    input.addEventListener('input', () => {
+        renderMenu(input.value, false);
+    });
+
+    input.addEventListener('focus', () => {
+        renderMenu(input.value, true);
+    });
+
+    if (btn) {
+        btn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            if (menu.style.display === 'block') {
+                hideMenu();
+            } else {
+                renderMenu('', true);
+                input.focus();
+            }
+        });
+    }
+
+    menu.addEventListener('mousedown', (e) => {
+        const target = e.target.closest('.df-combo-item');
+        if (target) {
+            const val = target.getAttribute('data-value');
+            selectBashItem(val);
+        }
+    });
+
+    input.addEventListener('keydown', (e) => {
+        if (menu.style.display === 'block') {
+            const items = menu.querySelectorAll('.df-combo-item');
+            if (e.key === 'ArrowDown') {
+                e.preventDefault();
+                if (items.length > 0) {
+                    activeBashIndex = (activeBashIndex + 1) % items.length;
+                    updateActiveItem();
+                }
+            } else if (e.key === 'ArrowUp') {
+                e.preventDefault();
+                if (items.length > 0) {
+                    activeBashIndex = (activeBashIndex - 1 + items.length) % items.length;
+                    updateActiveItem();
+                }
+            } else if (e.key === 'Enter') {
+                e.preventDefault();
+                if (activeBashIndex >= 0 && items[activeBashIndex]) {
+                    const val = items[activeBashIndex].getAttribute('data-value');
+                    selectBashItem(val);
+                } else {
+                    validateAndEnforce();
+                    hideMenu();
+                    const btnSearch = document.getElementById('dfBtnSearch') || document.querySelector('.df-btn-search');
+                    if (btnSearch) btnSearch.focus();
+                    dfSearchCar();
+                }
+            } else if (e.key === 'Tab') {
+                if (activeBashIndex >= 0 && items[activeBashIndex]) {
+                    const val = items[activeBashIndex].getAttribute('data-value');
+                    selectBashItem(val);
+                } else {
+                    validateAndEnforce();
+                    hideMenu();
+                    const btnSearch = document.getElementById('dfBtnSearch') || document.querySelector('.df-btn-search');
+                    if (btnSearch) btnSearch.focus();
+                    dfSearchCar();
+                }
+            } else if (e.key === 'Escape') {
+                hideMenu();
+            }
+        } else {
+            if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+                renderMenu(input.value, true);
+            } else if (e.key === 'Enter') {
+                e.preventDefault();
+                validateAndEnforce();
+                const btnSearch = document.getElementById('dfBtnSearch') || document.querySelector('.df-btn-search');
+                if (btnSearch) btnSearch.focus();
+                dfSearchCar();
+            }
+        }
+    });
+
+    input.addEventListener('blur', () => {
+        setTimeout(() => {
+            hideMenu();
+            validateAndEnforce();
+        }, 220);
+    });
+
+    document.addEventListener('click', (e) => {
+        if (!e.target.closest('#dfCWrapper')) {
+            hideMenu();
+        }
+    });
+}
+
+// ─── HIJZ RED ALERT CONTROLLERS ────────────────────────────────────
+function showHijzRedAlert(r) {
+    const mainWrap = document.querySelector('.df-container') || document.body;
+    mainWrap.classList.add('df-screen-hijz-red');
+
+    const regAlert = document.getElementById('regAlert');
+    const h = r.hijz || {};
+    const noteText = h.note ? `<div style="margin-top:8px;background:rgba(0,0,0,0.25);padding:8px 12px;border-radius:4px;"><strong>تێبینی / هۆکار:</strong> ${h.note}</div>` : '';
+    const dateText = h.date ? `<div><strong>بەرواری گلدانەوە:</strong> ${h.date}</div>` : '';
+    const officerText = (h.officer || h.user) ? `<div><strong>تۆمارکەر/بەرپرس:</strong> ${h.officer || h.user}</div>` : '';
+    const plateInfo = (h.plate || h.tablo || h.bash) ? `<div><strong>ئوتومبێل:</strong> ${h.plate || ''} ${h.tablo || ''} (${h.bash || ''})</div>` : '';
+    const chassisInfo = h.chassis ? `<div><strong>شاسی:</strong> <span style="font-family:monospace;letter-spacing:1px;">${h.chassis}</span></div>` : '';
+
+    if (regAlert) {
+        regAlert.innerHTML = `
+            <div class="df-hijz-banner" id="dfHijzActiveBanner">
+                <div class="df-hijz-banner-header">
+                    <div class="df-hijz-banner-title">
+                        <span>⛔</span>
+                        <span>ئاگاداری گلدانەوە (حیجز)</span>
+                    </div>
+                    <button type="button" onclick="clearHijzAlert()" style="background:rgba(255,255,255,0.25);border:1.5px solid #fff;color:#fff;border-radius:4px;padding:4px 12px;cursor:pointer;font-family:var(--ku);font-weight:800;font-size:13px;">لابردنی ڕەنگی سوور ✕</button>
+                </div>
+                <div class="df-hijz-banner-msg">
+                    ${r.message || 'ئەم ئوتومبێلە کاری بۆ ناکرێت لەبەر ئەوەی نیشانەی گلدانەوەی لەسەرە و پەیوەندی بکەن بە سەرپەرشتیاری هۆبەی پشکنین'}
+                </div>
+                <div class="df-hijz-banner-details">
+                    ${plateInfo}
+                    ${chassisInfo}
+                    ${dateText}
+                    ${officerText}
+                </div>
+                ${noteText}
+            </div>
+        `;
+        regAlert.scrollIntoView({ behavior: 'smooth', block: 'center' });
+    }
+
+    showToast('⛔ ئاگاداری: ئەم ئوتومبێلە نیشانەی گلدانەوەی لەسەرە و کاری بۆ ناکرێت!', true);
+
+    // Audio warning beep
+    try {
+        const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(440, audioCtx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(880, audioCtx.currentTime + 0.3);
+        gain.gain.setValueAtTime(0.3, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + 0.6);
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+        osc.start();
+        osc.stop(audioCtx.currentTime + 0.6);
+    } catch(e) {}
+}
+
+function clearHijzAlert() {
+    const mainWrap = document.querySelector('.df-container') || document.body;
+    mainWrap.classList.remove('df-screen-hijz-red');
+    const banner = document.getElementById('dfHijzActiveBanner');
+    if (banner) banner.remove();
+}
+
+// ─── LOAD LOOKUPS (COLORS, TABLO/PROVINCES, USERS, PLACES, BARADS, BASH) ────────────
 async function loadLookups() {
     try {
-        const [colors, tabloList, staff, barads] = await Promise.all([
+        initBashCombobox(); // Initialize immediately with default options
+
+        const [colors, tabloList, staff, barads, bashList] = await Promise.all([
             fetch('/api/colors').then(r=>r.json()).catch(()=>[]),
             fetch('/api/tablo').then(r=>r.json()).catch(()=>fetch('/api/provinces').then(r=>r.json()).catch(()=>[])),
             fetch('/api/staff-list').then(r=>r.json()).catch(()=>({users:[], places:[]})),
-            fetch('/api/barads').then(r=>r.json()).catch(()=>[])
+            fetch('/api/barads').then(r=>r.json()).catch(()=>[]),
+            fetch('/api/bash').then(r=>r.json()).catch(()=>[])
         ]);
 
         // 1. Populate Color Combobox (#dfL) and datalist (#colorList) from Tbl_Color
@@ -1894,7 +2804,10 @@ async function loadLookups() {
             colorList.innerHTML = colors.map(c => `<option value="${c}">`).join('');
         }
 
-        // 2. Populate Tablo / Plates (#tabloList and #provinceList) from Tbl_Tablo
+        // 2. Populate Tablo / Plates (#dfB combobox, #tabloList and #provinceList) from parz
+        if (Array.isArray(tabloList) && tabloList.length > 0) {
+            initTabloCombobox(tabloList);
+        }
         const tabloDatalist = document.getElementById('tabloList');
         if (tabloDatalist && Array.isArray(tabloList)) {
             tabloDatalist.innerHTML = tabloList.map(p => `<option value="${p}">`).join('');
@@ -1904,7 +2817,12 @@ async function loadLookups() {
             provList.innerHTML = tabloList.map(p => `<option value="${p}">`).join('');
         }
 
-        // 3. Staff users & places
+        // 3. Populate Bash Combobox (#dfC)
+        if (Array.isArray(bashList) && bashList.length > 0) {
+            initBashCombobox(bashList);
+        }
+
+        // 4. Staff users & places
         const userList = document.getElementById('userList');
         if (userList && staff.users) {
             userList.innerHTML = staff.users.map(u => `<option value="${u.User_id}">${u.User_Name ? u.User_Name : ''}</option>`).join('');
@@ -2041,6 +2959,7 @@ function openRegisterModal() {
 
 function dfResetNew() {
     loadedVehicleId = null;
+    clearHijzAlert();
     const setVal = (id, val) => {
         const el = document.getElementById(id);
         if (el) el.value = val;
@@ -2048,7 +2967,9 @@ function dfResetNew() {
 
     setVal('dfA', '');
     setVal('dfB', 'سلێمانی');
+    if (typeof setTabloValue === 'function') setTabloValue('سلێمانی');
     setVal('dfC', 'تایبەت');
+    if (typeof setBashValue === 'function') setBashValue('تایبەت');
     
     // Set inspection place based on logged in user and disable it
     const userPlace = (currentUser && (currentUser.place || currentUser.Place_)) ? (currentUser.place || currentUser.Place_) : 'عمر عوسمان';
@@ -2094,13 +3015,9 @@ function dfResetNew() {
     if (bReset) {
         bReset.value = '';
         delete bReset.dataset.autoGen;
-        bReset.disabled = true;
-        bReset.style.background = '#f1f5f9';
-        bReset.style.borderColor = '#cbd5e1';
-        bReset.style.color = '#94a3b8';
-        bReset.style.cursor = 'not-allowed';
-        bReset.placeholder = 'چاوەڕوانی شاسی...';
     }
+    renderLiveBarcode('TC00000000');
+    setPrintButtonState(false);
     const regAlert = document.getElementById('regAlert');
     if (regAlert) regAlert.innerHTML = '';
 }
@@ -2124,12 +3041,40 @@ async function dfSearchCar() {
 
         const res = await fetch('/api/register/find?' + params.toString());
         const r = await res.json();
+
+        // ─── CHECK HIJZ RESULT (SEIZURE DETECTED) ───
+        if (r && r.isHijz) {
+            loadedVehicleId = null;
+            dfResetNew();
+            // Completely empty all inputs as requested
+            const elA = document.getElementById('dfA');
+            if (elA) elA.value = '';
+            const elB = document.getElementById('dfB');
+            if (elB) elB.value = '';
+            const elC = document.getElementById('dfC');
+            if (elC) elC.value = '';
+            const elR = document.getElementById('dfR');
+            if (elR) elR.value = '';
+            const bReset = document.getElementById('dfBarcode');
+            if (bReset) bReset.value = '';
+            renderLiveBarcode('TC00000000');
+            setPrintButtonState(false);
+
+            // Turn screen red and show required warning message
+            showHijzRedAlert(r);
+            return;
+        }
+
+        // If not in Hijz, clear any active red alert
+        clearHijzAlert();
+
         if (!r) {
             // 100% exact match not found: clear all textboxes completely as requested
             loadedVehicleId = null;
             dfResetNew();
             const elA = document.getElementById('dfA');
             if (elA) elA.value = '';
+            setPrintButtonState(false);
 
             showToast('⚠️ بەم (ژمارەیە + پارێزگا + بەش) لە ١٠٠٪ نەدۆزرایەوە، هەموو خانەکان بەتاڵ کرانەوە', true);
             const regAlert = document.getElementById('regAlert');
@@ -2170,7 +3115,9 @@ async function dfSearchCar() {
 
         set('dfA', r.A || plate);
         set('dfB', r.B || tablo || 'سلێمانی');
+        if (typeof setTabloValue === 'function') setTabloValue(r.B || tablo || 'سلێمانی');
         set('dfC', r.C || bash || 'تایبەت');
+        if (typeof setBashValue === 'function') setBashValue(r.C || bash || 'تایبەت');
         set('dfTo', r.Place_ || r.To || 'هاتووچۆی پارێزگای سلێمانی');
         set('dfE', r.E || '');
         set('dfF', r.F || '*');
@@ -2188,25 +3135,34 @@ async function dfSearchCar() {
         set('dfR', r.R || '');
         updateKeyLength();
         
-        // Handle Barcode
+        // Handle Barcode (NEVER take from VA, strictly <= 10 chars, unique)
         const bEl = document.getElementById('dfBarcode');
-        if (bEl) {
-            const code = r.Barcod || r.KK || (r.R ? generateUniqueBarcode() : '');
-            bEl.value = code;
-            if (code) {
-                bEl.disabled = false;
-                bEl.style.background = '#ffffff';
-                bEl.style.borderColor = '#2563eb';
-                bEl.style.color = '#1e3a8a';
-                bEl.style.cursor = 'text';
-            } else {
-                bEl.disabled = true;
-                bEl.style.background = '#f1f5f9';
-                bEl.style.borderColor = '#cbd5e1';
-                bEl.style.color = '#94a3b8';
-                bEl.style.cursor = 'not-allowed';
-                bEl.placeholder = 'چاوەڕوانی شاسی...';
+        if (r.source === 'Taqega') {
+            let code = generateUniqueBarcode();
+            try {
+                const bRes = await fetch('/api/barcode/generate');
+                if (bRes.ok) {
+                    const bData = await bRes.json();
+                    if (bData && bData.barcode) code = bData.barcode;
+                }
+            } catch(e) {}
+            if (bEl) {
+                bEl.value = code.substring(0, 10);
+                bEl.dataset.autoGen = 'true';
             }
+            renderLiveBarcode(code);
+            // Loaded from lab (VA), not yet registered in T1 -> disabled print
+            setPrintButtonState(false);
+        } else {
+            const code = (r.KK || (r.R ? generateUniqueBarcode() : 'TC00000000')).substring(0, 10);
+            if (bEl) {
+                bEl.value = code;
+                bEl.dataset.autoGen = 'false';
+            }
+            renderLiveBarcode(code);
+            // Enable print ONLY if registered today
+            const isToday = r.DD && (new Date(r.DD).toDateString() === new Date().toDateString());
+            setPrintButtonState(isToday);
         }
         
         set('dfS', r.S || 0);
@@ -2235,6 +3191,7 @@ async function dfSearchCar() {
     } catch(err) {
         console.error('Search error:', err);
         showToast('⚠️ کێشەی پەیوەندی بە سێرڤەر', true);
+        setPrintButtonState(false);
     }
 }
 
@@ -2245,6 +3202,18 @@ async function dfSaveVehicle() {
         return;
     }
 
+    // Strict validation against parz table
+    if (payload.B && PARZ_ITEMS.length > 0 && !PARZ_ITEMS.includes(payload.B)) {
+        showToast(`⚠️ تابلۆی "${payload.B}" لە لیستی فەرمی (parz) نییە و قبوڵ ناکرێت!`, true);
+        const bInput = document.getElementById('dfB');
+        if (bInput) {
+            bInput.classList.add('df-invalid-shake');
+            bInput.focus();
+            setTimeout(() => bInput.classList.remove('df-invalid-shake'), 600);
+        }
+        return;
+    }
+
     try {
         const res = await fetch('/api/register', {
             method: 'POST',
@@ -2252,7 +3221,19 @@ async function dfSaveVehicle() {
             body: JSON.stringify(payload)
         });
         const data = await res.json();
-        if (data.success) {
+        if (res.ok && data.success) {
+            loadedVehicleId = data.id || loadedVehicleId;
+            if (data.barcode) {
+                const bEl = document.getElementById('dfBarcode');
+                if (bEl) {
+                    bEl.value = data.barcode.substring(0, 10);
+                    bEl.dataset.autoGen = 'false';
+                }
+                renderLiveBarcode(data.barcode.substring(0, 10));
+            }
+            // Enable print button now that data is successfully saved in database!
+            setPrintButtonState(true);
+
             showToast('✅ ' + data.message);
             if (data.warnings && data.warnings.length > 0) {
                 document.getElementById('regAlert').innerHTML = `
@@ -2260,7 +3241,7 @@ async function dfSaveVehicle() {
                 `;
             } else {
                 document.getElementById('regAlert').innerHTML = `
-                    <div class="alert-box alert-success">✅ ئوتومبێل بە سەرکەوتوویی تۆمارکرا</div>
+                    <div class="alert-box alert-success">✅ ئوتومبێل بە سەرکەوتوویی تۆمارکرا (بارکۆد: ${data.barcode || ''})</div>
                 `;
             }
             loadStats();
@@ -2273,12 +3254,17 @@ async function dfSaveVehicle() {
                 }, 300);
             }
         } else {
+            setPrintButtonState(false);
+            const errMsg = data.message || data.error || 'هەڵە لە کاتی تۆمارکردن';
+            showToast('⚠️ ' + errMsg, true);
             document.getElementById('regAlert').innerHTML = `
-                <div class="alert-box alert-danger">⚠️ ${data.message || 'هەڵە'}</div>
+                <div class="alert-box alert-danger">⚠️ ${errMsg}</div>
             `;
         }
     } catch(err) {
-        alert('کێشەی پەیوەندی بە سێرڤەر');
+        setPrintButtonState(false);
+        console.error('Save error:', err);
+        showToast('⚠️ کێشەی پەیوەندی بە سێرڤەر', true);
     }
 }
 
@@ -2288,6 +3274,19 @@ async function dfUpdateVehicle() {
         return;
     }
     const payload = getFormPayload();
+
+    // Strict validation against parz table
+    if (payload.B && PARZ_ITEMS.length > 0 && !PARZ_ITEMS.includes(payload.B)) {
+        showToast(`⚠️ تابلۆی "${payload.B}" لە لیستی فەرمی (parz) نییە و قبوڵ ناکرێت!`, true);
+        const bInput = document.getElementById('dfB');
+        if (bInput) {
+            bInput.classList.add('df-invalid-shake');
+            bInput.focus();
+            setTimeout(() => bInput.classList.remove('df-invalid-shake'), 600);
+        }
+        return;
+    }
+
     try {
         const res = await fetch('/api/register/' + loadedVehicleId, {
             method: 'PUT',
@@ -2295,15 +3294,19 @@ async function dfUpdateVehicle() {
             body: JSON.stringify(payload)
         });
         const data = await res.json();
-        if (data.success) {
+        if (res.ok && data.success) {
+            setPrintButtonState(true);
             showToast('✅ ' + data.message);
             document.getElementById('regAlert').innerHTML = `
                 <div class="alert-box alert-success">✅ زانیاری ئوتومبێل (ID: ${loadedVehicleId}) بە سەرکەوتوویی نوێکرایەوە</div>
             `;
         } else {
+            setPrintButtonState(false);
+            showToast('⚠️ ' + (data.error || 'نەتوانرا نوێ بکرێتەوە'), true);
             alert('هەڵە: ' + (data.error || 'نەتوانرا نوێ بکرێتەوە'));
         }
     } catch(err) {
+        setPrintButtonState(false);
         alert('کێشەی پەیوەندی بە سێرڤەر');
     }
 }
@@ -2357,7 +3360,7 @@ function getFormPayload() {
     };
 }
 
-function generateCode128SVG(text) {
+function generateCode128SVG(text, height = 26) {
     if (!text) text = 'TC00000000';
     const code128Patterns = [
         '212222','222122','222221','121223','121322','131222','122213','122312','132212','221213',
@@ -2389,21 +3392,56 @@ function generateCode128SVG(text) {
         for (let j = 0; j < pat.length; j++) {
             let w = parseInt(pat[j]);
             if (j % 2 === 0) {
-                bars += '<rect x="' + x + '" y="0" width="' + w + '" height="26" fill="#000"/>';
+                bars += '<rect x="' + x + '" y="0" width="' + w + '" height="' + height + '" fill="#000000"/>';
             }
             x += w;
         }
     }
-    return '<svg width="' + (x + 8) + '" height="28" viewBox="-4 0 ' + (x + 8) + ' 28" xmlns="http://www.w3.org/2000/svg">' + bars + '</svg>';
+    const totalW = x + 24;
+    return '<svg width="' + totalW + '" height="' + height + '" viewBox="-12 0 ' + totalW + ' ' + height + '" xmlns="http://www.w3.org/2000/svg" style="display:block;margin:auto;"><rect x="-12" y="0" width="' + totalW + '" height="' + height + '" fill="#ffffff"/>' + bars + '</svg>';
 }
 
-function dfPrintInspection() {
-    const p = getFormPayload();
-    const barcodeCode = p.Barcode || p.KK || (p.R ? ('TC' + (p.R.length >= 6 ? p.R.slice(-6) : p.R)) : 'TC00000000');
+async function dfPrintInspection() {
+    const pForm = getFormPayload();
+    const plate = (pForm.A || '').trim();
+    const tablo = (pForm.B || '').trim();
+    const bash = (pForm.C || '').trim();
+
+    if (!plate) {
+        showToast('⚠️ تکایە سەرەتا ژمارەی ئوتومبێل بنووسە و تۆماری بکە پێش چاپکردن', true);
+        return;
+    }
+
+    // Verify strictly against database query: plate + tablo + bash + today's date
+    let rData = pForm;
+    try {
+        const queryUrl = `/api/register/print-record?plate=${encodeURIComponent(plate)}&tablo=${encodeURIComponent(tablo)}&bash=${encodeURIComponent(bash)}`;
+        const res = await fetch(queryUrl);
+        const data = await res.json();
+
+        if (!res.ok || !data.found || !data.record) {
+            setPrintButtonState(false);
+            const msg = data.message || '⚠️ ئەم ئوتومبێلە ئەمڕۆ خەزن نەکراوە! تەنها ئەو زانیارییانە چاپ دەکرێن کە ئەمڕۆ تۆمار کراون.';
+            showToast(msg, true);
+            const regAlert = document.getElementById('regAlert');
+            if (regAlert) {
+                regAlert.innerHTML = `<div class="alert-box alert-danger">⚠️ ${msg}</div>`;
+            }
+            return;
+        }
+        rData = data.record;
+    } catch(err) {
+        console.error('Print query error:', err);
+        showToast('⚠️ کێشەی پەیوەندی لە کاتی هێنانی داتای چاپی ئەمڕۆ', true);
+        return;
+    }
+
+    const p = rData;
+    const barcodeCode = (p.KK || p.Barcode || (p.R ? ('TC' + (p.R.length >= 6 ? p.R.slice(-6) : p.R)) : 'TC00000000')).substring(0, 10);
     const barcodeSvg = generateCode128SVG(barcodeCode);
     const now = new Date();
     const timeStr = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
-    const dateStr = p.DD || now.toISOString().slice(0, 10);
+    const dateStr = p.DD ? new Date(p.DD).toISOString().slice(0, 10) : now.toISOString().slice(0, 10);
     const toDirectorate = p.To || p.D || 'هاتووچۆی پارێزگای سلێمانی';
     const placeName = p.D || (currentUser && (currentUser.place || currentUser.Place_)) || 'عمر عوسمان';
     const userName = p.GG || currentUser?.name || currentUser?.username || '';

@@ -185,12 +185,17 @@ app.get('/api/colors', requireAuth, async (req, res) => {
     }
 });
 
-// ─── GET TABLO / PLATES LIST (Tbl_Tablo) ─────────────────────────────
+// ─── GET TABLO / PLATES LIST (parz) ──────────────────────────────────
 app.get('/api/tablo', requireAuth, async (req, res) => {
     try {
         const pool = await getPool();
-        const result = await pool.request().query(`SELECT Tablo_Name FROM Tbl_Tablo ORDER BY id`);
-        res.json(result.recordset.map(r => r.Tablo_Name));
+        const result = await pool.request().query(`
+            SELECT DISTINCT LTRIM(RTRIM(par)) as par 
+            FROM parz 
+            WHERE par IS NOT NULL AND LEN(LTRIM(RTRIM(par))) > 0 
+            ORDER BY par
+        `);
+        res.json(result.recordset.map(r => r.par));
     } catch (err) {
         res.status(500).json({ error: err.message });
     }
@@ -200,16 +205,34 @@ app.get('/api/tablo', requireAuth, async (req, res) => {
 app.get('/api/provinces', requireAuth, async (req, res) => {
     try {
         const pool = await getPool();
-        const result = await pool.request().query(`SELECT Tablo_Name as par FROM Tbl_Tablo ORDER BY id`);
+        const result = await pool.request().query(`
+            SELECT DISTINCT LTRIM(RTRIM(par)) as par 
+            FROM parz 
+            WHERE par IS NOT NULL AND LEN(LTRIM(RTRIM(par))) > 0 
+            ORDER BY par
+        `);
         res.json(result.recordset.map(r => r.par));
     } catch (err) {
-        try {
-            const pool = await getPool();
-            const result = await pool.request().query(`SELECT par FROM parz ORDER BY par`);
-            res.json(result.recordset.map(r => r.par));
-        } catch (e2) {
-            res.status(500).json({ error: err.message });
-        }
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// ─── GET BASH / DEPARTMENTS LIST ─────────────────────────────────────
+app.get('/api/bash', requireAuth, async (req, res) => {
+    try {
+        const pool = await getPool();
+        const result = await pool.request().query(`
+            SELECT DISTINCT LTRIM(RTRIM(C)) as bash 
+            FROM T1 
+            WHERE C IS NOT NULL AND LEN(LTRIM(RTRIM(C))) > 0 
+            ORDER BY bash
+        `);
+        const dbItems = result.recordset.map(r => r.bash);
+        const defaults = ['تایبەت', 'بار', 'کرێ', 'بیناسازی', 'ماتۆڕ', 'میری', 'کشتوکاڵی', 'ناوخۆ', 'هاتووچۆ', 'جۆری تر', 'باص', 'پاص', 'انشائی', 'تراکتۆر'];
+        const all = Array.from(new Set([...defaults, ...dbItems]));
+        res.json(all);
+    } catch (err) {
+        res.status(500).json({ error: err.message });
     }
 });
 
@@ -383,21 +406,243 @@ app.delete('/api/hijz/:id', requireAuth, async (req, res) => {
     }
 });
 
+// ─── UNIQUE BARCODE GENERATOR (STRICT <= 10 CHARS & NO COLLISION) ─────
+async function generateUniqueBarcode(pool) {
+    const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+    let attempts = 0;
+    while (attempts < 60) {
+        attempts++;
+        let randomStr = '';
+        for (let i = 0; i < 8; i++) {
+            randomStr += chars.charAt(Math.floor(Math.random() * chars.length));
+        }
+        const candidate = 'TC' + randomStr; // Exactly 10 characters!
+        const check = await pool.request()
+            .input('bc', sql.NVarChar, candidate)
+            .query(`SELECT TOP 1 id FROM T1 WHERE KK = @bc`);
+        if (check.recordset.length === 0) {
+            return candidate;
+        }
+    }
+    const digits = String(Date.now()).slice(-8);
+    return 'TC' + digits;
+}
+
+// ─── GET FRESH UNIQUE BARCODE ENDPOINT ────────────────────────────────
+app.get('/api/barcode/generate', requireAuth, async (req, res) => {
+    try {
+        const pool = await getPool();
+        const barcode = await generateUniqueBarcode(pool);
+        res.json({ barcode });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// ─── PRINT RECORD QUERY (STRICT: PLATE + BASH + TABLO + TODAY'S DATE) ─
+app.get('/api/register/print-record', requireAuth, async (req, res) => {
+    try {
+        const { plate, tablo, bash } = req.query;
+        if (!plate || !tablo || !bash) {
+            return res.status(400).json({ error: 'ژمارەی ئۆتۆمبێل، تابلۆ و بەش داواکراوە' });
+        }
+        const pool = await getPool();
+        const cleanPlate = plate.trim();
+        const cleanTablo = tablo.trim();
+        const cleanBash = bash.trim();
+        const normTablo = cleanTablo.replace(/ى/g, 'ی').replace(/ك/g, 'ک');
+        const normBash = cleanBash.replace(/ى/g, 'ی').replace(/ك/g, 'ک');
+
+        // STRICT TODAY'S DATE FILTER: ( ژمارەی ئوتومبێل + بەش + تابلۆ یان پارێزگا + بەرواری ئەمڕۆ )
+        const query = `
+            SELECT TOP 1 * FROM T1 
+            WHERE (A = @plate OR REPLACE(A, ' ', '') = @plate)
+              AND (B = @tablo OR REPLACE(B, N'ى', N'ی') = @normTablo)
+              AND (C = @bash OR REPLACE(C, N'ى', N'ی') = @normBash)
+              AND CAST(DD as date) = CAST(GETDATE() as date)
+            ORDER BY id DESC
+        `;
+        const result = await pool.request()
+            .input('plate', sql.NVarChar, cleanPlate)
+            .input('tablo', sql.NVarChar, cleanTablo)
+            .input('normTablo', sql.NVarChar, normTablo)
+            .input('bash', sql.NVarChar, cleanBash)
+            .input('normBash', sql.NVarChar, normBash)
+            .query(query);
+
+        if (result.recordset.length === 0) {
+            return res.status(404).json({ 
+                error: 'ئەم ئوتومبێلە بەرواری ئەمڕۆی خەزن نەکراوە لە سیستەمدا! ناتوانرێت فۆڕمی بەتاڵ، تۆمارنەکراو یاخود ڕۆژانی تر چاپ بکرێت.' 
+            });
+        }
+
+        res.json(result.recordset[0]);
+    } catch(err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// ─── ADMIN DELETE VEHICLE (T1) ───────────────────────────────────────
+app.delete('/api/register/:id', requireAuth, async (req, res) => {
+    try {
+        const user = req.session.user;
+        const perm = (user.permission || '').toUpperCase();
+        if (perm !== 'ADMIN' && perm !== 'MANAGER' && user.username !== '9') {
+            return res.status(403).json({ success: false, message: 'تەنها ئەدمین بۆی هەیە تۆمارەکان بسڕێتەوە!' });
+        }
+
+        const pool = await getPool();
+        const result = await pool.request()
+            .input('id', sql.Int, req.params.id)
+            .query(`DELETE FROM T1 WHERE id = @id`);
+
+        res.json({ success: true, message: `تۆمارەکە لە لایەن ئەدمینەوە بە سەرکەوتوویی سڕایەوە (ID: ${req.params.id})` });
+    } catch(err) {
+        res.status(500).json({ success: false, error: err.message });
+    }
+});
+
 // ─── FIND VEHICLE FOR REGISTRATION FORM (TAQEGA & T1) ────────────────
 app.get('/api/register/find', requireAuth, async (req, res) => {
     try {
-        const { plate, tablo, bash, chassis } = req.query;
-        if (!plate && !chassis) return res.json(null);
+        const { plate, tablo, bash, chassis, barcode } = req.query;
+        if (!plate && !chassis && !barcode) return res.json(null);
 
         const pool = await getPool();
+        const cleanPlate = (plate || '').trim();
+        const cleanTablo = (tablo || '').trim();
+        const cleanBash = (bash || '').trim();
+        const cleanChassis = (chassis || '').trim().toUpperCase();
+        const cleanBarcode = (barcode || '').trim().toUpperCase();
 
-        // 1. FIRST PRIORITY: SEARCH IN [Taqega].[dbo].[VA]
-        // 1. SEARCH BY VEHICLE (PLATE + PROVINCE + BASH) - 100% STRICT EXACT MATCH
-        if (plate && plate.trim()) {
-            const cleanPlate = plate.trim();
-            const cleanTablo = (tablo || '').trim();
-            const cleanBash = (bash || '').trim();
+        // ─── 0. MANDATORY EARLY HIJZ PRE-CHECK (CHECK BEFORE VA & T1 TO MINIMIZE SERVER LOAD) ───
+        // Check Condition 1: By (Plate + Tablo/Province + Bash)
+        // Check Condition 2: By Chassis (Reg_Name = chassis)
+        if ((cleanPlate && cleanTablo && cleanBash) || cleanChassis) {
+            let hijzQuery = `SELECT TOP 1 idd, Auto_No, Place_, Car_Plet, Date_Releasing, Reg_Name, car_Note, UUser, B FROM Hijz WHERE 1=0 `;
+            const hijzReq = pool.request();
 
+            if (cleanPlate && cleanTablo && cleanBash) {
+                hijzReq.input('hPlate', sql.NVarChar, cleanPlate);
+                hijzReq.input('hTablo', sql.NVarChar, cleanTablo);
+                const normTablo = cleanTablo.replace(/ى/g, 'ی').replace(/ك/g, 'ک');
+                hijzReq.input('normTablo', sql.NVarChar, normTablo);
+
+                hijzReq.input('hBash', sql.NVarChar, cleanBash);
+                const normBash = cleanBash.replace(/ى/g, 'ی').replace(/ك/g, 'ک');
+                hijzReq.input('normBash', sql.NVarChar, normBash);
+
+                hijzQuery += ` OR (
+                    (Auto_No = @hPlate OR REPLACE(Auto_No, ' ', '') = @hPlate)
+                    AND (Place_ = @hTablo OR REPLACE(Place_, N'ى', N'ی') = @normTablo)
+                    AND (Car_Plet = @hBash OR REPLACE(Car_Plet, N'ى', N'ی') = @normBash)
+                )`;
+            }
+
+            if (cleanChassis) {
+                hijzReq.input('hChassis', sql.NVarChar, cleanChassis);
+                hijzQuery += ` OR (Reg_Name = @hChassis OR REPLACE(Reg_Name, ' ', '') = @hChassis)`;
+            }
+
+            hijzQuery += ` ORDER BY idd DESC`;
+
+            const hijzRes = await hijzReq.query(hijzQuery);
+            if (hijzRes.recordset.length > 0) {
+                const h = hijzRes.recordset[0];
+                return res.json({
+                    isHijz: true,
+                    message: 'ئەم ئوتومبێلە کاری بۆ ناکرێت لەبەر ئەوەی نیشانەی گلدانەوەی لەسەرە و پەیوەندی بکەن بە سەرپەرشتیاری هۆبەی پشکنین',
+                    hijz: {
+                        idd: h.idd,
+                        plate: h.Auto_No,
+                        tablo: h.Place_,
+                        bash: h.Car_Plet,
+                        chassis: h.Reg_Name,
+                        date: h.Date_Releasing,
+                        note: h.car_Note,
+                        officer: h.B,
+                        user: h.UUser
+                    }
+                });
+            }
+        }
+
+        // 1. SEARCH BY BARCODE (FOR BARCODE READERS & SCANNERS)
+        if (cleanBarcode) {
+            const bRes = await pool.request()
+                .input('bc', sql.NVarChar, cleanBarcode)
+                .query(`SELECT TOP 1 * FROM T1 WHERE KK = @bc OR R = @bc ORDER BY id DESC`);
+            if (bRes.recordset.length > 0) {
+                const r = bRes.recordset[0];
+                
+                // Double check if this vehicle/chassis is in Hijz
+                const ch = (r.R || '').trim().toUpperCase();
+                if (ch) {
+                    const hCheck = await pool.request().input('rch', sql.NVarChar, ch).query(`SELECT TOP 1 * FROM Hijz WHERE Reg_Name = @rch`);
+                    if (hCheck.recordset.length > 0) {
+                        const h = hCheck.recordset[0];
+                        return res.json({
+                            isHijz: true,
+                            message: 'ئەم ئوتومبێلە کاری بۆ ناکرێت لەبەر ئەوەی نیشانەی گلدانەوەی لەسەرە و پەیوەندی بکەن بە سەرپەرشتیاری هۆبەی پشکنین',
+                            hijz: {
+                                idd: h.idd,
+                                plate: h.Auto_No,
+                                tablo: h.Place_,
+                                bash: h.Car_Plet,
+                                chassis: h.Reg_Name,
+                                date: h.Date_Releasing,
+                                note: h.car_Note,
+                                officer: h.B,
+                                user: h.UUser
+                            }
+                        });
+                    }
+                }
+
+                return res.json({
+                    source: 'T1',
+                    id: r.id,
+                    A: r.A || '',
+                    B: r.B || 'سلێمانی',
+                    C: r.C || 'تایبەت',
+                    D: r.D || '',
+                    E: r.E || '',
+                    F: r.F || '*',
+                    G: (r.G || '').trim(),
+                    H: (r.H || '').trim() || 'تۆماری یەکەم جار',
+                    I: (r.I || '').trim(),
+                    J: (r.J || '').trim() || 'صالون',
+                    K: (r.K || '').trim() || 'بەنزین',
+                    L: (r.L || '').trim(),
+                    M: (r.M || '').trim() || 'ئۆتۆماتیک',
+                    N: r.N || 0,
+                    O: r.O || 0,
+                    P: r.P || 0,
+                    Q: r.Q || 0,
+                    R: (r.R || '').trim().toUpperCase(),
+                    S: r.S || 0,
+                    T: (r.T || '').trim() || 0,
+                    U: (r.U || '').trim(),
+                    V: (r.V || '').trim(),
+                    W: r.W || '*',
+                    X: r.X || '',
+                    Y: r.Y || 0,
+                    Z: r.Z || '',
+                    AA: r.AA || '*',
+                    BB: r.BB || '',
+                    CC: r.CC || 0,
+                    II: r.II || 0,
+                    JJ: r.JJ || 0,
+                    DD: r.DD ? new Date(r.DD).toISOString().slice(0, 10) : new Date().toISOString().slice(0, 10),
+                    KK: r.KK || cleanBarcode,
+                    Barcod: r.KK || cleanBarcode,
+                    resulat: ''
+                });
+            }
+        }
+
+        // 2. SEARCH BY VEHICLE (PLATE + PROVINCE + BASH) - 100% STRICT EXACT MATCH
+        if (cleanPlate) {
             // A. Search in [Taqega].[dbo].[VA]
             const reqVa = pool.request().input('plate', sql.NVarChar, cleanPlate);
             let vaQuery = `
@@ -424,6 +669,31 @@ app.get('/api/register/find', requireAuth, async (req, res) => {
 
             if (vaResult.recordset.length > 0) {
                 const r = vaResult.recordset[0];
+                const foundChassis = (r.shassy || '').trim().toUpperCase();
+
+                // Check if found vehicle's chassis is in Hijz
+                if (foundChassis) {
+                    const hCheck = await pool.request().input('vch', sql.NVarChar, foundChassis).query(`SELECT TOP 1 * FROM Hijz WHERE Reg_Name = @vch`);
+                    if (hCheck.recordset.length > 0) {
+                        const h = hCheck.recordset[0];
+                        return res.json({
+                            isHijz: true,
+                            message: 'ئەم ئوتومبێلە کاری بۆ ناکرێت لەبەر ئەوەی نیشانەی گلدانەوەی لەسەرە و پەیوەندی بکەن بە سەرپەرشتیاری هۆبەی پشکنین',
+                            hijz: {
+                                idd: h.idd,
+                                plate: h.Auto_No,
+                                tablo: h.Place_,
+                                bash: h.Car_Plet,
+                                chassis: h.Reg_Name,
+                                date: h.Date_Releasing,
+                                note: h.car_Note,
+                                officer: h.B,
+                                user: h.UUser
+                            }
+                        });
+                    }
+                }
+
                 return res.json({
                     source: 'Taqega',
                     id: r.id,
@@ -444,7 +714,7 @@ app.get('/api/register/find', requireAuth, async (req, res) => {
                     O: r.celender || 0,
                     P: r.Model || 0,
                     Q: 5,
-                    R: (r.shassy || '').trim().toUpperCase(),
+                    R: foundChassis,
                     S: 0,
                     T: (r.mobile || '').trim() || 0,
                     U: (r.NNote_ || '').trim(),
@@ -460,8 +730,7 @@ app.get('/api/register/find', requireAuth, async (req, res) => {
                     JJ: 0,
                     DD: r.Date_ ? new Date(r.Date_).toISOString().slice(0, 10) : new Date().toISOString().slice(0, 10),
                     resulat: r.resulat || '',
-                    Psulla: r.Psulla || '',
-                    Barcod: r.Barcod || ''
+                    Psulla: r.Psulla || ''
                 });
             }
 
@@ -485,6 +754,31 @@ app.get('/api/register/find', requireAuth, async (req, res) => {
             const t1Result = await reqT1.query(t1Query);
             if (t1Result.recordset.length > 0) {
                 const row = t1Result.recordset[0];
+                const foundChassis = (row.R || '').trim().toUpperCase();
+
+                // Check if found vehicle's chassis is in Hijz
+                if (foundChassis) {
+                    const hCheck = await pool.request().input('t1ch', sql.NVarChar, foundChassis).query(`SELECT TOP 1 * FROM Hijz WHERE Reg_Name = @t1ch`);
+                    if (hCheck.recordset.length > 0) {
+                        const h = hCheck.recordset[0];
+                        return res.json({
+                            isHijz: true,
+                            message: 'ئەم ئوتومبێلە کاری بۆ ناکرێت لەبەر ئەوەی نیشانەی گلدانەوەی لەسەرە و پەیوەندی بکەن بە سەرپەرشتیاری هۆبەی پشکنین',
+                            hijz: {
+                                idd: h.idd,
+                                plate: h.Auto_No,
+                                tablo: h.Place_,
+                                bash: h.Car_Plet,
+                                chassis: h.Reg_Name,
+                                date: h.Date_Releasing,
+                                note: h.car_Note,
+                                officer: h.B,
+                                user: h.UUser
+                            }
+                        });
+                    }
+                }
+
                 row.source = 'T1';
                 return res.json(row);
             }
@@ -493,9 +787,8 @@ app.get('/api/register/find', requireAuth, async (req, res) => {
             return res.json(null);
         }
 
-        // 2. SEARCH BY CHASSIS (ONLY WHEN NO PLATE WAS ENTERED)
-        if (chassis && chassis.trim()) {
-            const cleanChassis = chassis.trim().toUpperCase();
+        // 3. SEARCH BY CHASSIS (ONLY WHEN NO PLATE WAS ENTERED)
+        if (cleanChassis) {
             const chRes = await pool.request()
                 .input('chassis', sql.NVarChar, cleanChassis)
                 .query(`SELECT TOP 1 * FROM [Taqega].[dbo].[VA] WHERE shassy = @chassis ORDER BY id DESC`);
@@ -573,18 +866,89 @@ app.post('/api/register', requireAuth, async (req, res) => {
         const pool = await getPool();
         const user = req.session.user.name || req.session.user.username;
 
-        // Check if chassis exists in Hijz
-        let warnings = [];
-        if (R && R.trim()) {
-            const chCheck = await pool.request()
-                .input('ch', sql.NVarChar, R.trim().toUpperCase())
-                .query(`SELECT TOP 1 * FROM Hijz WHERE Reg_Name = @ch`);
-            if (chCheck.recordset.length > 0) {
-                warnings.push(`ئاگاداری: ئەم شاسییە (${R}) لە لیستی حیجز تۆمارکراوە!`);
+        // ─── STRICT HIJZ BLOCK ON REGISTRATION ───
+        const cleanA = (A || '').trim();
+        const cleanB = (B || '').trim();
+        const cleanC = (C || '').trim();
+        const cleanR = (R || '').trim().toUpperCase();
+
+        if ((cleanA && cleanB && cleanC) || cleanR) {
+            let hq = `SELECT TOP 1 idd, Auto_No, Place_, Car_Plet, Reg_Name, car_Note, B FROM Hijz WHERE 1=0 `;
+            const hReq = pool.request();
+            if (cleanA && cleanB && cleanC) {
+                hReq.input('hA', sql.NVarChar, cleanA);
+                hReq.input('hB', sql.NVarChar, cleanB);
+                hReq.input('normB', sql.NVarChar, cleanB.replace(/ى/g, 'ی').replace(/ك/g, 'ک'));
+                hReq.input('hC', sql.NVarChar, cleanC);
+                hReq.input('normC', sql.NVarChar, cleanC.replace(/ى/g, 'ی').replace(/ك/g, 'ک'));
+                hq += ` OR ((Auto_No = @hA OR REPLACE(Auto_No, ' ', '') = @hA) AND (Place_ = @hB OR REPLACE(Place_, N'ى', N'ی') = @normB) AND (Car_Plet = @hC OR REPLACE(Car_Plet, N'ى', N'ی') = @normC))`;
+            }
+            if (cleanR) {
+                hReq.input('hR', sql.NVarChar, cleanR);
+                hq += ` OR (Reg_Name = @hR OR REPLACE(Reg_Name, ' ', '') = @hR)`;
+            }
+            const hRes = await hReq.query(hq);
+            if (hRes.recordset.length > 0) {
+                return res.status(403).json({
+                    success: false,
+                    isHijz: true,
+                    message: 'ئەم ئوتومبێلە کاری بۆ ناکرێت لەبەر ئەوەی نیشانەی گلدانەوەی لەسەرە و پەیوەندی بکەن بە سەرپەرشتیاری هۆبەی پشکنین'
+                });
             }
         }
 
-        await pool.request()
+        // ─── STRICT DUPLICATE PREVENTION: (A + B + C) CAN ONLY BE ENTERED ONCE ───
+        if (cleanA && cleanB && cleanC) {
+            const dupCheck = await pool.request()
+                .input('dA', sql.NVarChar, cleanA)
+                .input('dB', sql.NVarChar, cleanB)
+                .input('normB', sql.NVarChar, cleanB.replace(/ى/g, 'ی').replace(/ك/g, 'ک'))
+                .input('dC', sql.NVarChar, cleanC)
+                .input('normC', sql.NVarChar, cleanC.replace(/ى/g, 'ی').replace(/ك/g, 'ک'))
+                .query(`
+                    SELECT TOP 1 id, A, B, C, R, DD, FF FROM T1 
+                    WHERE (A = @dA OR REPLACE(A, ' ', '') = @dA)
+                      AND (B = @dB OR REPLACE(B, N'ى', N'ی') = @normB)
+                      AND (C = @dC OR REPLACE(C, N'ى', N'ی') = @normC)
+                    ORDER BY id DESC
+                `);
+            
+            if (dupCheck.recordset.length > 0) {
+                const existing = dupCheck.recordset[0];
+                const dateStr = existing.DD ? new Date(existing.DD).toISOString().slice(0, 10) : '';
+                return res.status(409).json({
+                    success: false,
+                    isDuplicate: true,
+                    message: `⚠️ ئەم ئوتومبێلە پێشتر تۆمارکراوە بەم زانیارییانە (ژمارە: ${existing.A} - تابلۆ: ${existing.B} - بەش: ${existing.C}) لە بەرواری (${dateStr}) لە لایەن (${existing.FF || '-'}). هەموو ڕیکۆردێک تەنها یەکجار داخل دەکرێت و دووبارە قبوڵ ناکرێتەوە! لە کاتی پێویست دەبێت ئەدمین بیسڕێتەوە.`
+                });
+            }
+        }
+
+        // Validate that B belongs to parz table
+        if (B && B.trim()) {
+            const parzCheck = await pool.request()
+                .input('pName', sql.NVarChar, B.trim())
+                .query(`SELECT TOP 1 par FROM parz WHERE LTRIM(RTRIM(par)) = @pName`);
+            if (parzCheck.recordset.length === 0) {
+                return res.status(400).json({ 
+                    success: false, 
+                    message: `تابلۆی دیاریکراو (${B}) لە لیستی فەرمی (parz) نییە و ڕێگەپێدراو نییە.` 
+                });
+            }
+        }
+
+        // ─── UNIQUE BARCODE <= 10 CHARACTERS GUARANTEE ───
+        let finalBarcode = (KK || Barcode || '').trim().toUpperCase();
+        if (!finalBarcode || finalBarcode.length > 10 || finalBarcode === 'TC00000000') {
+            finalBarcode = await generateUniqueBarcode(pool);
+        } else {
+            const bcCheck = await pool.request().input('bc', sql.NVarChar, finalBarcode).query(`SELECT TOP 1 id FROM T1 WHERE KK = @bc`);
+            if (bcCheck.recordset.length > 0) {
+                finalBarcode = await generateUniqueBarcode(pool);
+            }
+        }
+
+        const insertRes = await pool.request()
             .input('A', sql.NVarChar, A || '')
             .input('B', sql.NVarChar, B || '')
             .input('C', sql.NVarChar, C || 'تایبەت')
@@ -602,9 +966,9 @@ app.post('/api/register', requireAuth, async (req, res) => {
             .input('O', sql.NVarChar, O != null ? String(O) : '0')
             .input('P', sql.NVarChar, P != null ? String(P) : '0')
             .input('Q', sql.NVarChar, Q != null ? String(Q) : '0')
-            .input('R', sql.NVarChar, (R || '').trim().toUpperCase())
-            .input('S', sql.NVarChar, S || '*')
-            .input('T', sql.NVarChar, T || '0')
+            .input('R', sql.NVarChar, (R || '').trim().toUpperCase().slice(0, 17))
+            .input('S', sql.NVarChar, (S || '*').trim().toUpperCase().slice(0, 17))
+            .input('T', sql.NVarChar, (T || '0').trim().replace(/[^0-9]/g, '').slice(0, 11))
             .input('U', sql.NVarChar, U || '')
             .input('V', sql.NVarChar, V || '')
             .input('W', sql.NVarChar, W || '*')
@@ -619,11 +983,13 @@ app.post('/api/register', requireAuth, async (req, res) => {
             .input('FF', sql.NVarChar, user)
             .input('GG', sql.NVarChar, GG || '')
             .input('DD', sql.NVarChar, DD || new Date().toISOString().slice(0, 10))
-            .input('KK', sql.NVarChar, KK || Barcode || '')
+            .input('KK', sql.NVarChar, finalBarcode)
             .query(`INSERT INTO T1 (A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U, V, W, X, Y, Z, AA, BB, CC, II, JJ, FF, GG, DD, EE, KK)
-                    VALUES (@A, @B, @C, @D, @E, @F, @G, @H, @I, @J, @K, @L, @M, @N, @O, @P, @Q, @R, @S, @T, @U, @V, @W, @X, @Y, @Z, @AA, @BB, @CC, @II, @JJ, @FF, @GG, @DD, GETDATE(), @KK)`);
+                    VALUES (@A, @B, @C, @D, @E, @F, @G, @H, @I, @J, @K, @L, @M, @N, @O, @P, @Q, @R, @S, @T, @U, @V, @W, @X, @Y, @Z, @AA, @BB, @CC, @II, @JJ, @FF, @GG, @DD, GETDATE(), @KK);
+                    SELECT SCOPE_IDENTITY() AS newId;`);
 
-        res.json({ success: true, message: 'ئوتومبێل بە سەرکەوتوویی تۆمارکرا', warnings });
+        const newId = insertRes.recordset[0]?.newId;
+        res.json({ success: true, message: 'ئوتومبێل بە سەرکەوتوویی تۆمارکرا', id: newId, barcode: finalBarcode, warnings });
     } catch (err) {
         console.error('Register vehicle error:', err);
         res.status(500).json({ error: err.message });
@@ -661,9 +1027,9 @@ app.put('/api/register/:id', requireAuth, async (req, res) => {
             .input('O', sql.NVarChar, O != null ? String(O) : '0')
             .input('P', sql.NVarChar, P != null ? String(P) : '0')
             .input('Q', sql.NVarChar, Q != null ? String(Q) : '0')
-            .input('R', sql.NVarChar, (R || '').trim().toUpperCase())
-            .input('S', sql.NVarChar, S || '*')
-            .input('T', sql.NVarChar, T || '0')
+            .input('R', sql.NVarChar, (R || '').trim().toUpperCase().slice(0, 17))
+            .input('S', sql.NVarChar, (S || '*').trim().toUpperCase().slice(0, 17))
+            .input('T', sql.NVarChar, (T || '0').trim().replace(/[^0-9]/g, '').slice(0, 11))
             .input('U', sql.NVarChar, U || '')
             .input('V', sql.NVarChar, V || '')
             .input('W', sql.NVarChar, W || '*')
