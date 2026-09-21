@@ -328,17 +328,23 @@ app.get('/api/gomrg/search-va', requireAuth, async (req, res) => {
             return res.status(400).json({ success: false, message: 'تکایە ژمارەی ئۆتۆمبێل بنووسە' });
         }
         const pool = await getPool();
-        
-        // 1. Search in Taqega.dbo.VA
+        const cleanCarN = car_n.trim();
+
+        // ONLY Search in Taqega.dbo.VA (Database Taqega)
         let vaQuery = `
             SELECT TOP 1 * FROM [Taqega].[dbo].[VA]
-            WHERE (auto_no = @car_n OR shassy = @car_n)
+            WHERE (
+                REPLACE(auto_no, ' ', '') = REPLACE(@car_n, ' ', '') 
+                OR auto_no = @car_n
+                OR shassy = @car_n
+            )
         `;
-        const reqVA = pool.request().input('car_n', sql.NVarChar, car_n.trim());
+        const reqVA = pool.request().input('car_n', sql.NVarChar, cleanCarN);
         
         if (plet && plet.trim()) {
-            vaQuery += ` AND (plet LIKE @plet OR plet = @plet)`;
+            vaQuery += ` AND (plet LIKE @plet OR REPLACE(plet, N'ى', N'ی') LIKE @pletClean)`;
             reqVA.input('plet', sql.NVarChar, `%${plet.trim()}%`);
+            reqVA.input('pletClean', sql.NVarChar, `%${plet.trim().replace(/ى/g, 'ی')}%`);
         }
         if (bash && bash.trim()) {
             vaQuery += ` AND (bash LIKE @bash OR bash = @bash)`;
@@ -348,6 +354,17 @@ app.get('/api/gomrg/search-va', requireAuth, async (req, res) => {
 
         let result = await reqVA.query(vaQuery);
         
+        // If not found with plet/bash filters, search VA by auto_no directly within VA
+        if (!result.recordset || result.recordset.length === 0) {
+            result = await pool.request()
+                .input('car_n', sql.NVarChar, cleanCarN)
+                .query(`
+                    SELECT TOP 1 * FROM [Taqega].[dbo].[VA]
+                    WHERE (REPLACE(auto_no, ' ', '') = REPLACE(@car_n, ' ', '') OR auto_no = @car_n OR shassy = @car_n)
+                    ORDER BY id DESC
+                `);
+        }
+
         if (result.recordset && result.recordset.length > 0) {
             const row = result.recordset[0];
             return res.json({
@@ -360,44 +377,14 @@ app.get('/api/gomrg/search-va', requireAuth, async (req, res) => {
                     car_type: row.car_type || '',
                     model: row.Model || row.model || '',
                     color: row.color || '',
-                    shassy: row.shassy || '*',
+                    shassy: (row.shassy && row.shassy.trim() !== '') ? row.shassy.trim() : '*',
                     Full_name: row.Name_ || '',
                     place: (row.CC || '').replace(/^تاقیگەی\s*/, '').replace(/^تاقیگەى\s*/, '').trim() || ''
                 }
             });
         }
 
-        // 2. Fallback: Search in Car_Registraion.dbo.T1
-        const fbResult = await pool.request()
-            .input('car_n', sql.NVarChar, car_n.trim())
-            .query(`
-                SELECT TOP 1 A AS car_n, C AS bash, B AS parezga, I AS car_type, 
-                             P AS model, L AS color, R AS shassy, G AS Full_name, D AS place
-                FROM T1 
-                WHERE (A = @car_n OR R = @car_n)
-                ORDER BY id DESC
-            `);
-
-        if (fbResult.recordset && fbResult.recordset.length > 0) {
-            const row = fbResult.recordset[0];
-            return res.json({
-                success: true,
-                source: 'T1',
-                data: {
-                    car_n: row.car_n || '',
-                    bash: row.bash || '',
-                    parezga: row.parezga || '',
-                    car_type: row.car_type || '',
-                    model: row.model || '',
-                    color: row.color || '',
-                    shassy: row.shassy || '*',
-                    Full_name: row.Full_name || '',
-                    place: row.place || ''
-                }
-            });
-        }
-
-        return res.json({ success: false, message: 'هیچ داتایەک نەدۆزرایەوە بۆ ئەم ژمارەیە لە تاقیگە (VA)' });
+        return res.json({ success: false, message: 'هیچ داتایەک نەدۆزرایەوە لە خشتەی تاقیگە (VA)' });
     } catch (err) {
         console.error('Search VA error:', err);
         res.status(500).json({ success: false, error: err.message });

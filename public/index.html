@@ -1810,25 +1810,25 @@
                     <input type="text" id="gomrgDD" class="df-input c4-kurd" style="width: 340px; font-weight: 700; font-size: 14px;" placeholder="">
                 </div>
 
-                <!-- ROW 9: BUTTONS & REASON HEADER -->
+                <!-- ROW 9: REASON (RIGHT) & BUTTONS (LEFT) -->
                 <div class="df-row" style="margin-top: 14px; margin-bottom: 8px; justify-content: space-between; align-items: center;">
-                    <!-- Action Buttons on the Left -->
-                    <div style="display: flex; align-items: center; gap: 8px;">
-                        <button type="button" class="df-btn-search" style="background: #ff8080; border: 1.5px solid #e05252; color: #000000; font-weight: 900; font-size: 14px; padding: 4px 18px; height: 32px; border-radius: 3px;" onclick="gomrgSaveRecord()">تۆمار کردنی زانیاری</button>
-                        <button type="button" class="df-btn-search" style="background: #ffff00; border: 1.5px solid #d4d400; color: #000000; font-weight: 900; font-size: 14px; padding: 4px 18px; height: 32px; border-radius: 3px;" onclick="gomrgPrintForm()">چاپ کردنی فۆرم</button>
-                        <button type="button" class="df-btn-search" style="background: #cbf5fb; border: 1.5px solid #38bdf8; color: #0369a1; font-weight: 900; font-size: 13.5px; padding: 4px 14px; height: 32px; border-radius: 3px;" onclick="setGomrgQuickReason()">ڕاست کردنەوەی زانیاری لە کاتی ڕاکێشان و کەم و کورتی</button>
-                    </div>
-
-                    <!-- Red Reason Badge & Input on the Right -->
+                    <!-- Right Side (Child 1 in RTL): Red Reason Badge & Text Input -->
                     <div style="display: flex; align-items: center; gap: 8px;">
                         <span style="background: #e60000; color: #ffffff; font-weight: 900; font-size: 14px; padding: 4px 16px; border-radius: 3px; white-space: nowrap; font-family: var(--ku);">هۆکاری ناردن</span>
-                        <input type="text" id="gomrgReasonCode" class="df-input" style="width: 100px; text-align: center; font-weight: 800;">
+                        <input type="text" id="gomrgReason" class="df-input c4-kurd" style="width: 280px; font-size: 14px; font-weight: 800; border: 1.5px solid #94a3b8;" placeholder="هۆکاری ناردن..." oninput="if(document.getElementById('gomrgReasonFull')) document.getElementById('gomrgReasonFull').value = this.value">
+                    </div>
+
+                    <!-- Left Side (Child 2 in RTL): Quick Reason, Print, and Save Buttons -->
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <button type="button" class="df-btn-search" style="background: #cbf5fb; border: 1.5px solid #38bdf8; color: #0369a1; font-weight: 900; font-size: 13.5px; padding: 4px 14px; height: 32px; border-radius: 3px;" onclick="setGomrgQuickReason()">ڕاست کردنەوەی زانیاری لە کاتی ڕاکێشان و کەم و کورتی</button>
+                        <button type="button" class="df-btn-search" style="background: #ffff00; border: 1.5px solid #d4d400; color: #000000; font-weight: 900; font-size: 14px; padding: 4px 18px; height: 32px; border-radius: 3px;" onclick="gomrgPrintForm()">چاپ کردنی فۆرم</button>
+                        <button type="button" class="df-btn-search" style="background: #ff8080; border: 1.5px solid #e05252; color: #000000; font-weight: 900; font-size: 14px; padding: 4px 18px; height: 32px; border-radius: 3px;" onclick="gomrgSaveRecord()">تۆمار کردنی زانیاری</button>
                     </div>
                 </div>
 
                 <!-- ROW 10: FULL REASON INPUT/TEXTAREA -->
                 <div class="df-row" style="margin-bottom: 6px;">
-                    <input type="text" id="gomrgReason" class="df-input c4-kurd" style="width: 100%; height: 34px; font-size: 14.5px; font-weight: 800; border: 1.5px solid #94a3b8;" placeholder="">
+                    <input type="text" id="gomrgReasonFull" class="df-input c4-kurd" style="width: 100%; height: 34px; font-size: 14.5px; font-weight: 800; border: 1.5px solid #94a3b8;" placeholder="" oninput="if(document.getElementById('gomrgReason')) document.getElementById('gomrgReason').value = this.value">
                 </div>
             </div>
         </div>
@@ -4151,8 +4151,8 @@ function initGomrgEnterAsTab() {
         'gomrgBB',
         'gomrgCC',
         'gomrgDD',
-        'gomrgReasonCode',
-        'gomrgReason'
+        'gomrgReason',
+        'gomrgReasonFull'
     ];
 
     modal.addEventListener('keydown', function(e) {
@@ -4185,7 +4185,7 @@ function initGomrgEnterAsTab() {
                         }
                     }
                 } else if (nextIdx >= fieldOrder.length) {
-                    // Reached the end (gomrgReason), focus the save button
+                    // Reached the end (gomrgReasonFull), focus the save button
                     const saveBtn = modal.querySelector('button[onclick="gomrgSaveRecord()"]');
                     if (saveBtn) saveBtn.focus();
                 }
@@ -4293,7 +4293,7 @@ async function gomrgSearchVA() {
             setVal('gomrgBash', d.bash || 'بار');
             setVal('gomrgParezga', d.parezga || 'سلێمانى');
             setVal('gomrgCarType', d.car_type || '');
-            setVal('gomrgModel', d.model || ''); // سالی دهرچوونی مۆدیلی ئوتومبیل
+            setVal('gomrgModel', d.model || ''); // سالی دەرچوونی مۆدێلی ئۆتۆمبێل
             setVal('gomrgColor', d.color || '');
             // شاسی ڕاستەقینەی ئۆتۆمبێل نەک جۆری سوتەمەنی
             setVal('gomrgShassy', (d.shassy && d.shassy.trim() !== '') ? d.shassy.trim() : '*');
@@ -4303,10 +4303,9 @@ async function gomrgSearchVA() {
             setVal('gomrgCC', '*');
 
             if (alertBox) {
-                const srcName = res.source === 'VA' ? 'تاقیگە (VA)' : 'تۆماری گشتی (T1)';
                 alertBox.innerHTML = `
                     <div style="background:#ecfdf5;border:1.5px solid #a7f3d0;color:#065f46;padding:8px 14px;border-radius:4px;margin-bottom:10px;font-weight:800;font-size:13.5px;display:flex;align-items:center;justify-content:space-between;">
-                        <span>✅ داتاکان لە <strong>${srcName}</strong> بە سەرکەوتوویی هێنرانەوە و پڕکرانەوە</span>
+                        <span>✅ داتاکان لە تاقیگە (VA) بە سەرکەوتوویی هێنرانەوە و پڕکرانەوە</span>
                         <button type="button" onclick="this.parentElement.remove()" style="background:none;border:none;cursor:pointer;font-size:16px;">✕</button>
                     </div>
                 `;
@@ -4325,7 +4324,7 @@ async function gomrgSearchVA() {
             if (alertBox) {
                 alertBox.innerHTML = `
                     <div style="background:#fef2f2;border:1.5px solid #fecaca;color:#991b1b;padding:8px 14px;border-radius:4px;margin-bottom:10px;font-weight:800;font-size:13.5px;display:flex;align-items:center;justify-content:space-between;">
-                        <span>⚠️ ${res.message || 'هیچ داتایەک نەدۆزرایەوە بۆ ئەم ژمارەیە'}</span>
+                        <span>⚠️ ${res.message || 'هیچ داتایەک نەدۆزرایەوە بۆ ئەم ژمارەیە لە خشتەی تاقیگە (VA)'}</span>
                         <button type="button" onclick="this.parentElement.remove()" style="background:none;border:none;cursor:pointer;font-size:16px;">✕</button>
                     </div>
                 `;
@@ -4350,11 +4349,13 @@ async function gomrgSearchVA() {
 }
 
 function setGomrgQuickReason() {
-    const reasonInput = document.getElementById('gomrgReason');
-    if (reasonInput) {
-        reasonInput.value = 'ڕاست کردنەوەی زانیاری لە کاتی ڕاکێشان و کەم و کورتی';
-        reasonInput.focus();
-    }
+    const text = 'ڕاست کردنەوەی زانیاری لە کاتی ڕاکێشان و کەم و کورتی';
+    const r1 = document.getElementById('gomrgReason');
+    const r2 = document.getElementById('gomrgReasonFull');
+    if (r1) r1.value = text;
+    if (r2) r2.value = text;
+    if (r2) r2.focus();
+    else if (r1) r1.focus();
 }
 
 async function gomrgSaveRecord() {
@@ -4386,7 +4387,7 @@ async function gomrgSaveRecord() {
         BB: getVal('gomrgBB'),
         CC: getVal('gomrgCC') || '*',
         DD: getVal('gomrgDD'),
-        resoon: getVal('gomrgReason')
+        resoon: getVal('gomrgReasonFull') || getVal('gomrgReason') || ''
     };
 
     try {
