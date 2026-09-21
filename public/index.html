@@ -1667,41 +1667,185 @@
 </div>
 
 <!-- 2. MODAL: GOMRG (CUSTOMS) -->
+<!-- 2. MODAL: GOMRG (CUSTOMS FORM - EXACT WINDOWS FORM CLONE) -->
 <div class="overlay" id="modalGomrg">
-    <div class="modal modal-lg">
-        <div class="modal-head">
-            <div class="modal-title">🛃 تۆماری گومرگ</div>
-            <button class="modal-close" onclick="closeOverlay('modalGomrg')">✕</button>
+    <div class="modal modal-desktop" style="width: 1120px; max-width: 98vw; background: #ece9d8;">
+        <!-- Windows Form Titlebar -->
+        <div class="desktop-window-titlebar" style="background: #f0f0f0; border-bottom: 1.5px solid #a0a0a0;">
+            <div style="display:flex;align-items:center;gap:8px;">
+                <span class="desktop-window-title" style="font-family: Arial, sans-serif; font-weight: 700; font-size: 13px; color: #1e293b;">Gomrg</span>
+            </div>
+            <button class="desktop-btn-close" onclick="closeOverlay('modalGomrg')" title="داخستن">✕</button>
         </div>
-        <div class="modal-body">
-            <div style="display:flex;gap:10px;margin-bottom:16px;">
-                <input type="text" id="gomrgQ" class="s-input c4-kurd" placeholder="گەڕان لە گومرگ بە شاسی، تابلۆ، ناوی خاوەن، یان هۆکار...">
-                <button class="btn-search" onclick="loadGomrg()">🔍 گەڕان</button>
-                <button class="btn-primary" onclick="toggleGomrgAdd()" style="background:#0891b2;">+ تۆماری نوێ</button>
-            </div>
 
-            <!-- Inline Gomrg Add Form -->
-            <div id="gomrgAddBox" style="display:none;background:#f0f9ff;border:1px solid #bae6fd;border-radius:10px;padding:16px;margin-bottom:16px;">
-                <h4 style="color:#0369a1;margin-bottom:12px;font-size:14px;">تۆمارکردنی ئوتومبێل لە گومرگ</h4>
-                <div class="form-grid">
-                    <div class="form-group"><label class="form-label">ژمارەی تابلۆ</label><input type="text" id="gCarN" class="form-input c4-kurd"></div>
-                    <div class="form-group"><label class="form-label">شاسی</label><input type="text" id="gShassy" class="form-input" style="text-transform:uppercase;"></div>
-                    <div class="form-group"><label class="form-label">ناوی خاوەن</label><input type="text" id="gName" class="form-input c4-kurd"></div>
-                    <div class="form-group col-span-2"><label class="form-label">وەسف و جۆری ئوتومبێل</label><input type="text" id="gType" class="form-input c4-kurd"></div>
-                    <div class="form-group"><label class="form-label">مۆدێل</label><input type="text" id="gModel" class="form-input"></div>
-                    <div class="form-group"><label class="form-label">شوێن</label><input type="text" id="gPlace" list="placeList" class="form-input c4-kurd"></div>
-                    <div class="form-group"><label class="form-label">پارێزگا</label><input type="text" id="gParezga" list="provinceList" class="form-input c4-kurd"></div>
-                    <div class="form-group"><label class="form-label">بەش</label><input type="text" id="gBash" class="form-input c4-kurd" value="بار"></div>
-                    <div class="form-group col-span-3"><label class="form-label">هۆکار / تێبینی</label><input type="text" id="gReason" class="form-input c4-kurd"></div>
-                </div>
-                <div style="margin-top:12px;text-align:left;">
-                    <button class="btn-secondary" onclick="toggleGomrgAdd()" style="margin-left:8px;">پاشگەزبوونەوە</button>
-                    <button class="btn-primary" onclick="submitGomrg()" style="background:#0891b2;">تۆمارکردن</button>
-                </div>
-            </div>
+        <div class="desktop-body-wrapper" style="background: #f0f0f0; padding: 10px 16px 14px;">
+            <div id="gomrgAlert"></div>
 
-            <div class="table-wrap" id="gomrgTableWrap">
-                <div class="spin-box"><div class="spinner"></div></div>
+            <div class="desktop-form-container" style="background: #f0f0f0; border: none; box-shadow: none; padding: 4px 10px;">
+                <!-- TOP HEADER: GREEN BADGE (9), BLUE TITLE -->
+                <div style="position:relative; margin-bottom: 12px; min-height: 42px;">
+                    <!-- Badge 9 on the far right as in image -->
+                    <div id="gomrgBadge" style="position:absolute; top: 0; right: 18px; background: #86efac; border: 1.5px solid #22c55e; color: #14532d; font-size: 20px; font-weight: 900; padding: 1px 12px; min-width: 38px; text-align: center; border-radius: 3px; box-shadow: 0 1px 2px rgba(0,0,0,0.15);">9</div>
+
+                    <!-- Blue Center Title -->
+                    <div style="text-align: center;">
+                        <h2 style="color: #0022cc; font-size: 27px; font-weight: 900; margin: 0; letter-spacing: 0.5px; font-family: var(--ku);">نوسراو بۆ بەڕێوەبەایەتی گومرگ</h2>
+                    </div>
+                </div>
+
+                <!-- ROW 1: (لە تاقیکەی, بەروار, ژ - ڕۆیشتوو) -->
+                <div class="df-row" style="margin-bottom: 8px; justify-content: flex-start; gap: 12px;">
+                    <!-- ژ - ڕۆیشتوو -->
+                    <span class="df-label" style="font-size: 14.5px; font-weight: 800;">ژ - ڕۆیشتوو</span>
+                    <input type="text" id="gomrgIDD" class="df-input" style="width: 140px; background: #e2e8f0; font-weight: 900; font-size: 16px; text-align: center; color: #0f172a; border-color: #94a3b8;" readonly value="531577">
+
+                    <!-- بەروار -->
+                    <span class="df-label" style="font-size: 14.5px; font-weight: 800; margin-right: 16px;">بەروار</span>
+                    <input type="date" id="gomrgDate" class="df-input" style="width: 160px; font-weight: 700; text-align: center; border-color: #94a3b8;">
+
+                    <!-- لە تاقیکەی -->
+                    <span class="df-label" style="font-size: 14.5px; font-weight: 800; margin-right: 20px;">لە تاقیکەی</span>
+                    <select id="gomrgPlace" class="df-select" style="width: 260px; font-weight: 800; border-color: #94a3b8;">
+                        <option value="عمر عوسمان" selected>عمر عوسمان</option>
+                        <option value="پێشەنگ">پێشەنگ</option>
+                        <option value="بێستون">بێستون</option>
+                        <option value="کاروان">کاروان</option>
+                        <option value="عەربەت">عەربەت</option>
+                        <option value="ســارا">ســارا</option>
+                        <option value="دیاکۆ">دیاکۆ</option>
+                        <option value="شادی">شادی</option>
+                        <option value="شاره‌زوور">شاره‌زوور</option>
+                        <option value="عصام">عصام</option>
+                        <option value="مۆدێرن">مۆدێرن</option>
+                        <option value="هیمەت">هیمەت</option>
+                        <option value="بازیان">بازیان</option>
+                        <option value="ئاسۆ">ئاسۆ</option>
+                        <option value="گۆڕەپانی گشتی پشکنین">گۆڕەپانی گشتی پشکنین</option>
+                    </select>
+                </div>
+
+                <!-- ROW 2: SEARCH SECTION (HIGHLIGHTED PINK/SALMON BORDER) -->
+                <div style="background: #fff0f3; border: 1.5px solid #fecdd3; border-radius: 4px; padding: 6px 12px; margin-bottom: 10px; display: flex; align-items: center; justify-content: space-between; gap: 10px;">
+                    <div style="display: flex; align-items: center; gap: 10px; flex: 1;">
+                        <span class="df-label" style="font-size: 14px; font-weight: 800;">ژمارەی ئۆتۆمبێل</span>
+                        <input type="text" id="gomrgSearchCarN" class="df-input auto-en-upper df-vin-font" style="width: 170px; font-size: 16px; text-align: center; border-color: #f472b6;" placeholder="" onkeydown="if(event.key==='Enter')gomrgSearchVA()">
+
+                        <span class="df-label" style="font-size: 14px; font-weight: 800; margin-right: 8px;">تابلۆی</span>
+                        <input type="text" id="gomrgSearchPlet" class="df-input c4-kurd" style="width: 130px; text-align: center; font-weight: 800; border-color: #f472b6;" value="سلێمانی">
+
+                        <span class="df-label" style="font-size: 14px; font-weight: 800; margin-right: 8px;">بەش</span>
+                        <select id="gomrgSearchBash" class="df-select" style="width: 130px; font-weight: 800; border-color: #f472b6;">
+                            <option value="بار" selected>بار</option>
+                            <option value="تایبەت">تایبەت</option>
+                            <option value="کرێ">کرێ</option>
+                            <option value="کشتوکاڵی">کشتوکاڵی</option>
+                            <option value="بیناسازی">بیناسازی</option>
+                            <option value="پاص">پاص</option>
+                            <option value="میری">میری</option>
+                            <option value="ماتۆڕ">ماتۆڕ</option>
+                        </select>
+                    </div>
+
+                    <!-- Yellow Search Button -->
+                    <button type="button" id="gomrgBtnSearch" class="df-btn-search" style="background: #ffff00; border: 1.5px solid #d4d400; color: #000000; font-size: 14.5px; font-weight: 900; padding: 2px 28px; height: 30px; border-radius: 3px;" onclick="gomrgSearchVA()">بگەڕێ</button>
+                </div>
+
+                <!-- ROW 3: CAR NUMBER, BASH, PAREZGA -->
+                <div class="df-row" style="margin-bottom: 8px;">
+                    <span class="df-label" style="width: 125px; font-size: 14px;">ژمارەی ئۆتۆمبێل</span>
+                    <input type="text" id="gomrgCarN" class="df-input auto-en-upper df-vin-font" style="width: 160px; font-size: 16px; text-align: center; font-weight: 900; border-bottom: 2.5px solid #0055d4;" placeholder="">
+
+                    <span class="df-label" style="margin-right: 16px; font-size: 14px;">بەشی ئۆتۆمبێل</span>
+                    <select id="gomrgBash" class="df-select" style="width: 200px; font-weight: 800;">
+                        <option value="بار" selected>بار</option>
+                        <option value="تایبەت">تایبەت</option>
+                        <option value="کرێ">کرێ</option>
+                        <option value="کشتوکاڵی">کشتوکاڵی</option>
+                        <option value="بیناسازی">بیناسازی</option>
+                        <option value="پاص">پاص</option>
+                        <option value="میری">میری</option>
+                        <option value="ماتۆڕ">ماتۆڕ</option>
+                        <option value="بێ ژمارە">بێ ژمارە</option>
+                    </select>
+
+                    <span class="df-label" style="margin-right: 16px; font-size: 14px;">پاریزگای ئۆتۆمبێل</span>
+                    <select id="gomrgParezga" class="df-select" style="width: 220px; font-weight: 800;">
+                        <option value="سلێمانى" selected>سلێمانى</option>
+                        <option value="هەولێر">هەولێر</option>
+                        <option value="دهۆک">دهۆک</option>
+                        <option value="کاتى سلێمانى">کاتى سلێمانى</option>
+                        <option value="کاتى دهۆک">کاتى دهۆک</option>
+                        <option value="کاتى هەولێر">کاتى هەولێر</option>
+                        <option value="بغداد">بغداد</option>
+                        <option value="فحص مؤقت بغداد">فحص مؤقت بغداد</option>
+                    </select>
+                </div>
+
+                <!-- ROW 4: CAR TYPE (WIDE) -->
+                <div class="df-row" style="margin-bottom: 8px;">
+                    <span class="df-label" style="width: 125px; font-size: 14px;">جۆری ئۆتۆمبێل</span>
+                    <input type="text" id="gomrgCarType" class="df-input c4-kurd" style="flex: 1; font-weight: 700; font-size: 14px;" placeholder="">
+                </div>
+
+                <!-- ROW 5: MODEL, COLOR, SHASSY -->
+                <div class="df-row" style="margin-bottom: 8px;">
+                    <span class="df-label" style="width: 125px; font-size: 14px;">مۆدێل</span>
+                    <input type="text" id="gomrgModel" class="df-input" style="width: 120px; text-align: center; font-weight: 800; font-size: 14.5px;" placeholder="" maxlength="4">
+
+                    <span class="df-label" style="margin-right: 16px; font-size: 14px;">ڕەنگی</span>
+                    <input type="text" id="gomrgColor" class="df-input c4-kurd" style="flex: 1; font-weight: 700; font-size: 14px;" placeholder="">
+
+                    <span class="df-label" style="margin-right: 16px; font-size: 14px;">ژمارەی شاسی</span>
+                    <input type="text" id="gomrgShassy" class="df-input df-vin-font" style="width: 320px; background: #c8f7c5; border: 1.5px solid #86efac; font-weight: 900; text-align: center; font-size: 16px; color: #000000;" value="*">
+                </div>
+
+                <!-- ROW 6: CITIZEN NAME, QAMARA -->
+                <div class="df-row" style="margin-bottom: 8px;">
+                    <span class="df-label" style="width: 125px; font-size: 14px;">بە ناوی هاوڵاتی</span>
+                    <input type="text" id="gomrgName" class="df-input c4-kurd" style="flex: 1; background: #ffe8cc; border: 1.5px solid #fed7aa; font-weight: 800; font-size: 14.5px; color: #000000;" placeholder="">
+
+                    <span class="df-label" style="margin-right: 16px; font-size: 14px;">ژمارەی قەماره</span>
+                    <input type="text" id="gomrgQamara" class="df-input c4-kurd" style="width: 320px; background: #ffd1dc; border: 1.5px solid #fca5a5; font-weight: 900; text-align: center; font-size: 16px; color: #000000;" value="*">
+                </div>
+
+                <!-- ROW 7: TRAILER 1 SHASSY & COLOR -->
+                <div class="df-row" style="margin-bottom: 8px;">
+                    <span class="df-label" style="width: 165px; font-size: 14px;">ژمارەی شاسی عەره‌بانە1</span>
+                    <input type="text" id="gomrgAShassy" class="df-input" style="flex: 1; text-align: center; font-weight: 800; font-size: 15px;" value="*">
+
+                    <span class="df-label" style="margin-right: 16px; font-size: 14px;">ڕەنگی عارەبانە1</span>
+                    <input type="text" id="gomrgBB" class="df-input c4-kurd" style="width: 340px; font-weight: 700; font-size: 14px;" placeholder="">
+                </div>
+
+                <!-- ROW 8: TRAILER 2 SHASSY & COLOR -->
+                <div class="df-row" style="margin-bottom: 8px;">
+                    <span class="df-label" style="width: 165px; font-size: 14px;">ژمارەی شاسی عەره‌بانە2</span>
+                    <input type="text" id="gomrgCC" class="df-input" style="flex: 1; text-align: center; font-weight: 800; font-size: 15px;" value="*">
+
+                    <span class="df-label" style="margin-right: 16px; font-size: 14px;">ڕەنگی عارەبانە2</span>
+                    <input type="text" id="gomrgDD" class="df-input c4-kurd" style="width: 340px; font-weight: 700; font-size: 14px;" placeholder="">
+                </div>
+
+                <!-- ROW 9: BUTTONS & REASON HEADER -->
+                <div class="df-row" style="margin-top: 14px; margin-bottom: 8px; justify-content: space-between; align-items: center;">
+                    <!-- Action Buttons on the Left -->
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <button type="button" class="df-btn-search" style="background: #ff8080; border: 1.5px solid #e05252; color: #000000; font-weight: 900; font-size: 14px; padding: 4px 18px; height: 32px; border-radius: 3px;" onclick="gomrgSaveRecord()">تۆمار کردنی زانیاری</button>
+                        <button type="button" class="df-btn-search" style="background: #ffff00; border: 1.5px solid #d4d400; color: #000000; font-weight: 900; font-size: 14px; padding: 4px 18px; height: 32px; border-radius: 3px;" onclick="gomrgPrintForm()">چاپ کردنی فۆرم</button>
+                        <button type="button" class="df-btn-search" style="background: #cbf5fb; border: 1.5px solid #38bdf8; color: #0369a1; font-weight: 900; font-size: 13.5px; padding: 4px 14px; height: 32px; border-radius: 3px;" onclick="setGomrgQuickReason()">ڕاست کردنەوەی زانیاری لە کاتی ڕاکێشان و کەم و کورتی</button>
+                    </div>
+
+                    <!-- Red Reason Badge & Input on the Right -->
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <span style="background: #e60000; color: #ffffff; font-weight: 900; font-size: 14px; padding: 4px 16px; border-radius: 3px; white-space: nowrap; font-family: var(--ku);">هۆکاری ناردن</span>
+                        <input type="text" id="gomrgReasonCode" class="df-input" style="width: 100px; text-align: center; font-weight: 800;">
+                    </div>
+                </div>
+
+                <!-- ROW 10: FULL REASON INPUT/TEXTAREA -->
+                <div class="df-row" style="margin-bottom: 6px;">
+                    <input type="text" id="gomrgReason" class="df-input c4-kurd" style="width: 100%; height: 34px; font-size: 14.5px; font-weight: 800; border: 1.5px solid #94a3b8;" placeholder="">
+                </div>
             </div>
         </div>
     </div>
@@ -4001,80 +4145,243 @@ function dfPrintCard() {
 }
 
 // ─── 2. MODULE: GOMRG (CUSTOMS) ────────────────────────────────────────
-function openGomrgModal() {
+// ─── 2. MODULE: GOMRG (CUSTOMS FORM - WINDOWS FORM CLONE) ──────────────
+async function openGomrgModal() {
+    try {
+        const gomrgAlert = document.getElementById('gomrgAlert');
+        if (gomrgAlert) gomrgAlert.innerHTML = '';
+        
+        // Update user badge
+        if (currentUser) {
+            const badge = document.getElementById('gomrgBadge');
+            if (badge) badge.textContent = currentUser.username || currentUser.id || '9';
+        }
+
+        // Set date to today
+        const dateInput = document.getElementById('gomrgDate');
+        if (dateInput) {
+            const today = new Date();
+            const yyyy = today.getFullYear();
+            const mm = String(today.getMonth() + 1).padStart(2, '0');
+            const dd = String(today.getDate()).padStart(2, '0');
+            dateInput.value = `${yyyy}-${mm}-${dd}`;
+        }
+
+        // Fetch Next IDD and Places
+        try {
+            const res = await fetch('/api/gomrg/next-id').then(r => r.json());
+            if (res.success) {
+                const iddInput = document.getElementById('gomrgIDD');
+                if (iddInput && res.nextIDD) iddInput.value = res.nextIDD;
+
+                if (res.places && res.places.length > 0) {
+                    const placeSel = document.getElementById('gomrgPlace');
+                    if (placeSel) {
+                        const currentVal = placeSel.value;
+                        const defaultPlaces = ['عمر عوسمان', 'پێشەنگ', 'بێستون', 'کاروان', 'عەربەت', 'ســارا', 'دیاکۆ', 'شادی', 'شاره‌زوور', 'عصام', 'مۆدێرن', 'هیمەت', 'بازیان', 'ئاسۆ', 'گۆڕەپانی گشتی پشکنین'];
+                        const allPlaces = Array.from(new Set([...defaultPlaces, ...res.places]));
+                        placeSel.innerHTML = allPlaces.map(p => `<option value="${p}">${p}</option>`).join('');
+                        if (currentVal && allPlaces.includes(currentVal)) {
+                            placeSel.value = currentVal;
+                        } else if (currentUser && currentUser.place) {
+                            placeSel.value = currentUser.place;
+                        } else {
+                            placeSel.value = 'عمر عوسمان';
+                        }
+                    }
+                }
+            }
+        } catch(e) {
+            console.warn('Could not fetch next IDD:', e);
+        }
+
+    } catch(err) {
+        console.warn('Gomrg modal init warning:', err);
+    }
+
     openOverlay('modalGomrg');
-    loadGomrg();
+    setTimeout(() => {
+        const searchInput = document.getElementById('gomrgSearchCarN');
+        if (searchInput) {
+            searchInput.focus();
+            if (searchInput.select) searchInput.select();
+        }
+    }, 120);
 }
 
-async function loadGomrg() {
-    const q = document.getElementById('gomrgQ')?.value?.trim() || '';
-    const wrap = document.getElementById('gomrgTableWrap');
-    wrap.innerHTML = '<div class="spin-box"><div class="spinner"></div></div>';
+async function gomrgSearchVA() {
+    const searchCarN = document.getElementById('gomrgSearchCarN');
+    const pletSel = document.getElementById('gomrgSearchPlet');
+    const bashSel = document.getElementById('gomrgSearchBash');
+    const btn = document.getElementById('gomrgBtnSearch');
+    const alertBox = document.getElementById('gomrgAlert');
+
+    const car_n = searchCarN ? searchCarN.value.trim() : '';
+    const plet = pletSel ? pletSel.value.trim() : '';
+    const bash = bashSel ? bashSel.value.trim() : '';
+
+    if (!car_n) {
+        alert('تکایە ژمارەی ئۆتۆمبێل بنووسە بۆ گەڕان');
+        if (searchCarN) searchCarN.focus();
+        return;
+    }
+
+    if (btn) {
+        btn.disabled = true;
+        btn.textContent = 'دەگەڕێت...';
+    }
+    if (alertBox) alertBox.innerHTML = '';
+
     try {
-        const url = '/api/gomrg' + (q ? '?q=' + encodeURIComponent(q) : '');
-        const rows = await fetch(url).then(r=>r.json());
-        if (!rows.length) {
-            wrap.innerHTML = '<div class="empty-box"><div class="eicon">🛃</div><p>هیچ تۆمارێکی گومرگ نەدۆزرایەوە</p></div>';
-            return;
+        const url = `/api/gomrg/search-va?car_n=${encodeURIComponent(car_n)}&plet=${encodeURIComponent(plet)}&bash=${encodeURIComponent(bash)}`;
+        const res = await fetch(url).then(r => r.json());
+
+        if (res.success && res.data) {
+            const d = res.data;
+            
+            const setVal = (id, val) => {
+                const el = document.getElementById(id);
+                if (el && val !== undefined && val !== null) el.value = val;
+            };
+
+            setVal('gomrgCarN', d.car_n || car_n);
+            setVal('gomrgBash', d.bash || 'بار');
+            setVal('gomrgParezga', d.parezga || 'سلێمانى');
+            setVal('gomrgCarType', d.car_type || '');
+            setVal('gomrgModel', d.model || '');
+            setVal('gomrgColor', d.color || '');
+            setVal('gomrgShassy', d.shassy && d.shassy !== '' ? d.shassy : '*');
+            setVal('gomrgName', d.Full_name || '');
+            setVal('gomrgQamara', '*');
+            setVal('gomrgAShassy', '*');
+            setVal('gomrgCC', '*');
+
+            if (d.place) {
+                const placeEl = document.getElementById('gomrgPlace');
+                if (placeEl) {
+                    let matched = false;
+                    for (let opt of placeEl.options) {
+                        if (opt.value === d.place || d.place.includes(opt.value)) {
+                            placeEl.value = opt.value;
+                            matched = true;
+                            break;
+                        }
+                    }
+                    if (!matched) {
+                        const newOpt = new Option(d.place, d.place, true, true);
+                        placeEl.add(newOpt);
+                    }
+                }
+            }
+
+            if (alertBox) {
+                const srcName = res.source === 'VA' ? 'تاقیگە (VA)' : 'تۆماری گشتی (T1)';
+                alertBox.innerHTML = `
+                    <div style="background:#ecfdf5;border:1.5px solid #a7f3d0;color:#065f46;padding:8px 14px;border-radius:4px;margin-bottom:10px;font-weight:800;font-size:13.5px;display:flex;align-items:center;justify-content:space-between;">
+                        <span>✅ داتاکان لە <strong>${srcName}</strong> بە سەرکەوتوویی هێنرانەوە و پڕکرانەوە</span>
+                        <button type="button" onclick="this.parentElement.remove()" style="background:none;border:none;cursor:pointer;font-size:16px;">✕</button>
+                    </div>
+                `;
+            }
+        } else {
+            if (alertBox) {
+                alertBox.innerHTML = `
+                    <div style="background:#fef2f2;border:1.5px solid #fecaca;color:#991b1b;padding:8px 14px;border-radius:4px;margin-bottom:10px;font-weight:800;font-size:13.5px;display:flex;align-items:center;justify-content:space-between;">
+                        <span>⚠️ ${res.message || 'هیچ داتایەک نەدۆزرایەوە بۆ ئەم ژمارەیە'}</span>
+                        <button type="button" onclick="this.parentElement.remove()" style="background:none;border:none;cursor:pointer;font-size:16px;">✕</button>
+                    </div>
+                `;
+            }
+            const carNEl = document.getElementById('gomrgCarN');
+            if (carNEl && !carNEl.value) carNEl.value = car_n;
         }
-        const head = `<thead><tr>
-            <th>ژمارەی ئوتومبێل</th><th>شاسی</th><th>خاوەن</th><th>جۆر و وەسف</th>
-            <th>مۆدێل</th><th>شوێن</th><th>هۆکار</th><th>بەروار</th><th>تۆمارکار</th>
-        </tr></thead>`;
-        const body = rows.map(r => {
-            const date = r.date_insert ? new Date(r.date_insert).toLocaleDateString('ar-IQ') : '-';
-            return `<tr>
-                <td><strong>${r.car_n||'-'}</strong></td>
-                <td><strong style="color:var(--primary);">${r.shassy||'-'}</strong></td>
-                <td>${r.Full_name||'-'}</td>
-                <td style="max-width:200px;overflow:hidden;text-overflow:ellipsis;">${r.car_type||'-'}</td>
-                <td>${r.model||'-'}</td>
-                <td>${r.place||'-'}</td>
-                <td style="color:var(--danger);">${r.resoon||'-'}</td>
-                <td>${date}</td>
-                <td>${r.user_||'-'}</td>
-            </tr>`;
-        }).join('');
-        wrap.innerHTML = `<table>${head}<tbody>${body}</tbody></table>`;
-    } catch(e) {
-        wrap.innerHTML = '<div class="empty-box"><div class="eicon">⚠️</div><p>کێشەی پەیوەندی</p></div>';
+    } catch(err) {
+        console.error('Gomrg search error:', err);
+        if (alertBox) {
+            alertBox.innerHTML = `<div style="background:#fef2f2;border:1.5px solid #fecaca;color:#991b1b;padding:8px 14px;border-radius:4px;margin-bottom:10px;font-weight:800;font-size:13.5px;">⚠️ کێشە لە پەیوەندی بە سێرڤەر</div>`;
+        }
+    } finally {
+        if (btn) {
+            btn.disabled = false;
+            btn.textContent = 'بگەڕێ';
+        }
     }
 }
 
-function toggleGomrgAdd() {
-    const box = document.getElementById('gomrgAddBox');
-    box.style.display = box.style.display === 'none' ? 'block' : 'none';
+function setGomrgQuickReason() {
+    const reasonInput = document.getElementById('gomrgReason');
+    if (reasonInput) {
+        reasonInput.value = 'ڕاست کردنەوەی زانیاری لە کاتی ڕاکێشان و کەم و کورتی';
+        reasonInput.focus();
+    }
 }
 
-async function submitGomrg() {
+async function gomrgSaveRecord() {
+    const getVal = id => document.getElementById(id)?.value?.trim() || '';
+    const alertBox = document.getElementById('gomrgAlert');
+
+    const car_n = getVal('gomrgCarN') || getVal('gomrgSearchCarN');
+    const shassy = getVal('gomrgShassy');
+
+    if (!car_n && (!shassy || shassy === '*')) {
+        alert('تکایە ژمارەی ئۆتۆمبێل یان شاسی بنووسە پێش تۆمارکردن');
+        return;
+    }
+
     const payload = {
-        car_n: document.getElementById('gCarN').value.trim(),
-        shassy: document.getElementById('gShassy').value.trim().toUpperCase(),
-        Full_name: document.getElementById('gName').value.trim(),
-        car_type: document.getElementById('gType').value.trim(),
-        model: document.getElementById('gModel').value.trim(),
-        place: document.getElementById('gPlace').value.trim(),
-        parezga: document.getElementById('gParezga').value.trim(),
-        bash: document.getElementById('gBash').value.trim(),
-        resoon: document.getElementById('gReason').value.trim()
+        IDD: getVal('gomrgIDD'),
+        place: getVal('gomrgPlace'),
+        date_insert: getVal('gomrgDate'),
+        car_n: car_n,
+        bash: getVal('gomrgBash'),
+        parezga: getVal('gomrgParezga'),
+        car_type: getVal('gomrgCarType'),
+        model: getVal('gomrgModel'),
+        AA: getVal('gomrgColor'),
+        shassy: shassy || '*',
+        qamara: getVal('gomrgQamara') || '*',
+        Full_name: getVal('gomrgName'),
+        A_shassy: getVal('gomrgAShassy') || '*',
+        BB: getVal('gomrgBB'),
+        CC: getVal('gomrgCC') || '*',
+        DD: getVal('gomrgDD'),
+        resoon: getVal('gomrgReason')
     };
+
     try {
         const res = await fetch('/api/gomrg', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(payload)
-        });
-        const d = await res.json();
-        if (d.success) {
-            showToast('✅ ' + d.message);
-            toggleGomrgAdd();
-            loadGomrg();
+        }).then(r => r.json());
+
+        if (res.success) {
+            if (res.nextIDD) {
+                const iddInput = document.getElementById('gomrgIDD');
+                if (iddInput) iddInput.value = res.nextIDD;
+            }
+            if (alertBox) {
+                alertBox.innerHTML = `
+                    <div style="background:#ecfdf5;border:1.5px solid #a7f3d0;color:#065f46;padding:10px 16px;border-radius:4px;margin-bottom:12px;font-weight:900;font-size:14.5px;display:flex;align-items:center;justify-content:space-between;">
+                        <span>✅ ${res.message} (ژ - ڕۆیشتوو: ${res.savedIDD})</span>
+                        <button type="button" onclick="this.parentElement.remove()" style="background:none;border:none;cursor:pointer;font-size:16px;">✕</button>
+                    </div>
+                `;
+            }
+            if (typeof showToast === 'function') {
+                showToast(`✅ بە سەرکەوتوویی لە خشتەی Gomrg تۆمارکرا (ژ - ڕۆیشتوو: ${res.savedIDD})`);
+            }
         } else {
-            alert('هەڵە: ' + (d.error || 'نەتوانرا پاشەکەوت بکرێت'));
+            alert('هەڵە لە تۆمارکردن: ' + (res.error || res.message || 'نەتوانرا پاشەکەوت بکرێت'));
         }
-    } catch(e) {
-        alert('کێشەی پەیوەندی بە سێرڤەر');
+    } catch(err) {
+        console.error('Save Gomrg error:', err);
+        alert('کێشەی پەیوەندی بە سێرڤەر ڕوویدا');
     }
+}
+
+function gomrgPrintForm() {
+    alert('فۆرم ئامادەیە بۆ چاپ. کاتێک کڵێشەی چاپەکەت نارد، دەستبەجێ بە دیزاینە تایبەتەکەیەوە دەخرێتە سەر ئەم دوگمەیە.');
 }
 
 // ─── 3. MODULE: SET HIJZ ───────────────────────────────────────────────

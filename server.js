@@ -301,13 +301,116 @@ app.get('/api/suspicious', requireAuth, async (req, res) => {
 });
 
 // ─── GOMRG (CUSTOMS) ────────────────────────────────────────────────
+app.get('/api/gomrg/next-id', requireAuth, async (req, res) => {
+    try {
+        const pool = await getPool();
+        const r = await pool.request().query(`SELECT ISNULL(MAX(IDD), 530000) + 1 AS nextIDD FROM Gomrg`);
+        const nextIDD = r.recordset[0]?.nextIDD || 531577;
+        
+        const placesResult = await pool.request().query(`
+            SELECT DISTINCT place FROM Gomrg 
+            WHERE place IS NOT NULL AND place != '' AND place != '*' 
+            ORDER BY place
+        `);
+        const places = placesResult.recordset.map(x => x.place);
+
+        res.json({ success: true, nextIDD, places });
+    } catch (err) {
+        console.error('Next IDD error:', err);
+        res.status(500).json({ success: false, error: err.message });
+    }
+});
+
+app.get('/api/gomrg/search-va', requireAuth, async (req, res) => {
+    try {
+        const { car_n, plet, bash } = req.query;
+        if (!car_n || !car_n.trim()) {
+            return res.status(400).json({ success: false, message: 'تکایە ژمارەی ئۆتۆمبێل بنووسە' });
+        }
+        const pool = await getPool();
+        
+        // 1. Search in Taqega.dbo.VA
+        let vaQuery = `
+            SELECT TOP 1 * FROM [Taqega].[dbo].[VA]
+            WHERE (auto_no = @car_n OR shassy = @car_n)
+        `;
+        const reqVA = pool.request().input('car_n', sql.NVarChar, car_n.trim());
+        
+        if (plet && plet.trim()) {
+            vaQuery += ` AND (plet LIKE @plet OR plet = @plet)`;
+            reqVA.input('plet', sql.NVarChar, `%${plet.trim()}%`);
+        }
+        if (bash && bash.trim()) {
+            vaQuery += ` AND (bash LIKE @bash OR bash = @bash)`;
+            reqVA.input('bash', sql.NVarChar, `%${bash.trim()}%`);
+        }
+        vaQuery += ` ORDER BY id DESC`;
+
+        let result = await reqVA.query(vaQuery);
+        
+        if (result.recordset && result.recordset.length > 0) {
+            const row = result.recordset[0];
+            return res.json({
+                success: true,
+                source: 'VA',
+                data: {
+                    car_n: row.auto_no || '',
+                    bash: row.bash || '',
+                    parezga: row.plet || '',
+                    car_type: row.car_type || '',
+                    model: row.Model || row.model || '',
+                    color: row.color || '',
+                    shassy: row.shassy || '*',
+                    Full_name: row.Name_ || '',
+                    place: (row.CC || '').replace(/^تاقیگەی\s*/, '').replace(/^تاقیگەى\s*/, '').trim() || ''
+                }
+            });
+        }
+
+        // 2. Fallback: Search in Car_Registraion.dbo.T1
+        const fbResult = await pool.request()
+            .input('car_n', sql.NVarChar, car_n.trim())
+            .query(`
+                SELECT TOP 1 A AS car_n, C AS bash, B AS parezga, I AS car_type, 
+                             M AS model, L AS color, K AS shassy, G AS Full_name, D AS place
+                FROM T1 
+                WHERE (A = @car_n OR K = @car_n)
+                ORDER BY id DESC
+            `);
+
+        if (fbResult.recordset && fbResult.recordset.length > 0) {
+            const row = fbResult.recordset[0];
+            return res.json({
+                success: true,
+                source: 'T1',
+                data: {
+                    car_n: row.car_n || '',
+                    bash: row.bash || '',
+                    parezga: row.parezga || '',
+                    car_type: row.car_type || '',
+                    model: row.model || '',
+                    color: row.color || '',
+                    shassy: row.shassy || '*',
+                    Full_name: row.Full_name || '',
+                    place: row.place || ''
+                }
+            });
+        }
+
+        return res.json({ success: false, message: 'هیچ داتایەک نەدۆزرایەوە بۆ ئەم ژمارەیە لە تاقیگە (VA)' });
+    } catch (err) {
+        console.error('Search VA error:', err);
+        res.status(500).json({ success: false, error: err.message });
+    }
+});
+
 app.get('/api/gomrg', requireAuth, async (req, res) => {
     try {
         const { q } = req.query;
         const pool = await getPool();
-        let query = `SELECT TOP 100 id, car_n, shassy, Full_name, car_type, model, resoon, date_insert, user_, place, parezga, bash FROM Gomrg `;
+        let query = `SELECT TOP 100 id, IDD, car_n, shassy, Full_name, car_type, model, resoon, date_insert, user_, place, parezga, bash, qamara, AA, A_shassy, BB, CC, DD FROM Gomrg `;
         if (q && q.trim()) {
-            query += `WHERE shassy LIKE @term OR car_n LIKE @term OR Full_name LIKE @term OR resoon LIKE @term `;
+            query += `WHERE shassy LIKE @term OR car_n LIKE @term OR Full_name LIKE @term OR resoon LIKE @term OR CAST(IDD AS NVARCHAR) LIKE @term `;
         }
         query += `ORDER BY id DESC`;
 
@@ -325,26 +428,68 @@ app.get('/api/gomrg', requireAuth, async (req, res) => {
 
 app.post('/api/gomrg', requireAuth, async (req, res) => {
     try {
-        const { car_n, shassy, Full_name, car_type, model, resoon, place, parezga, bash } = req.body;
+        const {
+            IDD,
+            place,
+            date_insert,
+            car_n,
+            parezga,
+            bash,
+            car_type,
+            model,
+            AA,
+            shassy,
+            qamara,
+            Full_name,
+            A_shassy,
+            BB,
+            CC,
+            DD,
+            resoon
+        } = req.body;
+
         const pool = await getPool();
         const user = req.session.user.name || req.session.user.username;
+
+        let targetIDD = parseInt(IDD, 10);
+        if (isNaN(targetIDD) || targetIDD <= 0) {
+            const maxR = await pool.request().query(`SELECT ISNULL(MAX(IDD), 530000) + 1 AS nextIDD FROM Gomrg`);
+            targetIDD = maxR.recordset[0]?.nextIDD || 531577;
+        }
+
+        const insertDate = date_insert ? new Date(date_insert) : new Date();
+
         await pool.request()
-            .input('car_n', sql.NVarChar, car_n || '')
-            .input('shassy', sql.NVarChar, shassy || '')
-            .input('Full_name', sql.NVarChar, Full_name || '')
-            .input('car_type', sql.NVarChar, car_type || '')
-            .input('model', sql.NVarChar, model || '')
-            .input('resoon', sql.NVarChar, resoon || '')
-            .input('place', sql.NVarChar, place || '')
-            .input('parezga', sql.NVarChar, parezga || '')
-            .input('bash', sql.NVarChar, bash || '')
+            .input('IDD', sql.Int, targetIDD)
+            .input('place', sql.NVarChar, (place || '').trim())
+            .input('car_n', sql.NVarChar, (car_n || '').trim())
+            .input('bash', sql.NVarChar, (bash || '').trim())
+            .input('parezga', sql.NVarChar, (parezga || '').trim())
+            .input('car_type', sql.NVarChar, (car_type || '').trim())
+            .input('model', sql.NVarChar, (model || '').trim())
+            .input('shassy', sql.NVarChar, (shassy || '*').trim())
+            .input('qamara', sql.NVarChar, (qamara || '*').trim())
+            .input('A_shassy', sql.NVarChar, (A_shassy || '*').trim())
+            .input('Full_name', sql.NVarChar, (Full_name || '').trim())
+            .input('resoon', sql.NVarChar, (resoon || '').trim())
+            .input('date_insert', sql.Date, insertDate)
             .input('user_', sql.NVarChar, user)
-            .query(`INSERT INTO Gomrg (car_n, shassy, Full_name, car_type, model, resoon, place, parezga, bash, user_, date_insert)
-                    VALUES (@car_n, @shassy, @Full_name, @car_type, @model, @resoon, @place, @parezga, @bash, @user_, GETDATE())`);
-        res.json({ success: true, message: 'بە سەرکەوتوویی لە گومرگ تۆمارکرا' });
+            .input('AA', sql.NVarChar, (AA || '').trim())
+            .input('BB', sql.NVarChar, (BB || '').trim())
+            .input('CC', sql.NVarChar, (CC || '*').trim())
+            .input('DD', sql.NVarChar, (DD || '').trim())
+            .query(`INSERT INTO Gomrg (IDD, place, car_n, bash, parezga, car_type, model, shassy, qamara, A_shassy, Full_name, resoon, date_insert, user_, AA, BB, CC, DD)
+                    VALUES (@IDD, @place, @car_n, @bash, @parezga, @car_type, @model, @shassy, @qamara, @A_shassy, @Full_name, @resoon, @date_insert, @user_, @AA, @BB, @CC, @DD)`);
+
+        res.json({
+            success: true,
+            message: 'زانیارییەکان بە سەرکەوتوویی لە خشتەی گومرگ (Gomrg) تۆمار کران',
+            savedIDD: targetIDD,
+            nextIDD: targetIDD + 1
+        });
     } catch (err) {
         console.error('Add Gomrg error:', err);
-        res.status(500).json({ error: err.message });
+        res.status(500).json({ success: false, error: err.message });
     }
 });
 
