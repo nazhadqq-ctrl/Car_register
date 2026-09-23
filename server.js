@@ -257,17 +257,62 @@ app.get('/api/barads', requireAuth, async (req, res) => {
 app.get('/api/stats', requireAuth, async (req, res) => {
     try {
         const pool = await getPool();
+        const currentUser = req.session.user || {};
+        const isManager = Boolean(
+            currentUser.permission === 'MANAGER' || 
+            currentUser.place === '*' || 
+            currentUser.username === '9' ||
+            String(currentUser.permission || '').toUpperCase() === 'ADMIN'
+        );
+
+        // Optional query param: ?scope=all or ?scope=user (manager can switch views)
+        const requestedScope = req.query.scope; // 'all' or 'user'
+        const shouldFilterByUser = (!isManager) || (isManager && requestedScope === 'user');
+
+        let totalQuery, todayQuery, byTypeQuery;
+        const request = pool.request();
+
+        if (shouldFilterByUser) {
+            const userName = currentUser.name || currentUser.username || '';
+            const userPlace = currentUser.place || '';
+            request.input('userName', sql.NVarChar, userName);
+            request.input('userPlace', sql.NVarChar, userPlace);
+
+            // Filter in T1: GG is the employee/checker, FF is the station/user
+            const userCondition = `(GG = @userName OR FF = @userName OR (FF = @userPlace AND @userPlace != '*' AND @userPlace != ''))`;
+
+            totalQuery = `SELECT COUNT(*) as cnt FROM T1 WHERE ${userCondition}`;
+            todayQuery = `SELECT COUNT(*) as cnt FROM T1 WHERE CAST(DD as date) = CAST(GETDATE() as date) AND ${userCondition}`;
+            byTypeQuery = `SELECT C as type_, COUNT(*) as cnt FROM T1 WHERE C IS NOT NULL AND ${userCondition} GROUP BY C ORDER BY cnt DESC`;
+        } else {
+            // Full manager view (all cars across the whole system)
+            totalQuery = `SELECT COUNT(*) as cnt FROM T1`;
+            todayQuery = `SELECT COUNT(*) as cnt FROM T1 WHERE CAST(DD as date) = CAST(GETDATE() as date)`;
+            byTypeQuery = `SELECT C as type_, COUNT(*) as cnt FROM T1 WHERE C IS NOT NULL GROUP BY C ORDER BY cnt DESC`;
+        }
+
         const [total, today, byType] = await Promise.all([
-            pool.request().query(`SELECT COUNT(*) as cnt FROM T1`),
-            pool.request().query(`SELECT COUNT(*) as cnt FROM T1 WHERE CAST(DD as date) = CAST(GETDATE() as date)`),
-            pool.request().query(`SELECT C as type_, COUNT(*) as cnt FROM T1 WHERE C IS NOT NULL GROUP BY C ORDER BY cnt DESC`)
+            request.query(totalQuery),
+            request.query(todayQuery),
+            request.query(byTypeQuery)
         ]);
+
         res.json({
             total: total.recordset[0].cnt,
             today: today.recordset[0].cnt,
-            byType: byType.recordset
+            byType: byType.recordset,
+            isManager: Boolean(isManager),
+            scope: shouldFilterByUser ? 'user' : 'all',
+            scopedName: shouldFilterByUser ? (currentUser.name || currentUser.username) : 'سەرجەم بەشەکان (گشتی)',
+            currentUser: {
+                username: currentUser.username,
+                name: currentUser.name,
+                place: currentUser.place,
+                permission: currentUser.permission
+            }
         });
     } catch (err) {
+        console.error('Stats error:', err);
         res.status(500).json({ error: err.message });
     }
 });
