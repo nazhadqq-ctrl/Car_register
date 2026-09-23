@@ -113,6 +113,39 @@
             transition: all .2s;
         }
         .btn-out:hover { background: rgba(224,59,59,0.5); color: white; border-color: var(--danger); }
+        .btn-update-topbar {
+            background: linear-gradient(135deg, rgba(14, 165, 233, 0.25), rgba(2, 132, 199, 0.45));
+            border: 1.5px solid #38bdf8;
+            border-radius: 8px;
+            color: #ffffff;
+            padding: 6px 14px;
+            font-size: 12px;
+            font-weight: 700;
+            cursor: pointer;
+            font-family: var(--ku);
+            transition: all .2s;
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            box-shadow: 0 2px 8px rgba(14, 165, 233, 0.3);
+        }
+        .btn-update-topbar:hover {
+            background: linear-gradient(135deg, #0ea5e9, #0284c7);
+            box-shadow: 0 4px 14px rgba(14, 165, 233, 0.5);
+            transform: translateY(-1px);
+        }
+        .badge-ver {
+            background: rgba(255, 255, 255, 0.2);
+            color: #ffffff;
+            font-size: 10px;
+            padding: 1px 6px;
+            border-radius: 10px;
+            font-weight: 800;
+        }
+        @keyframes spin-slow {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
 
         /* ══ NAV TABS ══════════════════════════════════════════════ */
         .nav-tabs {
@@ -1217,6 +1250,11 @@
             <div class="user-place" id="topUserPlace">–</div>
         </div>
         <div class="avatar">👤</div>
+        <button class="btn-update-topbar" id="btnTopbarUpdate" onclick="openSystemUpdateModal()" title="پشکنین و نوێکردنەوەی سیستەم">
+            <span style="font-size:14px; animation: spin-slow 8s linear infinite; display:inline-block;">🔄</span>
+            <span>ئەپدەیت</span>
+            <span class="badge-ver" id="topbarVerBadge">v1.2.0</span>
+        </button>
         <button class="btn-out" id="logoutBtn">⬅ دەرچوون</button>
     </div>
 </header>
@@ -1227,6 +1265,7 @@
     <a class="nav-tab" data-page="search"><span class="tab-icon">🔍</span> گەڕانی ئوتومبێل</a>
     <a class="nav-tab" data-page="suspicious"><span class="tab-icon">⚠️</span> گومانلێکراو (RAP) <span class="tab-badge" id="suspBadge">0</span></a>
     <a class="nav-tab" data-page="reports"><span class="tab-icon">📋</span> ڕاپۆرت و ئامار</a>
+    <a class="nav-tab" data-page="update" onclick="openSystemUpdateModal(); return false;"><span class="tab-icon">🔄</span> ئەپدەیت (نوێکردنەوە)</a>
 </nav>
 
 <!-- ══ DASHBOARD PAGE ════════════════════════════════════════════════ -->
@@ -1338,6 +1377,12 @@
             <div class="mod-card mc-indigo" onclick="switchTab('reports')">
                 <div class="mod-icon">📋</div>
                 <div class="mod-label">ڕاپۆرت</div>
+            </div>
+
+            <!-- 12. ئەپدەیت (نوێکردنەوە) -->
+            <div class="mod-card mc-update" onclick="openSystemUpdateModal()" style="border: 2px solid #0284c7; background: linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%); cursor: pointer;">
+                <div class="mod-icon" style="color: #0284c7;">🔄</div>
+                <div class="mod-label" style="font-weight: 800; color: #0369a1;">ئەپدەیت (نوێکردنەوە)</div>
             </div>
 
         </div>
@@ -2009,6 +2054,67 @@
         </div>
         <div class="modal-body">
             <div class="detail-grid" id="modalBody"></div>
+        </div>
+    </div>
+</div>
+
+<!-- 11. MODAL: SYSTEM AUTO-UPDATER -->
+<div class="overlay" id="modalSystemUpdate">
+    <div class="modal modal-lg" style="max-width: 680px; border-radius: 12px; overflow: hidden; border: 2px solid #0284c7; box-shadow: 0 15px 50px rgba(0,0,0,0.35);">
+        <div class="modal-head" style="background: linear-gradient(135deg, #0f172a, #1e293b); color: #ffffff; padding: 14px 20px;">
+            <div class="modal-title" style="display:flex; align-items:center; gap:10px; font-size:15px; color:#38bdf8; font-weight:800;">
+                <span style="font-size: 20px;">🔄</span>
+                <span>نوێکردنەوەی سیستەمی بەرنامە (System Auto-Updater)</span>
+            </div>
+            <div style="display:flex; align-items:center; gap:10px;">
+                <span style="background: rgba(56, 189, 248, 0.2); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.4); padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 800;" id="updateModalVersionBadge">v1.2.0</span>
+                <button class="modal-close" style="color: #ffffff;" onclick="closeOverlay('modalSystemUpdate')">✕</button>
+            </div>
+        </div>
+        <div class="modal-body" style="padding: 22px; background: #f8fafc;">
+            <!-- Center Card -->
+            <div style="background: #ffffff; border: 1.5px solid #e2e8f0; border-radius: 10px; padding: 24px 18px; text-align: center; box-shadow: 0 2px 10px rgba(0,0,0,0.03); margin-bottom: 18px;">
+                <div style="width: 70px; height: 70px; margin: 0 auto 14px; border-radius: 50%; background: #e0f2fe; border: 2px solid #38bdf8; display: flex; align-items: center; justify-content: center;">
+                    <span id="updateCenterIcon" style="font-size: 32px; display:inline-block; transition: transform 0.3s;">🔄</span>
+                </div>
+
+                <h3 id="updateMainStatusTitle" style="font-size: 16px; font-weight: 800; color: #0f172a; margin-bottom: 6px;">
+                    پشکنین و داگرتنی نوێترین گۆڕانکارییەکان
+                </h3>
+                <p id="updateMainStatusDesc" style="font-size: 13px; color: #64748b; max-width: 520px; margin: 0 auto 18px; line-height: 1.7;">
+                    کاتێک کلیک لەسەر دوگمەی خوارەوە دەکەیت، بەرنامەکە ڕاستەوخۆ نوێترین گۆڕانکاری و چاکسازییەکان لە گیت هاب دادەبەزێنێت بەبێ ئەوەی پێویست بکات بەرنامەکە بسڕیتەوە (Remove) و سەرلەنوێ دایبەزێنیتەوە (Install).
+                </p>
+
+                <!-- Action Buttons -->
+                <div style="display:flex; justify-content:center; gap:10px; flex-wrap:wrap;" id="updateButtonsContainer">
+                    <button type="button" id="btnStartSystemUpdate" onclick="performSystemUpdate(false)" style="background: linear-gradient(135deg, #0284c7, #0369a1); color: #ffffff; border: none; font-weight: 800; font-size: 13.5px; padding: 11px 26px; border-radius: 8px; cursor: pointer; display: flex; align-items: center; gap: 8px; box-shadow: 0 4px 15px rgba(2, 132, 199, 0.35); font-family: var(--ku);">
+                        <span>🚀</span>
+                        <span>پشکنین و نوێکردنەوەی ئێستا</span>
+                    </button>
+
+                    <button type="button" id="btnForceSystemUpdate" onclick="performSystemUpdate(true)" style="background: #ffffff; color: #0284c7; border: 1.5px solid #0284c7; font-weight: 700; font-size: 12.5px; padding: 11px 18px; border-radius: 8px; cursor: pointer; display: flex; align-items: center; gap: 6px; font-family: var(--ku);">
+                        <span>⚡</span>
+                        <span>دووبارە داگرتنەوەی هەموو فایلەکان</span>
+                    </button>
+                </div>
+
+                <!-- Feedback & Progress Box -->
+                <div id="updateFeedbackBox" style="display: none; margin-top: 18px; padding: 14px; border-radius: 8px; font-size: 13px; text-align: right; direction: rtl; line-height: 1.7;">
+                </div>
+            </div>
+
+            <!-- Operator Guidance -->
+            <div style="background: #fffbeb; border: 1px solid #fde68a; border-radius: 8px; padding: 12px 16px;">
+                <div style="display:flex; align-items:center; gap:6px; font-weight:800; color: #b45309; font-size: 13px; margin-bottom: 4px;">
+                    <span>💡</span>
+                    <span>ڕێنمایی بۆ بەکارهێنەران:</span>
+                </div>
+                <ul style="font-size: 12px; color: #78350f; line-height: 1.7; padding-right: 16px; margin: 0;">
+                    <li>هەر کاتێک گۆڕانکاری لە کۆد یان دیزاین یان پرنت کرا، تەنها کلیک لەسەر (🚀 پشکنین و نوێکردنەوە) بکە.</li>
+                    <li>سیستەمەکە بە شێوەیەکی خۆکار فایلە نوێیەکان لە گیت هابەوە جێگیر دەکات و پەڕەکە ڕیفرێش دەبێتەوە.</li>
+                    <li>تەواوی داتاکانی بنکەدراوە پارێزراون و پێویست بە هیچ پرۆگرامێکی دەرەکی ناکات.</li>
+                </ul>
+            </div>
         </div>
     </div>
 </div>
@@ -5730,8 +5836,203 @@ function showSuspDetail(data) {
         <div class="d-item"><div class="d-label">بەڕاد</div><div class="d-val">${r.barad||'-'}</div></div>
         <div class="d-item"><div class="d-label">بەروار</div><div class="d-val">${date}</div></div>
         ${r.note ? `<div class="d-item full" style="background:#fee2e2;border-color:#fca5a5;"><div class="d-label" style="color:var(--danger)">⚠️ هۆکار / تێبینی</div><div class="d-val" style="color:var(--danger)">${r.note}</div></div>` : ''}
-    `;
 }
+
+// ─── 12. SYSTEM AUTO-UPDATER & VERSION LOGIC ─────────────────────────────
+let currentAppVersion = '1.2.0';
+
+async function loadSystemVersion() {
+    try {
+        const res = await fetch('/api/system/version');
+        if (res.ok) {
+            const data = await res.json();
+            currentAppVersion = data.version || '1.2.0';
+            const verStr = `v${currentAppVersion}`;
+            const topBadge = document.getElementById('topbarVerBadge');
+            if (topBadge) topBadge.textContent = verStr;
+            const modalBadge = document.getElementById('updateModalVersionBadge');
+            if (modalBadge) modalBadge.textContent = verStr;
+        }
+    } catch (e) {
+        console.warn('Could not fetch system version:', e);
+    }
+}
+
+function openSystemUpdateModal() {
+    loadSystemVersion();
+    const feedbackBox = document.getElementById('updateFeedbackBox');
+    if (feedbackBox) {
+        feedbackBox.style.display = 'none';
+        feedbackBox.innerHTML = '';
+    }
+    const titleEl = document.getElementById('updateMainStatusTitle');
+    if (titleEl) titleEl.textContent = 'پشکنین و داگرتنی نوێترین گۆڕانکارییەکان';
+    const centerIcon = document.getElementById('updateCenterIcon');
+    if (centerIcon) {
+        centerIcon.style.animation = 'none';
+        centerIcon.textContent = '🔄';
+    }
+    const btnStart = document.getElementById('btnStartSystemUpdate');
+    const btnForce = document.getElementById('btnForceSystemUpdate');
+    if (btnStart) btnStart.disabled = false;
+    if (btnForce) btnForce.disabled = false;
+
+    openOverlay('modalSystemUpdate');
+}
+
+async function performSystemUpdate(isForce = false) {
+    const feedbackBox = document.getElementById('updateFeedbackBox');
+    const centerIcon = document.getElementById('updateCenterIcon');
+    const titleEl = document.getElementById('updateMainStatusTitle');
+    const descEl = document.getElementById('updateMainStatusDesc');
+    const btnStart = document.getElementById('btnStartSystemUpdate');
+    const btnForce = document.getElementById('btnForceSystemUpdate');
+
+    if (btnStart) btnStart.disabled = true;
+    if (btnForce) btnForce.disabled = true;
+    if (centerIcon) {
+        centerIcon.style.animation = 'spin .8s linear infinite';
+    }
+
+    if (feedbackBox) {
+        feedbackBox.style.display = 'block';
+        feedbackBox.style.background = '#e0f2fe';
+        feedbackBox.style.border = '1.5px solid #38bdf8';
+        feedbackBox.style.color = '#0369a1';
+        feedbackBox.innerHTML = `
+            <div style="display:flex; align-items:center; gap:10px; justify-content:center; padding:6px 0;">
+                <span style="font-size:20px;">⏳</span>
+                <span style="font-weight:700;">کەمێک چاوەڕوان بە... پەیوەندی بە سێرڤەری گیت هاب دەکرێت بۆ پشکنین و داگرتنی فایلە نوێیەکان...</span>
+            </div>
+        `;
+    }
+
+    try {
+        const res = await fetch('/api/system/check-update', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ force: isForce })
+        });
+
+        const data = await res.json();
+
+        if (data.success && data.hasUpdate) {
+            // Success
+            if (feedbackBox) {
+                feedbackBox.style.display = 'block';
+                feedbackBox.style.background = '#dcfce7';
+                feedbackBox.style.border = '1.5px solid #22c55e';
+                feedbackBox.style.color = '#15803d';
+                feedbackBox.innerHTML = `
+                    <div style="font-size:15px; font-weight:800; margin-bottom:6px; color:#166534;">
+                        🎉 پیرۆزە! سیستەمەکە بە سەرکەوتوویی نوێکرایەوە بۆ وەشانی (${data.newVersion || 'نوێ'})
+                    </div>
+                    <div style="font-size:13px; color:#14532d; line-height:1.7;">
+                        گۆڕانکاری لە فایلەکان کرا: <b>${(data.updatedFiles || []).join('، ') || 'هەموو فایلەکان'}</b><br>
+                        <span style="color:#0369a1; font-weight:800;">🔄 بەرنامەکە دوای ٣ چرکە بە شێوەیەکی خۆکار ڕیفرێش دەبێت بۆ ئەوەی گۆڕانکارییەکان کارا بن...</span>
+                    </div>
+                `;
+            }
+            if (titleEl) titleEl.textContent = '✅ نوێکاری بە سەرکەوتوویی جێبەجێ کرا!';
+            if (descEl) descEl.textContent = 'سیستەمەکە گەیشتە نوێترین وەشان بە سەرکەوتوویی.';
+            if (centerIcon) {
+                centerIcon.style.animation = 'none';
+                centerIcon.textContent = '✅';
+            }
+
+            // Health poll and reload
+            let reloadAttempts = 0;
+            const checkAndReload = async () => {
+                try {
+                    const testRes = await fetch('/api/system/version?t=' + Date.now());
+                    if (testRes.ok) {
+                        window.location.reload();
+                        return;
+                    }
+                } catch(e) {}
+                reloadAttempts++;
+                if (reloadAttempts < 25) {
+                    setTimeout(checkAndReload, 800);
+                } else {
+                    window.location.reload();
+                }
+            };
+            setTimeout(checkAndReload, 2800);
+
+        } else if (data.success && !data.hasUpdate) {
+            // Already latest
+            if (feedbackBox) {
+                feedbackBox.style.display = 'block';
+                feedbackBox.style.background = '#f0f9ff';
+                feedbackBox.style.border = '1.5px solid #7dd3fc';
+                feedbackBox.style.color = '#0369a1';
+                feedbackBox.innerHTML = `
+                    <div style="font-size:14px; font-weight:800; margin-bottom:4px; color:#0284c7;">
+                        ✅ سیستەمەکەت لەسەر نوێترین وەشانە (${data.currentVersion || currentAppVersion})
+                    </div>
+                    <div style="font-size:12.5px; color:#0f172a;">
+                        ئەمە دوا گۆڕانکاری و نوێترین وەشانی فەرمییە و لە ئێستادا پێویست بە هیچ نوێکارییەک ناکات.
+                    </div>
+                `;
+            }
+            if (titleEl) titleEl.textContent = '✅ سیستەمەکەت نوێترین وەشانە';
+            if (centerIcon) {
+                centerIcon.style.animation = 'none';
+                centerIcon.textContent = '✨';
+            }
+            if (btnStart) btnStart.disabled = false;
+            if (btnForce) btnForce.disabled = false;
+
+        } else {
+            // Error
+            if (feedbackBox) {
+                feedbackBox.style.display = 'block';
+                feedbackBox.style.background = '#fee2e2';
+                feedbackBox.style.border = '1.5px solid #f87171';
+                feedbackBox.style.color = '#991b1b';
+                feedbackBox.innerHTML = `
+                    <div style="font-size:14px; font-weight:800; margin-bottom:4px; color:#b91c1c;">
+                        ⚠️ نەتوانرا نوێکاری بکرێت
+                    </div>
+                    <div style="font-size:12.5px; color:#7f1d1d;">
+                        ${data.error || data.message || 'پەیوەندی بە گیت هاب نەبەسترا.'}<br>
+                        تکایە دڵنیابەرەوە لە هێڵی ئینتەرنێت و دووبارە هەوڵبدەرەوە.
+                    </div>
+                `;
+            }
+            if (centerIcon) {
+                centerIcon.style.animation = 'none';
+                centerIcon.textContent = '❌';
+            }
+            if (btnStart) btnStart.disabled = false;
+            if (btnForce) btnForce.disabled = false;
+        }
+    } catch (err) {
+        if (feedbackBox) {
+            feedbackBox.style.display = 'block';
+            feedbackBox.style.background = '#fee2e2';
+            feedbackBox.style.border = '1.5px solid #f87171';
+            feedbackBox.style.color = '#991b1b';
+            feedbackBox.innerHTML = `
+                <div style="font-size:14px; font-weight:800; margin-bottom:4px; color:#b91c1c;">
+                    ⚠️ کێشە لە پەیوەندی سێرڤەر
+                </div>
+                <div style="font-size:12.5px; color:#7f1d1d;">
+                    ${err.message || 'نەتوانرا پەیوەندی بە سێرڤەر بکرێت.'}
+                </div>
+            `;
+        }
+        if (centerIcon) {
+            centerIcon.style.animation = 'none';
+            centerIcon.textContent = '❌';
+        }
+        if (btnStart) btnStart.disabled = false;
+        if (btnForce) btnForce.disabled = false;
+    }
+}
+
+// Initial version fetch
+setTimeout(loadSystemVersion, 500);
 </script>
 </body>
 </html>

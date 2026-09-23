@@ -1186,7 +1186,7 @@ app.post('/api/register', requireAuth, async (req, res) => {
                     VALUES (@A, @B, @C, @D, @E, @F, @G, @H, @I, @J, @K, @L, @M, @N, @O, @P, @Q, @R, @S, @T, @U, @V, @W, @X, @Y, @Z, @AA, @BB, @CC, @II, @JJ, @FF, @GG, @DD, GETDATE(), @KK);`);
 
         const newId = insertRes.recordset[0]?.newId;
-        res.json({ success: true, message: 'ئوتومبێل بە سەرکەوتوویی تۆمارکرا', id: newId, barcode: finalBarcode, warnings });
+        res.json({ success: true, message: 'ئوتومبێل بە سەرکەوتوویی تۆمارکرا', id: newId, barcode: finalBarcode });
     } catch (err) {
         console.error('Register vehicle error:', err);
         res.status(500).json({ error: err.message });
@@ -1377,7 +1377,49 @@ app.get('/api/advanced-search', requireAuth, async (req, res) => {
 
 
 
+// ─── SYSTEM AUTO-UPDATER & VERSION API ──────────────────────────────
+app.get('/api/system/version', (req, res) => {
+    try {
+        const updater = require('./auto-updater');
+        res.json(updater.getLocalVersion());
+    } catch (e) {
+        res.json({ version: '1.2.0', build: 120 });
+    }
+});
+
+app.post('/api/system/check-update', async (req, res) => {
+    try {
+        const isForce = req.body && !!req.body.force;
+        const updater = require('./auto-updater');
+        const result = await updater.checkForUpdates(isForce);
+        
+        res.json(result);
+
+        if (result.success && result.hasUpdate) {
+            console.log('✅ Update applied successfully. Relaunching server process...');
+            setTimeout(() => {
+                try {
+                    const { spawn } = require('child_process');
+                    const child = spawn('cmd.exe', ['/c', 'start', '""', process.execPath, path.join(__dirname, 'server.js')], {
+                        detached: true,
+                        stdio: 'ignore',
+                        cwd: __dirname
+                    });
+                    child.unref();
+                } catch (spawnErr) {
+                    console.error('Auto-restart spawn error:', spawnErr);
+                }
+                process.exit(0);
+            }, 1800);
+        }
+    } catch (err) {
+        console.error('Check update error:', err);
+        res.status(500).json({ success: false, error: err.message });
+    }
+});
+
 // ─── START SERVER ─────────────────────────────────────────────────────
 app.listen(PORT, () => {
     console.log(`✅ TrafficCheck Server running on http://localhost:${PORT}`);
 });
+
