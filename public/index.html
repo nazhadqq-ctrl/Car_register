@@ -2131,10 +2131,34 @@ function setupC4KurdInputs() {
 function toEnglishUppercase(text) {
     if (!text) return '';
     const map = {
-        'ض':'Q','ص':'W','ث':'E','ق':'R','ف':'T','غ':'Y','ع':'U','ه':'I','ھ':'I','خ':'O','ح':'P',
-        'ش':'A','س':'S','ی':'D','ي':'D','ێ':'D','ب':'F','ل':'G','ڵ':'L','ا':'H','أ':'H','إ':'H','آ':'H',
-        'ت':'J','ن':'K','م':'L','ئ':'Z','ء':'X','ۆ':'C','ؤ':'C','ر':'V','ڕ':'R','لا':'B','ى':'N','ة':'M',
-        'پ':'P','چ':'C','ژ':'J','گ':'G','ڤ':'V','ك':'K','ک':'K','و':'W','د':'D','ز':'Z','ط':'T','ظ':'Z',
+        // Standard PC Keyboard letters (QWERTY layout mapped from Kurdish keys)
+        'ق':'Q',
+        'و':'W',
+        'ە':'E', 'ع':'E',
+        'ر':'R', 'ڕ':'R',
+        'ت':'T', 'ط':'T',
+        'ی':'Y', 'ي':'Y', 'ى':'Y',
+        'ۆ':'O', 'ؤ':'O',
+        'ێ':'I', 'ئ':'I',
+        'پ':'P',
+        'ا':'A', 'ئا':'A', 'أ':'A', 'إ':'A', 'آ':'A', 'ء':'A',
+        'س':'S', 'ص':'S',
+        'د':'D', 'ض':'D',
+        'ف':'F',
+        'گ':'G', 'غ':'G',
+        'ه':'H', 'ھ':'H', 'ح':'H',
+        'ژ':'J',
+        'ک':'K', 'ك':'K',
+        'ل':'L', 'ڵ':'L',
+        'ز':'Z', 'ظ':'Z',
+        'خ':'X',
+        'چ':'C', 'ج':'C',
+        'ڤ':'V',
+        'ب':'B',
+        'ن':'N',
+        'م':'M',
+        
+        // Eastern Arabic & Persian digits
         '٠':'0','١':'1','٢':'2','٣':'3','٤':'4','٥':'5','٦':'6','٧':'7','٨':'8','٩':'9',
         '۰':'0','۱':'1','۲':'2','۳':'3','۴':'4','۵':'5','۶':'6','۷':'7','۸':'8','۹':'9'
     };
@@ -2258,6 +2282,84 @@ async function updateBarcodeState(forceRegenerate = false) {
 }
 
 function setupAutoEnglishUpper() {
+    // 1. Direct Physical PC Keyboard Interceptor via e.code
+    // Guarantees exact QWERTY English keycap characters regardless of Windows keyboard language (Kurdish/Arabic/etc.)
+    document.addEventListener('keydown', function(e) {
+        const target = e.target;
+        if (!target || !target.classList) return;
+
+        const isAutoEn = target.classList.contains('auto-en-upper');
+        const isMobile = target.id === 'dfT';
+        if (!isAutoEn && !isMobile) return;
+
+        // Allow system/browser shortcuts (Ctrl+C, Ctrl+V, Ctrl+A, Ctrl+Z, Alt+Shift, etc.)
+        if (e.ctrlKey || e.metaKey || e.altKey) return;
+
+        // Allow navigation and text editing control keys
+        const allowedControlKeys = [
+            'Backspace', 'Delete', 'Tab', 'Enter', 'Escape',
+            'ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown',
+            'Home', 'End', 'PageUp', 'PageDown', 'Insert',
+            'F1', 'F2', 'F3', 'F4', 'F5', 'F6', 'F7', 'F8', 'F9', 'F10', 'F11', 'F12'
+        ];
+        if (allowedControlKeys.includes(e.key)) return;
+
+        let char = null;
+        if (/^Key[A-Z]$/.test(e.code)) {
+            char = e.code.slice(3).toUpperCase();
+        } else if (/^Digit[0-9]$/.test(e.code)) {
+            if (e.shiftKey) {
+                if (e.code === 'Digit8') char = '*';
+                else return;
+            } else {
+                char = e.code.slice(5);
+            }
+        } else if (/^Numpad[0-9]$/.test(e.code)) {
+            char = e.code.slice(6);
+        } else if (e.code === 'Space') {
+            char = ' ';
+        } else if (e.code === 'NumpadMultiply') {
+            char = '*';
+        }
+
+        if (char === null) return;
+
+        // Field specific allowed characters
+        if (isMobile) {
+            if (!/[0-9]/.test(char)) { e.preventDefault(); return; }
+        } else if (target.id === 'dfR') {
+            if (!/[A-Z0-9]/.test(char)) { e.preventDefault(); return; }
+        } else if (target.id === 'dfA' || target.id === 'gomrgSearchCarN' || target.id === 'gomrgCarN') {
+            if (!/[A-Z0-9 ]/.test(char)) { e.preventDefault(); return; }
+        } else if (target.id === 'dfS' || target.id === 'dfW' || target.id === 'dfAA') {
+            if (!/[A-Z0-9*]/.test(char)) { e.preventDefault(); return; }
+        } else {
+            if (!/[A-Z0-9 ]/.test(char)) { e.preventDefault(); return; }
+        }
+
+        e.preventDefault();
+
+        const start = target.selectionStart;
+        const end = target.selectionEnd;
+        const val = target.value;
+
+        let maxLen = target.maxLength > 0 && target.maxLength < 1000 ? target.maxLength : 999;
+        if (target.id === 'dfR' || target.id === 'dfS' || target.id === 'dfW' || target.id === 'dfAA') {
+            maxLen = 17;
+        } else if (target.id === 'dfT') {
+            maxLen = 11;
+        }
+
+        if ((val.length - (end - start)) >= maxLen) {
+            return;
+        }
+
+        target.value = val.slice(0, start) + char + val.slice(end);
+        target.setSelectionRange(start + 1, start + 1);
+        target.dispatchEvent(new Event('input', { bubbles: true }));
+    });
+
+    // 2. Input event listener for pasted text, touch inputs, and normalization
     document.addEventListener('input', function(e) {
         if (!e.target) return;
 
