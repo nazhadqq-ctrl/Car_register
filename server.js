@@ -712,6 +712,55 @@ app.get('/api/register/find', requireAuth, async (req, res) => {
             }
         }
 
+        // ─── 0.5 CHECK IF ALREADY REGISTERED IN T1 (FOR PLATE/CHASSIS SEARCH) ───
+        if (!cleanBarcode && (cleanPlate || cleanChassis)) {
+            const reqT1Check = pool.request();
+            let t1CheckQuery = `SELECT TOP 1 id, A, B, C, R, DD, EE, FF, KK FROM T1 WHERE 1=0 `;
+            
+            if (cleanPlate && cleanTablo && cleanBash) {
+                reqT1Check.input('cpPlate', sql.NVarChar, cleanPlate);
+                reqT1Check.input('cpTablo', sql.NVarChar, cleanTablo);
+                const normTablo = cleanTablo.replace(/ى/g, 'ی').replace(/ك/g, 'ک');
+                reqT1Check.input('normCpTablo', sql.NVarChar, normTablo);
+
+                reqT1Check.input('cpBash', sql.NVarChar, cleanBash);
+                const normBash = cleanBash.replace(/ى/g, 'ی').replace(/ك/g, 'ک');
+                reqT1Check.input('normCpBash', sql.NVarChar, normBash);
+
+                t1CheckQuery += ` OR (
+                    (A = @cpPlate OR REPLACE(A, ' ', '') = @cpPlate)
+                    AND (B = @cpTablo OR REPLACE(B, N'ى', N'ی') = @normCpTablo)
+                    AND (C = @cpBash OR REPLACE(C, N'ى', N'ی') = @normCpBash)
+                )`;
+            } else if (cleanPlate && !cleanTablo && !cleanBash) {
+                reqT1Check.input('cpPlateOnly', sql.NVarChar, cleanPlate);
+                t1CheckQuery += ` OR (A = @cpPlateOnly OR REPLACE(A, ' ', '') = @cpPlateOnly)`;
+            }
+
+            if (cleanChassis && cleanChassis !== '*') {
+                reqT1Check.input('cpChassis', sql.NVarChar, cleanChassis);
+                t1CheckQuery += ` OR (R = @cpChassis OR REPLACE(R, ' ', '') = @cpChassis)`;
+            }
+
+            t1CheckQuery += ` ORDER BY id DESC`;
+
+            const t1CheckRes = await reqT1Check.query(t1CheckQuery);
+            if (t1CheckRes.recordset.length > 0) {
+                const existing = t1CheckRes.recordset[0];
+                const regDate = existing.DD ? new Date(existing.DD).toISOString().slice(0, 10) : (existing.EE ? new Date(existing.EE).toISOString().slice(0, 10) : 'نەزانراو');
+                return res.json({
+                    alreadyRegistered: true,
+                    date: regDate,
+                    id: existing.id,
+                    plate: existing.A,
+                    tablo: existing.B,
+                    bash: existing.C,
+                    chassis: existing.R,
+                    user: existing.FF
+                });
+            }
+        }
+
         // 1. SEARCH BY BARCODE (FOR BARCODE READERS & SCANNERS)
         if (cleanBarcode) {
             const bRes = await pool.request()
@@ -1131,7 +1180,10 @@ app.post('/api/register', requireAuth, async (req, res) => {
             .input('KK', sql.NVarChar, finalBarcode)
             .query(`INSERT INTO T1 (A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U, V, W, X, Y, Z, AA, BB, CC, II, JJ, FF, GG, DD, EE, KK)
                     VALUES (@A, @B, @C, @D, @E, @F, @G, @H, @I, @J, @K, @L, @M, @N, @O, @P, @Q, @R, @S, @T, @U, @V, @W, @X, @Y, @Z, @AA, @BB, @CC, @II, @JJ, @FF, @GG, @DD, GETDATE(), @KK);
-                    SELECT SCOPE_IDENTITY() AS newId;`);
+                    SELECT SCOPE_IDENTITY() AS newId;
+
+                    INSERT INTO T1_backup (A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U, V, W, X, Y, Z, AA, BB, CC, II, JJ, FF, GG, DD, EE, KK)
+                    VALUES (@A, @B, @C, @D, @E, @F, @G, @H, @I, @J, @K, @L, @M, @N, @O, @P, @Q, @R, @S, @T, @U, @V, @W, @X, @Y, @Z, @AA, @BB, @CC, @II, @JJ, @FF, @GG, @DD, GETDATE(), @KK);`);
 
         const newId = insertRes.recordset[0]?.newId;
         res.json({ success: true, message: 'ئوتومبێل بە سەرکەوتوویی تۆمارکرا', id: newId, barcode: finalBarcode, warnings });
