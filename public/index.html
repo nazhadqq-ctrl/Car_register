@@ -1586,29 +1586,30 @@
                     </datalist>
                     
                     <span class="df-label">پارەی رسومات</span>
-                    <select id="dfJJ" class="df-select df-vin-font" onchange="dfOnFeeChange(this)" style="flex:1;min-width:180px;height:27px;font-weight:700;text-align:center;">
-                        <option value="0" selected>0</option>
-                        <option value="210000">210,000</option>
-                        <option value="337500">337,500</option>
-                        <option value="420000">420,000</option>
-                        <option value="840000">840,000</option>
-                        <option value="1260000">1,260,000</option>
-                        <option value="1312500">1,312,500</option>
-                        <option value="1575000">1,575,000</option>
-                        <option value="1653750">1,653,750</option>
-                        <option value="1680000">1,680,000</option>
-                        <option value="1732500">1,732,500</option>
-                        <option value="1785000">1,785,000</option>
-                        <option value="1942500">1,942,500</option>
-                        <option value="2100000">2,100,000</option>
-                        <option value="2362500">2,362,500</option>
-                        <option value="3037500">3,037,500</option>
-                        <option value="3150000">3,150,000</option>
-                        <option value="3307500">3,307,500</option>
-                        <option value="3675000">3,675,000</option>
-                        <option value="8400000">8,400,000</option>
-                        <option value="custom">دیاریکردنی تر (نوسین)...</option>
-                    </select>
+                    <div class="df-combobox" id="dfJJWrapper" style="flex:1;min-width:180px;">
+                        <input type="text" id="dfJJ" class="df-input df-vin-font df-combo-input" autocomplete="off" value="0" placeholder="0" list="dfJJList" style="text-align:center;font-weight:700;">
+                        <button type="button" class="df-combo-btn" id="dfJJBtn" tabindex="-1" title="بینینی هەموو رسوماتەکان">▼</button>
+                        <div class="df-combo-menu" id="dfJJMenu"></div>
+                        <datalist id="dfJJList">
+                            <option value="0">0</option>
+                            <option value="210000">210,000</option>
+                            <option value="840000">840,000</option>
+                            <option value="1260000">1,260,000</option>
+                            <option value="1312500">1,312,500</option>
+                            <option value="1575000">1,575,000</option>
+                            <option value="1653750">1,653,750</option>
+                            <option value="1680000">1,680,000</option>
+                            <option value="1732500">1,732,500</option>
+                            <option value="1785000">1,785,000</option>
+                            <option value="1942500">1,942,500</option>
+                            <option value="2100000">2,100,000</option>
+                            <option value="2362500">2,362,500</option>
+                            <option value="3150000">3,150,000</option>
+                            <option value="3307500">3,307,500</option>
+                            <option value="3675000">3,675,000</option>
+                            <option value="8400000">8,400,000</option>
+                        </datalist>
+                    </div>
                 </div>
 
                 <!-- ROW 7 (Chassis/VIN: 17, Key Length, Cabin: 17, Barcode, Mobile: 11) -->
@@ -2849,6 +2850,176 @@ function initBashCombobox(items) {
     });
 }
 
+// ─── FEE COMBOBOX (پارەی رسومات) ──────────────────────────────────
+const FEE_ITEMS = [
+    '0',
+    '210000',
+    '840000',
+    '1260000',
+    '1312500',
+    '1575000',
+    '1653750',
+    '1680000',
+    '1732500',
+    '1785000',
+    '1942500',
+    '2100000',
+    '2362500',
+    '3150000',
+    '3307500',
+    '3675000',
+    '8400000'
+];
+
+function initFeeCombobox() {
+    const input = document.getElementById('dfJJ');
+    const btn = document.getElementById('dfJJBtn');
+    const menu = document.getElementById('dfJJMenu');
+    if (!input || !menu) return;
+    if (input._feeInit) return;
+    input._feeInit = true;
+
+    let activeFeeIndex = -1;
+
+    function renderMenu(filterText = '', showAll = false) {
+        const query = (filterText || '').toString().trim().replace(/,/g, '');
+        let matches = [];
+        if (showAll || !query) {
+            matches = FEE_ITEMS;
+        } else {
+            const startsWith = [];
+            const contains = [];
+            FEE_ITEMS.forEach(item => {
+                if (item.startsWith(query)) startsWith.push(item);
+                else if (item.includes(query)) contains.push(item);
+            });
+            matches = [...startsWith, ...contains];
+        }
+
+        if (matches.length === 0) {
+            menu.innerHTML = `<div class="df-combo-empty">نووسینی نرخ: ${query}</div>`;
+            activeFeeIndex = -1;
+        } else {
+            menu.innerHTML = matches.map((item, idx) => {
+                const n = Number(item);
+                const formatted = (!isNaN(n) && n > 0) ? n.toLocaleString() : item;
+                let textHtml = item === '0' ? '0' : `${formatted} (${item})`;
+                if (query && query !== '0') {
+                    const regex = new RegExp(`(${query})`, 'gi');
+                    textHtml = textHtml.replace(regex, '<mark>$1</mark>');
+                }
+                return `<div class="df-combo-item" data-value="${item}" data-index="${idx}" style="font-family:'Courier New', monospace; font-weight:700; direction:ltr; text-align:right;">${textHtml}</div>`;
+            }).join('');
+            activeFeeIndex = matches.length > 0 ? 0 : -1;
+            updateActiveItem();
+        }
+        menu.style.display = 'block';
+    }
+
+    function hideMenu() {
+        menu.style.display = 'none';
+        activeFeeIndex = -1;
+    }
+
+    function updateActiveItem() {
+        const items = menu.querySelectorAll('.df-combo-item');
+        items.forEach((it, idx) => {
+            if (idx === activeFeeIndex) {
+                it.classList.add('active');
+                it.scrollIntoView({ block: 'nearest' });
+            } else {
+                it.classList.remove('active');
+            }
+        });
+    }
+
+    function selectFeeItem(val) {
+        input.value = val;
+        hideMenu();
+    }
+
+    input.addEventListener('input', () => {
+        renderMenu(input.value, false);
+    });
+
+    input.addEventListener('focus', () => {
+        renderMenu(input.value === '0' ? '' : input.value, true);
+    });
+
+    if (btn) {
+        btn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            if (menu.style.display === 'block') {
+                hideMenu();
+            } else {
+                renderMenu('', true);
+                input.focus();
+            }
+        });
+    }
+
+    menu.addEventListener('mousedown', (e) => {
+        const target = e.target.closest('.df-combo-item');
+        if (target) {
+            const val = target.getAttribute('data-value');
+            selectFeeItem(val);
+        }
+    });
+
+    input.addEventListener('keydown', (e) => {
+        if (menu.style.display === 'block') {
+            const items = menu.querySelectorAll('.df-combo-item');
+            if (e.key === 'ArrowDown') {
+                e.preventDefault();
+                if (items.length > 0) {
+                    activeFeeIndex = (activeFeeIndex + 1) % items.length;
+                    updateActiveItem();
+                }
+            } else if (e.key === 'ArrowUp') {
+                e.preventDefault();
+                if (items.length > 0) {
+                    activeFeeIndex = (activeFeeIndex - 1 + items.length) % items.length;
+                    updateActiveItem();
+                }
+            } else if (e.key === 'Enter') {
+                if (activeFeeIndex >= 0 && items[activeFeeIndex]) {
+                    e.preventDefault();
+                    const val = items[activeFeeIndex].getAttribute('data-value');
+                    selectFeeItem(val);
+                }
+                hideMenu();
+            } else if (e.key === 'Tab') {
+                if (activeFeeIndex >= 0 && items[activeFeeIndex]) {
+                    const val = items[activeFeeIndex].getAttribute('data-value');
+                    selectFeeItem(val);
+                }
+                hideMenu();
+            } else if (e.key === 'Escape') {
+                hideMenu();
+            }
+        } else {
+            if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+                renderMenu('', true);
+            }
+        }
+    });
+
+    input.addEventListener('blur', () => {
+        setTimeout(() => {
+            hideMenu();
+            if (!input.value.trim()) {
+                input.value = '0';
+            }
+        }, 220);
+    });
+
+    document.addEventListener('click', (e) => {
+        if (!e.target.closest('#dfJJWrapper')) {
+            hideMenu();
+        }
+    });
+}
+
 // ─── HIJZ RED ALERT CONTROLLERS ────────────────────────────────────
 function showHijzRedAlert(r) {
     const mainWrap = document.querySelector('.df-container') || document.body;
@@ -2917,6 +3088,7 @@ function clearHijzAlert() {
 async function loadLookups() {
     try {
         initBashCombobox(); // Initialize immediately with default options
+        initFeeCombobox();  // Initialize fee combobox with standard Kurdistan fees
 
         const [colors, tabloList, staff, barads, bashList] = await Promise.all([
             fetch('/api/colors').then(r=>r.json()).catch(()=>[]),
@@ -3039,7 +3211,7 @@ function initEnterAsTab() {
                 
                 const focusables = Array.from(modal.querySelectorAll(
                     'input:not([type="hidden"]):not([disabled]), select:not([disabled]), button:not([disabled])'
-                )).filter(el => el.offsetParent !== null && !el.classList.contains('desktop-btn-close'));
+                )).filter(el => el.offsetParent !== null && !el.classList.contains('desktop-btn-close') && !el.classList.contains('df-combo-btn'));
 
                 const index = focusables.indexOf(target);
                 if (index > -1) {
@@ -3063,6 +3235,8 @@ let loadedVehicleId = null;
 function openRegisterModal() {
     try {
         initEnterAsTab();
+        initFeeCombobox();
+        initFeeTransactionSync();
         const regAlert = document.getElementById('regAlert');
         if (regAlert) regAlert.innerHTML = '';
         if (currentUser) {
@@ -3077,6 +3251,12 @@ function openRegisterModal() {
         }
         if (!loadedVehicleId) {
             dfResetNew();
+        } else {
+            const dfHEl = document.getElementById('dfH');
+            if (dfHEl && dfHEl.value !== 'تۆماری یەکەم جار') {
+                const feeEl = document.getElementById('dfJJ');
+                if (feeEl) feeEl.value = '0';
+            }
         }
     } catch(err) {
         console.warn('Register modal init warning:', err);
@@ -3156,24 +3336,17 @@ function dfResetNew() {
     if (regAlert) regAlert.innerHTML = '';
 }
 
-function dfOnFeeChange(sel) {
-    if (!sel) return;
-    if (sel.value === 'custom') {
-        const entered = prompt('تکایە بڕی پارەی رسومات بنووسە (ژمارە):');
-        if (entered && entered.trim()) {
-            const clean = entered.trim().replace(/,/g, '');
-            let opt = Array.from(sel.options).find(o => o.value === clean);
-            if (!opt) {
-                opt = document.createElement('option');
-                opt.value = clean;
-                const numVal = Number(clean);
-                opt.textContent = !isNaN(numVal) && numVal > 0 ? (numVal.toLocaleString() + ' (' + clean + ')') : clean;
-                sel.insertBefore(opt, sel.querySelector('option[value="custom"]'));
+// Automatically sync dfJJ with transaction type (تۆماری یەکەم جار)
+function initFeeTransactionSync() {
+    const dfHEl = document.getElementById('dfH');
+    if (dfHEl && !dfHEl._feeSyncInit) {
+        dfHEl._feeSyncInit = true;
+        dfHEl.addEventListener('change', function() {
+            const feeEl = document.getElementById('dfJJ');
+            if (this.value !== 'تۆماری یەکەم جار') {
+                if (feeEl) feeEl.value = '0';
             }
-            sel.value = clean;
-        } else {
-            sel.value = '0';
-        }
+        });
     }
 }
 
@@ -3333,7 +3506,11 @@ async function dfSearchCar() {
         set('dfBB', r.BB || '');
         set('dfCC', r.CC || 0);
         set('dfII', r.II || 0);
-        set('dfJJ', r.JJ || 0);
+        if (r.source === 'Taqega' || (r.H && r.H !== 'تۆماری یەکەم جار')) {
+            set('dfJJ', '0');
+        } else {
+            set('dfJJ', r.JJ || '0');
+        }
         if (r.DD) {
             set('dfDD', new Date(r.DD).toISOString().slice(0, 10));
         }
