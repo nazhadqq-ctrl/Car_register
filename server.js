@@ -44,7 +44,8 @@ app.post('/api/login', async (req, res) => {
         req.session.user = {
             id: user.id,
             username: user.User_id,
-            name: user.User_Name || user.User_id,
+            name: user.User_id, // User_id is the person's name in Tbl_User; User_Name is phone number
+            phone: user.User_Name || '',
             permission: user.Permission,
             place: user.Place_ || ''
         };
@@ -445,7 +446,10 @@ app.post('/api/gomrg', requireAuth, async (req, res) => {
         } = req.body;
 
         const pool = await getPool();
-        const user = req.session.user.name || req.session.user.username;
+        let user = (req.session.user && (req.session.user.username || req.session.user.name)) || 'بەهرە قادر سعید';
+        if (/^[0-9\+\-\s]{5,}$/.test(user) && req.session.user && req.session.user.username && !/^[0-9\+\-\s]{5,}$/.test(req.session.user.username)) {
+            user = req.session.user.username;
+        }
 
         let targetIDD = parseInt(IDD, 10);
         if (isNaN(targetIDD) || targetIDD <= 0) {

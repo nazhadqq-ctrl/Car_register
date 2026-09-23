@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="ckb" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <title>پێشبینینی فۆڕم و چاپی گومرگ</title>
+    <style>
+        @font-face {
+            font-family: 'Speda';
+            src: local('Speda'), local('Speda Bold'), url('/fonts/Speda.ttf') format('truetype');
+            font-weight: normal;
+            font-style: normal;
+        }
+        @font-face {
+            font-family: 'Speda';
+            src: local('Speda-Bold'), local('Speda Bold'), url('/fonts/Speda-Bold.ttf') format('truetype');
+            font-weight: bold;
+            font-style: normal;
+        }
+        @font-face {
+            font-family: 'Speda-Bold';
+            src: local('Speda-Bold'), local('Speda Bold'), url('/fonts/Speda-Bold.ttf') format('truetype');
+            font-weight: bold;
+            font-style: normal;
+        }
+        * { box-sizing: border-box; }
+        body {
+            margin: 0;
+            padding: 24px;
+            background: #f1f5f9;
+            font-family: 'Speda', 'Noto Naskh Arabic', 'Segoe UI', Tahoma, Arial, sans-serif;
+            color: #0f172a;
+            direction: rtl;
+        }
+
+        .section-title {
+            text-align: center;
+            font-size: 20px;
+            font-weight: 800;
+            color: #1e293b;
+            margin: 20px 0 14px 0;
+            padding-bottom: 6px;
+            border-bottom: 2px solid #cbd5e1;
+        }
+
+        /* ══ 1. WINDOWS FORM CLONE ══ */
+        .wf-window {
+            width: 950px;
+            margin: 0 auto 40px auto;
+            background: #f0f0f0;
+            border: 2px solid #0055d4;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.25);
+            font-family: 'Segoe UI', Tahoma, sans-serif;
+        }
+        .wf-titlebar {
+            background: linear-gradient(90deg, #0055d4, #3b82f6);
+            color: white;
+            padding: 6px 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: bold;
+            font-size: 13.5px;
+        }
+        .wf-content {
+            padding: 16px 20px;
+        }
+        .wf-row {
+            display: flex;
+            align-items: center;
+            margin-bottom: 8px;
+            gap: 6px;
+        }
+        .wf-label {
+            font-size: 13px;
+            font-weight: 700;
+            color: #1e293b;
+            white-space: nowrap;
+        }
+        .wf-input {
+            border: 1px solid #7f9db9;
+            background: #ffffff;
+            padding: 3px 6px;
+            font-size: 13px;
+            height: 26px;
+            outline: none;
+            font-family: inherit;
+        }
+
+        /* ══ 2. REPORT PAGE (A4) ══ */
+        .report-page {
+            width: 794px;
+            min-height: 1050px;
+            margin: 0 auto;
+            background: #ffffff;
+            padding: 40px 48px;
+            box-shadow: 0 6px 20px rgba(0,0,0,0.2);
+            border: 1px solid #cbd5e1;
+            font-family: 'Speda', 'Speda-Bold', Arial, sans-serif !important;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- SECTION 1: FORM INTERFACE (WINDOWS FORM CLONE) -->
+    <div class="section-title">١. فۆڕمی تۆمارکردنی گومرگ (شێوازی فۆڕمەکە لە سیستمدا)</div>
+    <div class="wf-window">
+        <div class="wf-titlebar">
+            <span>Gomrg</span>
+            <div style="background:#e11d48; width:16px; height:16px; border-radius:2px; text-align:center; line-height:14px; font-size:11px;">✕</div>
+        </div>
+        <div class="wf-content">
+            <!-- Header title -->
+            <div style="position: relative; text-align: center; margin-bottom: 12px;">
+                <div style="position: absolute; right: 10px; top: 0; background: #22c55e; color: #fff; font-weight: 900; font-size: 13px; padding: 2px 10px; border-radius: 3px;">9</div>
+                <div style="color: #0022cc; font-size: 21px; font-weight: 900;">نوسراو بۆ بەڕێوەبەرایەتی گومرگ</div>
+            </div>
+
+            <!-- Top row: IDD, Date, Place -->
+            <div class="wf-row" style="justify-content: flex-start; margin-bottom: 12px;">
+                <span class="wf-label">ژ - ڕۆیشتوو</span>
+                <input type="text" class="wf-input" style="width: 110px; text-align: center; font-weight: 900; background: #e2e8f0;" value="531577" readonly>
+
+                <span class="wf-label" style="margin-right: 14px;">بەروار</span>
+                <input type="text" class="wf-input" style="width: 105px; text-align: center; font-weight: 800;" value="2026-09-23">
+
+                <span class="wf-label" style="margin-right: 14px;">لە تاقیکەی</span>
+                <input type="text" class="wf-input" style="width: 150px; text-align: center; font-weight: 800; background: #f1f5f9;" value="پێشەنگ" readonly>
+            </div>
+
+            <!-- Search row (Pink bar) -->
+            <div style="background: #fff0f3; border: 1.5px solid #fecdd3; border-radius: 4px; padding: 6px 12px; margin-bottom: 12px; display: flex; align-items: center; justify-content: space-between;">
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <span class="wf-label" style="font-weight: 900;">ژمارەی ئۆتۆمبێل</span>
+                    <input type="text" class="wf-input" style="width: 150px; text-align: center; font-weight: 900; border-color: #f472b6;" value="57055">
+
+                    <span class="wf-label" style="font-weight: 900; margin-right: 6px;">تابلۆی</span>
+                    <input type="text" class="wf-input" style="width: 130px; text-align: center; font-weight: 800; border-color: #f472b6;" value="سلێمانی">
+
+                    <span class="wf-label" style="font-weight: 900; margin-right: 6px;">بەش</span>
+                    <input type="text" class="wf-input" style="width: 110px; text-align: center; font-weight: 800; border-color: #f472b6;" value="تایبەت">
+                </div>
+                <button style="background: #ffff00; border: 1.5px solid #d4d400; color: #000; font-size: 14px; font-weight: 900; padding: 3px 26px; border-radius: 3px; cursor: pointer;">بگەڕێ</button>
+            </div>
+
+            <div style="background:#ecfdf5;border:1.5px solid #a7f3d0;color:#065f46;padding:6px 12px;border-radius:4px;margin-bottom:10px;font-weight:800;font-size:13px;">
+                ✅ داتاکان لە تاقیگە (VA) بە سەرکەوتوویی هێنرانەوە و پڕکرانەوە
+            </div>
+
+            <!-- Form fields -->
+            <div class="wf-row">
+                <span class="wf-label" style="width: 125px;">ژمارەی ئۆتۆمبێل</span>
+                <input type="text" class="wf-input" style="width: 150px; text-align: center; font-weight: 900; border-bottom: 2px solid #0055d4;" value="57055">
+
+                <span class="wf-label" style="margin-right: 14px;">بەشی ئۆتۆمبێل</span>
+                <input type="text" class="wf-input" style="width: 180px; text-align: center; font-weight: 800;" value="تایبەت">
+
+                <span class="wf-label" style="margin-right: 14px;">پاریزگای ئۆتۆمبێل</span>
+                <input type="text" class="wf-input" style="width: 190px; text-align: center; font-weight: 800;" value="سلێمانی">
+            </div>
+
+            <div class="wf-row">
+                <span class="wf-label" style="width: 125px;">جۆری ئۆتۆمبێل</span>
+                <input type="text" class="wf-input" style="flex: 1; font-weight: 800;" value="كيا سبورتاج استيشن">
+            </div>
+
+            <div class="wf-row">
+                <span class="wf-label" style="width: 220px; font-weight: 800;">مۆدێلی ئۆتۆمبێل (ساڵی دەرچوون)</span>
+                <input type="text" class="wf-input" style="width: 100px; text-align: center; font-weight: 900;" value="2010">
+
+                <span class="wf-label" style="margin-right: 14px;">ڕەنگی</span>
+                <input type="text" class="wf-input" style="flex: 1; font-weight: 800;" value="ابيض">
+            </div>
+
+            <div class="wf-row">
+                <span class="wf-label" style="width: 125px;">ژمارەی شاسی</span>
+                <input type="text" class="wf-input" style="width: 280px; font-weight: 900; background: #dcfce7; text-align: center;" value="KNAKH812BA7660920">
+
+                <span class="wf-label" style="margin-right: 14px;">ژمارەی قەمەرە</span>
+                <input type="text" class="wf-input" style="flex: 1; text-align: center; font-weight: 900; background: #fbcfe8;" value="*">
+            </div>
+
+            <div class="wf-row">
+                <span class="wf-label" style="width: 125px;">بەناوی هاوڵاتی</span>
+                <input type="text" class="wf-input" style="flex: 1; font-weight: 900; background: #ffedd5;" value="سرمد عصمت سینۆ">
+            </div>
+
+            <div class="wf-row">
+                <span class="wf-label" style="width: 160px;">ژمارەی شاسی عەرەبانە1</span>
+                <input type="text" class="wf-input" style="flex: 1; text-align: center; font-weight: 900;" value="*">
+
+                <span class="wf-label" style="margin-right: 14px;">ڕەنگی عارەبانە1</span>
+                <input type="text" class="wf-input" style="width: 320px;" value="">
+            </div>
+
+            <div class="wf-row">
+                <span class="wf-label" style="width: 160px;">ژمارەی شاسی عەرەبانە2</span>
+                <input type="text" class="wf-input" style="flex: 1; text-align: center; font-weight: 900;" value="*">
+
+                <span class="wf-label" style="margin-right: 14px;">ڕەنگی عارەبانە2</span>
+                <input type="text" class="wf-input" style="width: 320px;" value="">
+            </div>
+
+            <!-- Row 9: Reason Label (Right) & Buttons (Left) -->
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 14px; margin-bottom: 8px;">
+                <span style="background: #e60000; color: #fff; font-weight: 900; font-size: 13.5px; padding: 4px 18px; border-radius: 3px;">هۆکاری ناردن</span>
+                <div style="display: flex; gap: 8px;">
+                    <button style="background: #cbf5fb; border: 1.5px solid #38bdf8; color: #0369a1; font-weight: 900; font-size: 13px; padding: 4px 14px; border-radius: 3px; cursor: pointer;">ڕاست کردنەوەی زانیاری لە کاتی ڕاکێشان و کەم و کورتی</button>
+                    <button style="background: #ffff00; border: 1.5px solid #d4d400; color: #000; font-weight: 900; font-size: 13.5px; padding: 4px 18px; border-radius: 3px; cursor: pointer;">چاپ کردنی فۆرم</button>
+                    <button style="background: #ff8080; border: 1.5px solid #e05252; color: #000; font-weight: 900; font-size: 13.5px; padding: 4px 18px; border-radius: 3px; cursor: pointer;">تۆمار کردنی زانیاری</button>
+                </div>
+            </div>
+
+            <!-- Bottom wide textarea -->
+            <textarea style="width: 100%; height: 60px; font-size: 14px; font-weight: 700; border: 1.5px solid #94a3b8; padding: 6px 10px; font-family: inherit;" readonly>ڕاست کردنەوەی زانیاری لە کاتی ڕاکێشان و کەم و کورتی</textarea>
+        </div>
+    </div>
+
+
+    <!-- SECTION 2: PRINT REPORT PREVIEW (CLONE OF OFFICIAL DOCUMENT) -->
+    <div class="section-title">٢. چاپی فەرمی گومرگ (ڕاپۆرتی دەرچوو - هاوشێوەی ١٠٠٪ـی کڵێشەکەت)</div>
+    <div class="report-page">
+        <!-- HEADER -->
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 6px;">
+            <div style="text-align: center; width: 33%; font-size: 13px; font-weight: 700; line-height: 1.55;">
+                <div>وەزارەتی ناوخۆ - بەڕێوەبەرایەتی گشتی هاتووچۆ</div>
+                <div>بەڕێوەبەرایەتی هاتووچۆی پارێزگای سلێمانی</div>
+                <div>بەشی تۆمار کردن</div>
+                <div style="margin-top: 14px; font-weight: 800; font-size: 14px;">پێشەنگ</div>
+            </div>
+
+            <div style="text-align: center; width: 34%;">
+                <img src="/img/kurdistan_traffic_logo.png" style="height: 72px; object-fit: contain; margin-bottom: 3px;" alt="Logo">
+                <div style="font-family: Arial, sans-serif; font-size: 10px; font-weight: 700; line-height: 1.3; direction: ltr;">
+                    <div>Ministry of InteriorGeneral Directorate of Traffic</div>
+                    <div>Sulaimany Traffic Directorate</div>
+                    <div>Registration Affair</div>
+                </div>
+            </div>
+
+            <div style="text-align: center; width: 33%; font-size: 13px; font-weight: 700; line-height: 1.55; direction: rtl;">
+                <div>وزارة الداخلية - مديرية مرور العامة</div>
+                <div>مديرية مرور محافظة السليمانية</div>
+                <div>قسم الفني</div>
+            </div>
+        </div>
+
+        <!-- NUMBER & DATE BAR -->
+        <div style="display: flex; justify-content: space-between; align-items: flex-end; padding: 2px 8px; font-size: 13.5px; font-weight: 700;">
+            <div style="direction: rtl; text-align: right; line-height: 1.6;">
+                <div>ژمارە : &nbsp; <span style="font-family: Arial, sans-serif; font-size: 14.5px;">531577</span></div>
+                <div>بەروار : &nbsp; <span style="font-family: Arial, sans-serif; font-size: 13.5px;">2026-09-23</span></div>
+            </div>
+            <div style="direction: ltr; text-align: left; font-family: Arial, sans-serif; line-height: 1.6;">
+                <div>No. &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span>531577</span></div>
+                <div>Date &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span>2026-09-23</span></div>
+            </div>
+        </div>
+
+        <hr style="border: none; border-top: 1.5px solid #000; margin: 4px 0 16px 0;">
+
+        <!-- TITLES & REFERENCE -->
+        <div style="text-align: center; font-size: 15px; font-weight: 800; margin-bottom: 6px;">
+            بۆ / بەڕێوەبەرایەتی گومرگی سلێمانی / بەشی ئۆتۆمبێل
+        </div>
+        <div style="text-align: center; font-size: 14.5px; font-weight: 800; margin-bottom: 14px;">
+            بابەت / ڕاپۆرتی پشکنین و بڕیاری لیژنە
+        </div>
+        <div style="text-align: center; font-size: 13.5px; font-weight: 700; margin-bottom: 18px;">
+            ئاماژە بە نوسراوی وەزارەتی دارایی و ئابوری ژمارە ٤٦٨٤ لە ( ٧-١٠-١٩٩٢ ) هاوپێچ لەگەڵ نوسراوماندا
+        </div>
+
+        <!-- MAIN TABLE -->
+        <table style="width: 100%; border-collapse: collapse; font-size: 14px; font-weight: 700; text-align: center; direction: rtl; margin-bottom: 0;">
+            <!-- ROW 1 -->
+            <tr>
+                <td style="border: 1.5px solid #000; padding: 5px 10px; width: 130px; white-space: nowrap;">ئۆتۆمبێلی ژمارە</td>
+                <td style="border: 1.5px solid #000; padding: 5px 4px; width: 22px;">:</td>
+                <td style="border: 1.5px solid #000; padding: 5px 12px; width: 120px; font-size: 15px;">57055</td>
+                <td style="border: 1.5px solid #000; padding: 5px 8px; width: 70px;">تایبەت</td>
+                <td style="border: 1.5px solid #000; padding: 5px 8px; width: 110px;">سلێمانی</td>
+                <td style="border: none;" colspan="3"></td>
+            </tr>
+
+            <!-- ROW 2 -->
+            <tr>
+                <td style="border: 1.5px solid #000; padding: 6px 10px; width: 130px; white-space: nowrap;">جۆری ئۆتۆمبێل</td>
+                <td style="border: 1.5px solid #000; padding: 6px 4px; width: 22px;">:</td>
+                <td colspan="6" style="border: 1.5px solid #000; padding: 6px 12px; font-size: 15px; font-weight: 800; text-align: center;">كيا سبورتاج استيشن</td>
+            </tr>
+
+            <!-- ROW 3 -->
+            <tr>
+                <td style="border: 1.5px solid #000; padding: 5px 10px; width: 130px;">مۆدێل</td>
+                <td style="border: 1.5px solid #000; padding: 5px 4px; width: 22px;">:</td>
+                <td colspan="2" style="border: 1.5px solid #000; padding: 5px 12px; font-size: 15px;">2010</td>
+                <td style="border: 1.5px solid #000; padding: 5px 6px; width: 45px;">ڕەنگ</td>
+                <td style="border: 1.5px solid #000; padding: 5px 4px; width: 20px;">:</td>
+                <td colspan="2" style="border: 1.5px solid #000; padding: 5px 8px;">ابيض</td>
+            </tr>
+
+            <!-- ROW 4 -->
+            <tr>
+                <td style="border: 1.5px solid #000; padding: 6px 10px; width: 130px;">ژمارەی شاسی</td>
+                <td style="border: 1.5px solid #000; padding: 6px 4px; width: 22px;">:</td>
+                <td colspan="4" style="border: 1.5px solid #000; padding: 6px 12px; font-size: 15px; font-weight: 800; letter-spacing: 0.5px;">KNAKH812BA7660920</td>
+                <td style="border: none;" colspan="2"></td>
+            </tr>
+
+            <!-- ROW 5 -->
+            <tr>
+                <td style="border: 1.5px solid #000; padding: 5px 10px; width: 130px;">ژمارەی لاشە</td>
+                <td style="border: 1.5px solid #000; padding: 5px 4px; width: 22px;">:</td>
+                <td colspan="4" style="border: 1.5px solid #000; padding: 5px 12px;"></td>
+                <td style="border: none;" colspan="2"></td>
+            </tr>
+
+            <!-- ROW 6 -->
+            <tr>
+                <td style="border: 1.5px solid #000; padding: 5px 10px; width: 130px;">ژ.شاسی عەرەبانە1</td>
+                <td style="border: 1.5px solid #000; padding: 5px 4px; width: 22px;">:</td>
+                <td colspan="2" style="border: 1.5px solid #000; padding: 5px 12px;">*</td>
+                <td style="border: 1.5px solid #000; padding: 5px 6px; width: 45px;">ڕەنگ</td>
+                <td style="border: 1.5px solid #000; padding: 5px 4px; width: 20px;">:</td>
+                <td colspan="2" style="border: 1.5px solid #000; padding: 5px 8px;"></td>
+            </tr>
+
+            <!-- ROW 7 -->
+            <tr>
+                <td style="border: 1.5px solid #000; padding: 5px 10px; width: 130px;">ژ.شاسی عەرەبانە2</td>
+                <td style="border: 1.5px solid #000; padding: 5px 4px; width: 22px;">:</td>
+                <td colspan="2" style="border: 1.5px solid #000; padding: 5px 12px;">*</td>
+                <td style="border: 1.5px solid #000; padding: 5px 6px; width: 45px;">ڕەنگ</td>
+                <td style="border: 1.5px solid #000; padding: 5px 4px; width: 20px;">:</td>
+                <td colspan="2" style="border: 1.5px solid #000; padding: 5px 8px;"></td>
+            </tr>
+
+            <!-- ROW 8 -->
+            <tr>
+                <td style="border: 1.5px solid #000; padding: 6px 10px; width: 130px;">بەناوی هاوڵاتی</td>
+                <td style="border: 1.5px solid #000; padding: 6px 4px; width: 22px;">:</td>
+                <td colspan="4" style="border: 1.5px solid #000; padding: 6px 12px; font-size: 15px; font-weight: 800;">سرمد عصمت سینۆ</td>
+                <td style="border: none;" colspan="2"></td>
+            </tr>
+        </table>
+
+        <!-- REASON SECTION -->
+        <div style="margin-top: 0px; direction: rtl;">
+            <div style="display: flex; justify-content: flex-start;">
+                <div style="background: #e2e2e2; border: 1.5px solid #000; border-bottom: none; padding: 4px 18px; font-weight: 800; font-size: 14px; width: 240px; text-align: right;">
+                    بۆتان دەنێرین بە مەبەستی :-
+                </div>
+            </div>
+            <div style="border: 1.5px solid #000; padding: 10px 14px; min-height: 110px; font-size: 15px; font-weight: 800; line-height: 1.65; text-align: right;">ڕاست کردنەوەی زانیاری لە کاتی ڕاکێشان و کەم و کورتی</div>
+        </div>
+
+        <!-- SIGNATURES -->
+        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-top: 40px; padding: 0 16px; direction: rtl; font-size: 14.5px; font-weight: 800; text-align: center;">
+            <div style="width: 28%;">
+                <div>ڕێکخەری فۆڕم</div>
+                <div style="margin-top: 25px;">بەهرە قادر سعید</div>
+            </div>
+            <div style="width: 25%;">
+                <div>ئەندام</div>
+            </div>
+            <div style="width: 35%;">
+                <div>ئەفسەری پشکنین</div>
+                <div style="margin-top: 14px;">ل.بەڕێوەبەری بەشی تۆمار کردن</div>
+            </div>
+        </div>
+
+    </div>
+
+</body>
+</html>

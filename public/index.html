@@ -6,8 +6,26 @@
     <title>هۆبەی پشکنین – هاتووچۆی سلێمانی</title>
     <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@500;600;700;800;900&family=Libre+Barcode+128&family=Libre+Barcode+128+Text&display=swap">
     <style>
+        @font-face {
+            font-family: 'Speda';
+            src: local('Speda'), local('Speda Bold'), url('/fonts/Speda.ttf') format('truetype');
+            font-weight: normal;
+            font-style: normal;
+        }
+        @font-face {
+            font-family: 'Speda';
+            src: local('Speda-Bold'), local('Speda Bold'), url('/fonts/Speda-Bold.ttf') format('truetype');
+            font-weight: bold;
+            font-style: normal;
+        }
+        @font-face {
+            font-family: 'Speda-Bold';
+            src: local('Speda-Bold'), local('Speda Bold'), url('/fonts/Speda-Bold.ttf') format('truetype');
+            font-weight: bold;
+            font-style: normal;
+        }
         :root {
-            --ku: Speda, Tahoma, sans-serif;
+            --ku: 'Speda', Tahoma, sans-serif;
             --primary: #1a3a6b;
             --primary-d: #0d1e3d;
             --accent: #c8a84b;
@@ -4463,7 +4481,17 @@ async function gomrgSaveRecord() {
 }
 
 function renderSingleGomrgDocument(d) {
-    const userName = d.user_ || (currentUser && (currentUser.name || currentUser.username)) || 'بەهرە قادر سعید';
+    let rawUser = (d.user_ || '').trim();
+    if (!rawUser || /^[0-9\+\-\s]{5,}$/.test(rawUser)) {
+        if (currentUser && currentUser.username && !/^[0-9\+\-\s]{5,}$/.test(currentUser.username)) {
+            rawUser = currentUser.username;
+        } else if (currentUser && currentUser.name && !/^[0-9\+\-\s]{5,}$/.test(currentUser.name)) {
+            rawUser = currentUser.name;
+        } else {
+            rawUser = 'بەهرە قادر سعید';
+        }
+    }
+    const userName = rawUser;
     const placeName = d.place || (currentUser && (currentUser.place || currentUser.Place_)) || 'پێشەنگ';
     const cleanQamara = (d.qamara && d.qamara !== '*') ? d.qamara : '';
     const cleanAShassy = (d.A_shassy && d.A_shassy !== '*') ? d.A_shassy : (d.A_shassy || '*');
@@ -4472,7 +4500,7 @@ function renderSingleGomrgDocument(d) {
     const cleanDD = (d.DD && d.DD !== '*') ? d.DD : '';
 
     return `
-    <div class="gomrg-doc-container" style="font-family: 'Noto Naskh Arabic', 'Rabar', 'Tahoma', Arial, sans-serif; direction: rtl; color: #000000; width: 100%; box-sizing: border-box;">
+    <div class="gomrg-doc-container" style="font-family: 'Speda', 'Speda-Bold', Arial, sans-serif !important; direction: rtl; color: #000000; width: 100%; box-sizing: border-box;">
         
         <!-- HEADER -->
         <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 6px;">
@@ -4506,8 +4534,8 @@ function renderSingleGomrgDocument(d) {
         <div style="display: flex; justify-content: space-between; align-items: flex-end; padding: 2px 8px; font-size: 14px; font-weight: 700;">
             <!-- Right (Kurdish) -->
             <div style="direction: rtl; text-align: right; line-height: 1.6;">
-                <div>ژمارە : &nbsp; <span style="font-family: 'Segoe UI', Arial, sans-serif; font-size: 14.5px;">${d.IDD || ''}</span></div>
-                <div>بەروار : &nbsp; <span style="font-family: 'Segoe UI', Arial, sans-serif; font-size: 14px;">${d.date_insert || ''}</span></div>
+                <div>ژمارە : &nbsp; <span style="font-family: 'Speda', 'Speda-Bold', Arial, sans-serif; font-size: 14.5px;">${d.IDD || ''}</span></div>
+                <div>بەروار : &nbsp; <span style="font-family: 'Speda', 'Speda-Bold', Arial, sans-serif; font-size: 14px;">${d.date_insert || ''}</span></div>
             </div>
             <!-- Left (English) -->
             <div style="direction: ltr; text-align: left; font-family: 'Segoe UI', Arial, sans-serif; line-height: 1.6;">
@@ -4529,77 +4557,77 @@ function renderSingleGomrgDocument(d) {
             ئاماژە بە نوسراوی وەزارەتی دارایی و ئابوری ژمارە ٤٦٨٤ لە ( ٧-١٠-١٩٩٢ ) هاوپێچ لەگەڵ نوسراوماندا
         </div>
 
-        <!-- MAIN TABLE (EXACT 100% CLONE OF SCREENSHOT) -->
+        <!-- MAIN TABLE (EXACT 100% RIGHT-TO-LEFT CLONE OF OFFICIAL DOCUMENT) -->
         <table style="width: 100%; border-collapse: collapse; font-size: 14px; font-weight: 700; text-align: center; direction: rtl; margin-bottom: 0;">
             <!-- ROW 1 -->
             <tr>
-                <td style="border: none;" colspan="3"></td>
-                <td style="border: 1.5px solid #000; padding: 5px 8px; width: 110px;">${d.parezga || ''}</td>
-                <td style="border: 1.5px solid #000; padding: 5px 8px; width: 70px;">${d.bash || ''}</td>
-                <td style="border: 1.5px solid #000; padding: 5px 12px; width: 120px; font-family: 'Segoe UI', Arial, sans-serif; font-size: 15px;">${d.car_n || ''}</td>
-                <td style="border: 1.5px solid #000; padding: 5px 4px; width: 22px;">:</td>
                 <td style="border: 1.5px solid #000; padding: 5px 10px; width: 130px; white-space: nowrap;">ئۆتۆمبێلی ژمارە</td>
+                <td style="border: 1.5px solid #000; padding: 5px 4px; width: 22px;">:</td>
+                <td style="border: 1.5px solid #000; padding: 5px 12px; width: 120px; font-size: 15px;">${d.car_n || ''}</td>
+                <td style="border: 1.5px solid #000; padding: 5px 8px; width: 70px;">${d.bash || ''}</td>
+                <td style="border: 1.5px solid #000; padding: 5px 8px; width: 110px;">${d.parezga || ''}</td>
+                <td style="border: none;" colspan="3"></td>
             </tr>
 
             <!-- ROW 2 -->
             <tr>
-                <td colspan="6" style="border: 1.5px solid #000; padding: 6px 12px; font-size: 15px; font-weight: 800; text-align: center;">${d.car_type || ''}</td>
-                <td style="border: 1.5px solid #000; padding: 6px 4px; width: 22px;">:</td>
                 <td style="border: 1.5px solid #000; padding: 6px 10px; width: 130px; white-space: nowrap;">جۆری ئۆتۆمبێل</td>
+                <td style="border: 1.5px solid #000; padding: 6px 4px; width: 22px;">:</td>
+                <td colspan="6" style="border: 1.5px solid #000; padding: 6px 12px; font-size: 15px; font-weight: 800; text-align: center;">${d.car_type || ''}</td>
             </tr>
 
             <!-- ROW 3 -->
             <tr>
-                <td colspan="2" style="border: 1.5px solid #000; padding: 5px 8px;">${d.color || ''}</td>
-                <td style="border: 1.5px solid #000; padding: 5px 4px; width: 20px;">:</td>
-                <td style="border: 1.5px solid #000; padding: 5px 6px; width: 45px;">ڕەنگ</td>
-                <td colspan="2" style="border: 1.5px solid #000; padding: 5px 12px; font-family: 'Segoe UI', Arial, sans-serif; font-size: 15px;">${d.model || ''}</td>
-                <td style="border: 1.5px solid #000; padding: 5px 4px; width: 22px;">:</td>
                 <td style="border: 1.5px solid #000; padding: 5px 10px; width: 130px;">مۆدێل</td>
+                <td style="border: 1.5px solid #000; padding: 5px 4px; width: 22px;">:</td>
+                <td colspan="2" style="border: 1.5px solid #000; padding: 5px 12px; font-size: 15px;">${d.model || ''}</td>
+                <td style="border: 1.5px solid #000; padding: 5px 6px; width: 45px;">ڕەنگ</td>
+                <td style="border: 1.5px solid #000; padding: 5px 4px; width: 20px;">:</td>
+                <td colspan="2" style="border: 1.5px solid #000; padding: 5px 8px;">${d.color || ''}</td>
             </tr>
 
             <!-- ROW 4 -->
             <tr>
-                <td style="border: none;" colspan="2"></td>
-                <td colspan="4" style="border: 1.5px solid #000; padding: 6px 12px; font-family: 'Segoe UI', monospace; font-size: 15px; font-weight: 800; letter-spacing: 0.5px;">${d.shassy || '*'}</td>
-                <td style="border: 1.5px solid #000; padding: 6px 4px; width: 22px;">:</td>
                 <td style="border: 1.5px solid #000; padding: 6px 10px; width: 130px;">ژمارەی شاسی</td>
+                <td style="border: 1.5px solid #000; padding: 6px 4px; width: 22px;">:</td>
+                <td colspan="4" style="border: 1.5px solid #000; padding: 6px 12px; font-size: 15px; font-weight: 800; letter-spacing: 0.5px;">${d.shassy || '*'}</td>
+                <td style="border: none;" colspan="2"></td>
             </tr>
 
             <!-- ROW 5 -->
             <tr>
-                <td style="border: none;" colspan="2"></td>
-                <td colspan="4" style="border: 1.5px solid #000; padding: 5px 12px;">${cleanQamara}</td>
-                <td style="border: 1.5px solid #000; padding: 5px 4px; width: 22px;">:</td>
                 <td style="border: 1.5px solid #000; padding: 5px 10px; width: 130px;">ژمارەی لاشە</td>
+                <td style="border: 1.5px solid #000; padding: 5px 4px; width: 22px;">:</td>
+                <td colspan="4" style="border: 1.5px solid #000; padding: 5px 12px;">${cleanQamara}</td>
+                <td style="border: none;" colspan="2"></td>
             </tr>
 
             <!-- ROW 6 -->
             <tr>
-                <td colspan="2" style="border: 1.5px solid #000; padding: 5px 8px;">${cleanBB}</td>
-                <td style="border: 1.5px solid #000; padding: 5px 4px; width: 20px;">:</td>
-                <td style="border: 1.5px solid #000; padding: 5px 6px; width: 45px;">ڕەنگ</td>
-                <td colspan="2" style="border: 1.5px solid #000; padding: 5px 12px; font-family: 'Segoe UI', Arial, sans-serif;">${cleanAShassy}</td>
-                <td style="border: 1.5px solid #000; padding: 5px 4px; width: 22px;">:</td>
                 <td style="border: 1.5px solid #000; padding: 5px 10px; width: 130px;">ژ.شاسی عەرەبانە1</td>
+                <td style="border: 1.5px solid #000; padding: 5px 4px; width: 22px;">:</td>
+                <td colspan="2" style="border: 1.5px solid #000; padding: 5px 12px;">${cleanAShassy}</td>
+                <td style="border: 1.5px solid #000; padding: 5px 6px; width: 45px;">ڕەنگ</td>
+                <td style="border: 1.5px solid #000; padding: 5px 4px; width: 20px;">:</td>
+                <td colspan="2" style="border: 1.5px solid #000; padding: 5px 8px;">${cleanBB}</td>
             </tr>
 
             <!-- ROW 7 -->
             <tr>
-                <td colspan="2" style="border: 1.5px solid #000; padding: 5px 8px;">${cleanDD}</td>
-                <td style="border: 1.5px solid #000; padding: 5px 4px; width: 20px;">:</td>
-                <td style="border: 1.5px solid #000; padding: 5px 6px; width: 45px;">ڕەنگ</td>
-                <td colspan="2" style="border: 1.5px solid #000; padding: 5px 12px; font-family: 'Segoe UI', Arial, sans-serif;">${cleanCC}</td>
-                <td style="border: 1.5px solid #000; padding: 5px 4px; width: 22px;">:</td>
                 <td style="border: 1.5px solid #000; padding: 5px 10px; width: 130px;">ژ.شاسی عەرەبانە2</td>
+                <td style="border: 1.5px solid #000; padding: 5px 4px; width: 22px;">:</td>
+                <td colspan="2" style="border: 1.5px solid #000; padding: 5px 12px;">${cleanCC}</td>
+                <td style="border: 1.5px solid #000; padding: 5px 6px; width: 45px;">ڕەنگ</td>
+                <td style="border: 1.5px solid #000; padding: 5px 4px; width: 20px;">:</td>
+                <td colspan="2" style="border: 1.5px solid #000; padding: 5px 8px;">${cleanDD}</td>
             </tr>
 
             <!-- ROW 8 -->
             <tr>
-                <td style="border: none;" colspan="2"></td>
-                <td colspan="4" style="border: 1.5px solid #000; padding: 6px 12px; font-size: 15px; font-weight: 800;">${d.Full_name || ''}</td>
-                <td style="border: 1.5px solid #000; padding: 6px 4px; width: 22px;">:</td>
                 <td style="border: 1.5px solid #000; padding: 6px 10px; width: 130px;">بەناوی هاوڵاتی</td>
+                <td style="border: 1.5px solid #000; padding: 6px 4px; width: 22px;">:</td>
+                <td colspan="4" style="border: 1.5px solid #000; padding: 6px 12px; font-size: 15px; font-weight: 800;">${d.Full_name || ''}</td>
+                <td style="border: none;" colspan="2"></td>
             </tr>
         </table>
 
@@ -4615,14 +4643,14 @@ function renderSingleGomrgDocument(d) {
 
         <!-- SIGNATURES -->
         <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-top: 40px; padding: 0 16px; direction: rtl; font-size: 14.5px; font-weight: 800; text-align: center;">
-            <div style="width: 28%;">
+            <div style="width: 28%; text-align: center;">
                 <div>ڕێکخەری فۆڕم</div>
-                <div style="margin-top: 25px;">${userName}</div>
+                <div style="margin-top: 25px; font-size: 15px; font-weight: 800;">${userName}</div>
             </div>
-            <div style="width: 25%;">
+            <div style="width: 25%; text-align: center;">
                 <div>ئەندام</div>
             </div>
-            <div style="width: 35%;">
+            <div style="width: 35%; text-align: center;">
                 <div>ئەفسەری پشکنین</div>
                 <div style="margin-top: 14px;">ل.بەڕێوەبەری بەشی تۆمار کردن</div>
             </div>
@@ -4653,7 +4681,7 @@ function gomrgPrintForm(customData) {
         DD: getVal('gomrgDD') || '',
         Full_name: getVal('gomrgName') || '',
         resoon: getVal('gomrgReason') || '',
-        user_: (currentUser && (currentUser.name || currentUser.username)) || 'بەهرە قادر سعید'
+        user_: (currentUser && (currentUser.username || currentUser.name)) || 'بەهرە قادر سعید'
     };
 
     const singleDoc = renderSingleGomrgDocument(d);
@@ -4666,6 +4694,24 @@ function gomrgPrintForm(customData) {
         <meta charset="UTF-8">
         <title>ڕاپۆرتی گومرگ - ${d.IDD || ''}</title>
         <style>
+            @font-face {
+                font-family: 'Speda';
+                src: local('Speda'), local('Speda Bold'), url('/fonts/Speda.ttf') format('truetype');
+                font-weight: normal;
+                font-style: normal;
+            }
+            @font-face {
+                font-family: 'Speda';
+                src: local('Speda-Bold'), local('Speda Bold'), url('/fonts/Speda-Bold.ttf') format('truetype');
+                font-weight: bold;
+                font-style: normal;
+            }
+            @font-face {
+                font-family: 'Speda-Bold';
+                src: local('Speda-Bold'), local('Speda Bold'), url('/fonts/Speda-Bold.ttf') format('truetype');
+                font-weight: bold;
+                font-style: normal;
+            }
             @page {
                 size: A4 portrait;
                 margin: 10mm 14mm 10mm 14mm;
@@ -4677,7 +4723,7 @@ function gomrgPrintForm(customData) {
                 margin: 0;
                 padding: 0;
                 background: #ffffff;
-                font-family: 'Noto Naskh Arabic', 'Rabar', 'Tahoma', Arial, sans-serif;
+                font-family: 'Speda', 'Speda-Bold', Arial, sans-serif !important;
                 -webkit-print-color-adjust: exact !important;
                 print-color-adjust: exact !important;
             }
