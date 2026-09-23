@@ -1626,7 +1626,7 @@
                     <input type="hidden" id="dfStar" value="*">
                     
                     <span class="df-label">ژ.مۆبایل</span>
-                    <input type="text" id="dfT" class="df-input df-red-text df-vin-font" style="flex:1.4;min-width:170px;height:28px;color:#dc2626;" maxlength="11" placeholder="07XXXXXXXXX (11 ژمارە)" value="0">
+                    <input type="text" id="dfT" class="df-input df-red-text df-vin-font" style="flex:1.4;min-width:170px;height:28px;color:#dc2626;" maxlength="11" placeholder="07XXXXXXXXX (11 ژمارە)" value="">
                 </div>
 
                 <!-- ROW 8 (Notes) -->
@@ -3415,7 +3415,7 @@ function dfResetNew() {
     setVal('dfR', '');
     setVal('dfS', 0);
     setVal('dfStar', '*');
-    setVal('dfT', 0);
+    setVal('dfT', '');
     setVal('dfU', '');
     setVal('dfV', '');
     setVal('dfW', '*');
@@ -3642,7 +3642,7 @@ async function dfSearchCar() {
         
         set('dfS', r.S || 0);
         set('dfStar', '*');
-        set('dfT', r.T || 0);
+        set('dfT', (r.T && String(r.T).trim() !== '0') ? r.T : '');
         set('dfU', r.U || '');
         set('dfV', r.V || '');
         set('dfW', r.W || '*');
@@ -3677,24 +3677,97 @@ async function dfSearchCar() {
     }
 }
 
-async function dfSaveVehicle() {
-    const payload = getFormPayload();
-    if (!payload.A && !payload.R) {
-        alert('پێویستە لانی کەم ژمارەی تابلۆ یان شاسی دیاری بکرێت');
-        return;
+function validateRegistrationForm() {
+    const fields = [
+        { id: 'dfA', name: 'ژمارەی ئوتومبێل', isInvalid: v => !v || v.trim() === '' },
+        { id: 'dfB', name: 'پارێزگا', isInvalid: v => !v || v.trim() === '' },
+        { id: 'dfC', name: 'بەش', isInvalid: v => !v || v.trim() === '' },
+        { id: 'dfG', name: 'ناوی خاوەن سوارەو', isInvalid: v => !v || v.trim() === '' },
+        { id: 'dfE', name: 'بەڕادی هاتووچۆ', isInvalid: v => !v || v.trim() === '' },
+        { id: 'dfH', name: 'جۆری مامەڵە', isInvalid: v => !v || v.trim() === '' },
+        { id: 'dfI', name: 'جۆری ئوتومبێل', isInvalid: v => !v || v.trim() === '' },
+        { id: 'dfL', name: 'ڕەنگ', isInvalid: v => !v || v.trim() === '' || v.includes('--') },
+        { id: 'dfR', name: 'ژمارەی شاسی', isInvalid: v => !v || v.trim() === '' },
+        { id: 'dfT', name: 'ژمارەی مۆبایل', isInvalid: v => !v || v.trim() === '' || v.trim() === '0' },
+        { id: 'dfK', name: 'سووتەمەنی', isInvalid: v => !v || v.trim() === '' }
+    ];
+
+    for (const f of fields) {
+        const el = document.getElementById(f.id);
+        const val = el ? (el.value || '').trim() : '';
+
+        if (f.isInvalid(val)) {
+            const msg = `ناکرێت ئەم خانەیە ( ${f.name} ) پڕ نەکرێتەوە`;
+            showToast(`⛔ ${msg}`, true);
+            const regAlert = document.getElementById('regAlert');
+            if (regAlert) {
+                regAlert.innerHTML = `
+                    <div class="alert-box alert-danger" style="display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 16px;border-radius:6px;font-weight:800;font-size:15px;background:#fef2f2;border:1.5px solid #ef4444;color:#991b1b;box-shadow:0 2px 4px rgba(0,0,0,0.06);margin-bottom:12px;">
+                        <div style="display:flex;align-items:center;gap:10px;">
+                            <span style="font-size:22px;line-height:1;">⛔</span>
+                            <span>${msg}</span>
+                        </div>
+                        <button type="button" onclick="closeRegAlert()" style="background:transparent;border:none;color:#991b1b;font-size:20px;font-weight:900;cursor:pointer;padding:2px 8px;border-radius:4px;line-height:1;" title="داخستن">✕</button>
+                    </div>
+                `;
+                regAlert.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            }
+            if (el) {
+                el.classList.add('df-invalid-shake');
+                el.focus();
+                if (el.select) el.select();
+                setTimeout(() => el.classList.remove('df-invalid-shake'), 700);
+            }
+            return false;
+        }
+
+        if (f.id === 'dfR' && val.length !== 17) {
+            const msg = `ژمارەی شاسی دەبێت بە تەواوی ١٧ پیت و ژمارە بێت (ئێستا ${val.length} پیتە)`;
+            showToast(`⛔ ${msg}`, true);
+            const regAlert = document.getElementById('regAlert');
+            if (regAlert) {
+                regAlert.innerHTML = `
+                    <div class="alert-box alert-danger" style="display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 16px;border-radius:6px;font-weight:800;font-size:15px;background:#fef2f2;border:1.5px solid #ef4444;color:#991b1b;box-shadow:0 2px 4px rgba(0,0,0,0.06);margin-bottom:12px;">
+                        <div style="display:flex;align-items:center;gap:10px;">
+                            <span style="font-size:22px;line-height:1;">⛔</span>
+                            <span>${msg}</span>
+                        </div>
+                        <button type="button" onclick="closeRegAlert()" style="background:transparent;border:none;color:#991b1b;font-size:20px;font-weight:900;cursor:pointer;padding:2px 8px;border-radius:4px;line-height:1;" title="داخستن">✕</button>
+                    </div>
+                `;
+                regAlert.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+            }
+            if (el) {
+                el.classList.add('df-invalid-shake');
+                el.focus();
+                if (el.select) el.select();
+                setTimeout(() => el.classList.remove('df-invalid-shake'), 700);
+            }
+            return false;
+        }
     }
 
     // Strict validation against parz table
-    if (payload.B && PARZ_ITEMS.length > 0 && !PARZ_ITEMS.includes(payload.B)) {
-        showToast(`⚠️ تابلۆی "${payload.B}" لە لیستی فەرمی (parz) نییە و قبوڵ ناکرێت!`, true);
+    const bVal = document.getElementById('dfB')?.value.trim();
+    if (bVal && PARZ_ITEMS.length > 0 && !PARZ_ITEMS.includes(bVal)) {
+        showToast(`⚠️ تابلۆی "${bVal}" لە لیستی فەرمی (parz) نییە و قبوڵ ناکرێت!`, true);
         const bInput = document.getElementById('dfB');
         if (bInput) {
             bInput.classList.add('df-invalid-shake');
             bInput.focus();
-            setTimeout(() => bInput.classList.remove('df-invalid-shake'), 600);
+            setTimeout(() => bInput.classList.remove('df-invalid-shake'), 700);
         }
+        return false;
+    }
+
+    return true;
+}
+
+async function dfSaveVehicle() {
+    if (!validateRegistrationForm()) {
         return;
     }
+    const payload = getFormPayload();
 
     try {
         const res = await fetch('/api/register', {
@@ -3755,19 +3828,10 @@ async function dfUpdateVehicle() {
         alert('تکایە سەرەتا بە دوگمەی گەڕان ئوتومبێلەکە بدۆزەرەوە، یان ژمارەکەی بنووسە و گەڕان بکە پێش ڕاستکردنەوە.');
         return;
     }
-    const payload = getFormPayload();
-
-    // Strict validation against parz table
-    if (payload.B && PARZ_ITEMS.length > 0 && !PARZ_ITEMS.includes(payload.B)) {
-        showToast(`⚠️ تابلۆی "${payload.B}" لە لیستی فەرمی (parz) نییە و قبوڵ ناکرێت!`, true);
-        const bInput = document.getElementById('dfB');
-        if (bInput) {
-            bInput.classList.add('df-invalid-shake');
-            bInput.focus();
-            setTimeout(() => bInput.classList.remove('df-invalid-shake'), 600);
-        }
+    if (!validateRegistrationForm()) {
         return;
     }
+    const payload = getFormPayload();
 
     try {
         const res = await fetch('/api/register/' + loadedVehicleId, {
