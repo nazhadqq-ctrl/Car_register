@@ -31,8 +31,12 @@ public class SetupWizardForm : Form {
     private ProgressBar progressBar;
     private Label lblProgressStatus;
     private CheckBox chkLaunchNow;
+    private bool isRunningAsAdmin = false;
 
-    public SetupWizardForm() {
+    public SetupWizardForm() : this(false) { }
+
+    public SetupWizardForm(bool isAdmin) {
+        this.isRunningAsAdmin = isAdmin;
         InitializeComponents();
         ShowStep(0);
     }
@@ -165,7 +169,19 @@ public class SetupWizardForm : Form {
         desc.Font = new Font("Segoe UI", 10.5f, FontStyle.Regular);
         desc.ForeColor = Color.FromArgb(51, 65, 85);
         desc.Location = new Point(10, 60);
-        desc.Size = new Size(610, 220);
+        desc.Size = new Size(610, 190);
+
+        string baseDir = AppDomain.CurrentDomain.BaseDirectory;
+        if (!File.Exists(Path.Combine(baseDir, "server.js"))) {
+            Label warnZip = new Label();
+            warnZip.Text = "⚠️ ئاگاداری گرنگ:\nوا دەردەکەوێت فایلەکانی بەرنامەکە لەناو فۆڵدەری زیپ (ZIP) کرابێتنەوە بێ دەرکردنی فایلەکان.\nتکایە سەرەتا فۆڵدەری زیپەکە بە تەواوی دەربکە (Extract All) ئینجا بەرنامەکە دابمەزرێنە.";
+            warnZip.ForeColor = Color.FromArgb(185, 28, 28);
+            warnZip.BackColor = Color.FromArgb(254, 242, 242);
+            warnZip.Font = new Font("Segoe UI", 9.5f, FontStyle.Bold);
+            warnZip.Location = new Point(10, 255);
+            warnZip.Size = new Size(610, 55);
+            panelStep1.Controls.Add(warnZip);
+        }
 
         panelStep1.Controls.Add(title);
         panelStep1.Controls.Add(desc);
@@ -189,7 +205,11 @@ public class SetupWizardForm : Form {
         desc.Size = new Size(610, 30);
 
         txtInstallPath = new TextBox();
-        txtInstallPath.Text = @"C:\TrafficCheck";
+        if (isRunningAsAdmin) {
+            txtInstallPath.Text = @"C:\TrafficCheck";
+        } else {
+            txtInstallPath.Text = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "TrafficCheck");
+        }
         txtInstallPath.RightToLeft = RightToLeft.No;
         txtInstallPath.Font = new Font("Segoe UI", 10.5f);
         txtInstallPath.Location = new Point(130, 95);
@@ -403,14 +423,16 @@ public class SetupWizardForm : Form {
                 string[] filesToCopy = new string[] {
                     "server.js", "db.js", "package.json", "TrafficCheck.exe", "app.ico",
                     "Start_Silent_Print_Edge.bat", "Start_Silent_Print_Chrome.bat",
-                    "auto-updater.js", "version.json"
+                    "auto-updater.js", "version.json", "node.exe"
                 };
 
                 foreach (string f in filesToCopy) {
-                    string src = Path.Combine(sourceDir, f);
-                    if (File.Exists(src)) {
-                        File.Copy(src, Path.Combine(destDir, f), true);
-                    }
+                    try {
+                        string src = Path.Combine(sourceDir, f);
+                        if (File.Exists(src)) {
+                            File.Copy(src, Path.Combine(destDir, f), true);
+                        }
+                    } catch { }
                 }
 
                 UpdateStatus("کۆپیکردنی فایلەکانی دیزاین و وێب (public)...", 50);
@@ -486,15 +508,29 @@ public class SetupWizardForm : Form {
     }
 
     private static void CopyDirectory(string sourceDir, string destinationDir) {
-        Directory.CreateDirectory(destinationDir);
-        foreach (string file in Directory.GetFiles(sourceDir)) {
-            string targetFilePath = Path.Combine(destinationDir, Path.GetFileName(file));
-            File.Copy(file, targetFilePath, true);
-        }
-        foreach (string subDir in Directory.GetDirectories(sourceDir)) {
-            string targetSubDir = Path.Combine(destinationDir, Path.GetFileName(subDir));
-            CopyDirectory(subDir, targetSubDir);
-        }
+        try {
+            if (!Directory.Exists(destinationDir)) {
+                Directory.CreateDirectory(destinationDir);
+            }
+        } catch { }
+
+        try {
+            foreach (string file in Directory.GetFiles(sourceDir)) {
+                try {
+                    string targetFilePath = Path.Combine(destinationDir, Path.GetFileName(file));
+                    File.Copy(file, targetFilePath, true);
+                } catch { }
+            }
+        } catch { }
+
+        try {
+            foreach (string subDir in Directory.GetDirectories(sourceDir)) {
+                try {
+                    string targetSubDir = Path.Combine(destinationDir, Path.GetFileName(subDir));
+                    CopyDirectory(subDir, targetSubDir);
+                } catch { }
+            }
+        } catch { }
     }
 
     private static void CreateShortcut(string shortcutPath, string targetPath, string workingDir, string iconPath, string description) {
@@ -518,9 +554,32 @@ public class SetupWizardForm : Form {
     }
 
     [STAThread]
-    static void Main() {
+    static void Main(string[] args) {
         Application.EnableVisualStyles();
         Application.SetCompatibleTextRenderingDefault(false);
-        Application.Run(new SetupWizardForm());
+
+        bool isAdmin = false;
+        try {
+            using (var identity = System.Security.Principal.WindowsIdentity.GetCurrent()) {
+                var principal = new System.Security.Principal.WindowsPrincipal(identity);
+                isAdmin = principal.IsInRole(System.Security.Principal.WindowsBuiltInRole.Administrator);
+            }
+        } catch { }
+
+        bool noElevate = (args != null && Array.IndexOf(args, "--no-elevate") >= 0);
+        if (!isAdmin && !noElevate) {
+            try {
+                ProcessStartInfo psi = new ProcessStartInfo();
+                psi.FileName = Application.ExecutablePath;
+                psi.UseShellExecute = true;
+                psi.Verb = "runas";
+                Process.Start(psi);
+                return;
+            } catch {
+                // If user clicks No to UAC, continue in user mode (installs to LocalAppData)
+            }
+        }
+
+        Application.Run(new SetupWizardForm(isAdmin));
     }
 }
