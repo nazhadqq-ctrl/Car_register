@@ -1501,7 +1501,6 @@
     <a class="nav-tab" data-page="hijz" onclick="openHijzAddModal(); return false;" title="دانانی نیشانەی حجز لە سەر سوارڕەوەکان"><span class="tab-icon">🔖</span> دانانی نیشانەی حجز</a>
     <a class="nav-tab" data-page="raport"><span class="tab-icon">📄</span> فۆڕمی ڕاپۆرت</a>
     <a class="nav-tab" data-page="search"><span class="tab-icon">🔍</span> گەڕانی ئوتومبێل</a>
-    <a class="nav-tab" data-page="suspicious"><span class="tab-icon">⚠️</span> ئۆتۆمبێلی گومانلێکراو <span class="tab-badge" id="suspBadge">0</span></a>
     <a class="nav-tab" data-page="reports"><span class="tab-icon">📋</span> ڕاپۆرت و ئامار</a>
     <a class="nav-tab" data-page="update" onclick="openSystemUpdateModal(); return false;"><span class="tab-icon">🔄</span> ئەپدەیت (نوێکردنەوە)</a>
 </nav>
@@ -7583,9 +7582,12 @@ function doPrintRaportDocument() {
 async function loadSuspicious() {
     try {
         const data = await fetch('/api/suspicious').then(r=>r.json());
-        document.getElementById('suspCount').textContent  = data.length;
-        document.getElementById('suspBadge').textContent  = data.length;
+        const sc = document.getElementById('suspCount');
+        if (sc) sc.textContent = data.length;
+        const sb = document.getElementById('suspBadge');
+        if (sb) sb.textContent = data.length;
         const wrap = document.getElementById('suspTable');
+        if (!wrap) return;
         if (!data.length) {
             wrap.innerHTML = '<div class="empty-box"><div class="eicon">✅</div><p>هیچ ئوتومبێلێکی گومانلێکراو نیە</p></div>';
             return;
