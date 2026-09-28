@@ -1251,22 +1251,24 @@ app.get('/api/hijz/search-va', requireAuth, async (req, res) => {
         const result = await request.query(q);
         if (result.recordset && result.recordset.length > 0) {
             const row = result.recordset[0];
+            const carData = {
+                auto_no: row.auto_no || cleanCarN,
+                plet: (row.plet || cleanPlet).replace(/ى/g, 'ی'),
+                bash: row.bash || cleanBash,
+                shassy: (row.shassy || '').trim().toUpperCase(),
+                owner: (row.Name_ || '').trim(),
+                barad: (row.AA || '').trim(),
+                car_type: (row.car_type || '').trim(),
+                model: (row.Model || '').trim(),
+                color: (row.color || '').trim(),
+                resulat: (row.resulat || '').trim()
+            };
             return res.json({
                 success: true,
                 found: true,
                 source: 'VA',
-                data: {
-                    auto_no: row.auto_no || cleanCarN,
-                    plet: (row.plet || cleanPlet).replace(/ى/g, 'ی'),
-                    bash: row.bash || cleanBash,
-                    shassy: (row.shassy || '').trim().toUpperCase(),
-                    owner: (row.Name_ || '').trim(),
-                    barad: (row.AA || '').trim(),
-                    car_type: (row.car_type || '').trim(),
-                    model: (row.Model || '').trim(),
-                    color: (row.color || '').trim(),
-                    resulat: (row.resulat || '').trim()
-                }
+                data: carData,
+                car: carData
             });
         }
 
@@ -1276,18 +1278,20 @@ app.get('/api/hijz/search-va', requireAuth, async (req, res) => {
             .query(`SELECT TOP 1 * FROM T1 WHERE A = @plate OR R = @plate ORDER BY id DESC`);
         if (rT1.recordset && rT1.recordset.length > 0) {
             const row = rT1.recordset[0];
+            const carData = {
+                auto_no: row.A || cleanCarN,
+                plet: (row.B || cleanPlet).replace(/ى/g, 'ی'),
+                bash: row.C || cleanBash,
+                shassy: (row.R || '').trim().toUpperCase(),
+                owner: (row.E || '').trim(),
+                barad: (row.GG || '').trim()
+            };
             return res.json({
                 success: true,
                 found: true,
                 source: 'T1',
-                data: {
-                    auto_no: row.A || cleanCarN,
-                    plet: (row.B || cleanPlet).replace(/ى/g, 'ی'),
-                    bash: row.C || cleanBash,
-                    shassy: (row.R || '').trim().toUpperCase(),
-                    owner: (row.E || '').trim(),
-                    barad: (row.GG || '').trim()
-                }
+                data: carData,
+                car: carData
             });
         }
 
@@ -2160,10 +2164,33 @@ app.get('/api/staff-list', requireAuth, async (req, res) => {
 // ─── ADVANCED SEARCH ─────────────────────────────────────────────────
 app.get('/api/advanced-search', requireAuth, async (req, res) => {
     try {
-        const { plate, chassis, model, color, fuel, cylinders, year, province, type, owner } = req.query;
+        const { plate, chassis, model, color, fuel, cylinders, year, province, type, owner, scope } = req.query;
+        const currentUser = req.session.user || {};
+        const isManager = Boolean(
+            currentUser.permission === 'MANAGER' || 
+            currentUser.place === '*' || 
+            currentUser.username === '9' ||
+            String(currentUser.permission || '').toUpperCase() === 'ADMIN'
+        );
         const pool = await getPool();
         const request = pool.request();
         let conditions = [];
+
+        // USER REQUEST: گەڕانی وورد تایبەت بکە بە یوزەر و ئیشی ئەمڕۆی نەک هەموو شوێن و یوزەرەکان
+        const shouldFilterByUserToday = (!isManager) || (scope !== 'all');
+        if (shouldFilterByUserToday) {
+            conditions.push('CAST(DD as date) = CAST(GETDATE() as date)');
+            const userName = (currentUser.name || currentUser.username || '').trim();
+            if (userName) {
+                request.input('advUser', sql.NVarChar, userName);
+                conditions.push('(FF = @advUser OR GG = @advUser)');
+            }
+            const userPlace = (currentUser.place || '').trim();
+            if (userPlace && userPlace !== '*' && userPlace !== 'هەموو') {
+                request.input('advUserPlace', sql.NVarChar, userPlace);
+                conditions.push('(D = @advUserPlace OR B = @advUserPlace)');
+            }
+        }
 
         if (plate) { conditions.push('A LIKE @plate'); request.input('plate', sql.NVarChar, `%${plate.trim()}%`); }
         if (chassis) { conditions.push('R LIKE @chassis'); request.input('chassis', sql.NVarChar, `%${chassis.trim()}%`); }
@@ -2176,7 +2203,7 @@ app.get('/api/advanced-search', requireAuth, async (req, res) => {
         if (type) { conditions.push('C LIKE @type'); request.input('type', sql.NVarChar, `%${type.trim()}%`); }
         if (owner) { conditions.push('G LIKE @owner'); request.input('owner', sql.NVarChar, `%${owner.trim()}%`); }
 
-        let query = `SELECT TOP 100 id, A as plateNo, B as province, C as type, D as office, E as barad, G as owner,
+        let query = `SELECT TOP 200 id, A as plateNo, B as province, C as type, D as office, E as barad, G as owner,
                             I as model, J as category, K as fuel, L as color, M as gear, N as doors, O as cylinders,
                             P as year, Q as seats, R as chassis, T as mobile, FF as enteredBy, GG as checker, DD as date
                      FROM T1 `;

@@ -2072,7 +2072,7 @@
                         <option value="گشتی هاتووچۆ">گشتی هاتووچۆ</option>
                     </select>
                     
-                    <input type="date" id="dfDD" class="df-input" style="width:145px;margin-right:auto;">
+                    <input type="date" id="dfDD" class="df-input" style="width:145px;margin-right:auto;background:#e2e8f0;color:#334155;cursor:not-allowed;font-weight:700;" disabled readonly title="بەروار بە شێوەی خۆکار وەردەگیرێت (ناکرێت دەستکاری بکرێت)">
                 </div>
 
                 <!-- ROW 2 (Barad 1, Barad 2, Transaction Type) -->
@@ -2444,7 +2444,7 @@
                     <!-- ژمارەی ئوتومبێل -->
                     <div style="display: flex; align-items: center; gap: 8px; flex: 1.2; min-width: 220px;">
                         <label for="hzAutoNo" style="font-size: 15px; font-weight: 800; white-space: nowrap; color: #000;">ژمارەی ئوتومبێل</label>
-                        <input type="text" id="hzAutoNo" class="c4-kurd" required placeholder="ژمارەی تابلۆ" oninput="debounceHijzSearch()" style="flex: 1; height: 34px; background: #fff; border: 1.5px solid #6b7280; border-radius: 3px; padding: 4px 10px; font-size: 15px; font-weight: 700; text-align: center;">
+                        <input type="text" id="hzAutoNo" class="c4-kurd" required placeholder="ژمارەی تابلۆ" oninput="debounceHijzSearch()" onchange="triggerHijzAutoFill()" onblur="triggerHijzAutoFill()" onkeydown="if(event.key==='Enter'){event.preventDefault();triggerHijzAutoFill();}" style="flex: 1; height: 34px; background: #fff; border: 1.5px solid #6b7280; border-radius: 3px; padding: 4px 10px; font-size: 15px; font-weight: 700; text-align: center;">
                     </div>
                     
                     <!-- پارێزگا -->
@@ -2474,10 +2474,10 @@
                         </select>
                     </div>
 
-                    <!-- بەشی ئوتومبێل -->
+                    <!-- بەشی ئوتومبێل (ئیڤێنتی هەڵبژاردنی بەش بۆ هێنانەوەی داتای ڤی ئەی) -->
                     <div style="display: flex; align-items: center; gap: 8px; flex: 1.2; min-width: 200px;">
                         <label for="hzCarPlet" style="font-size: 15px; font-weight: 800; white-space: nowrap; color: #000;">بەشی ئوتومبێل</label>
-                        <select id="hzCarPlet" onchange="triggerHijzAutoFill()" style="flex: 1; height: 34px; background: #fff; border: 1.5px solid #6b7280; border-radius: 3px; padding: 4px 8px; font-size: 14.5px; font-weight: 700; font-family: var(--ku); cursor: pointer;">
+                        <select id="hzCarPlet" onchange="triggerHijzAutoFill()" oninput="triggerHijzAutoFill()" onblur="triggerHijzAutoFill()" style="flex: 1; height: 34px; background: #fff; border: 1.5px solid #6b7280; border-radius: 3px; padding: 4px 8px; font-size: 14.5px; font-weight: 700; font-family: var(--ku); cursor: pointer;">
                             <option value="تایبەت" selected>تایبەت</option>
                             <option value="کرێ">کرێ</option>
                             <option value="بارهەڵگر">بارهەڵگر</option>
@@ -2575,6 +2575,20 @@
             <button class="modal-close" onclick="closeOverlay('modalAdvSearch')">✕</button>
         </div>
         <div class="modal-body">
+            <!-- Scoping Notice: User and Today's Work -->
+            <div style="background:#eff6ff; border:1.5px solid #bfdbfe; border-radius:8px; padding:10px 14px; margin-bottom:14px; font-size:13px; color:#1e40af; font-weight:700; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:8px;">
+                <div style="display:flex; align-items:center; gap:8px;">
+                    <span style="font-size:18px;">👤</span>
+                    <span>گەڕانی وورد سنوردار کراوە تەنها بۆ تۆمارەکانی خۆت و ئیشی ئەمڕۆ.</span>
+                </div>
+                <div id="asScopeWrap" style="display:none;">
+                    <select id="asScopeSelect" style="font-size:12.5px; font-weight:700; padding:3px 10px; border-radius:6px; border:1.5px solid #3b82f6; background:#fff; color:#1d4ed8; cursor:pointer;">
+                        <option value="user" selected>👤 تەنها ئیشی ئەمڕۆم</option>
+                        <option value="all">🌐 سەرجەم کارمەندان و ڕۆژەکان (مەنهەجەر)</option>
+                    </select>
+                </div>
+            </div>
+
             <div class="form-grid">
                 <div class="form-group"><label class="form-label">شاسی</label><input type="text" id="asChassis" class="form-input"></div>
                 <div class="form-group"><label class="form-label">تابلۆ</label><input type="text" id="asPlate" class="form-input c4-kurd"></div>
@@ -6388,26 +6402,27 @@ async function triggerHijzAutoFill() {
         const res = await fetch(url);
         const data = await res.json();
 
-        if (data.found && data.car) {
+        const car = data.car || data.data;
+        if (data.found && car) {
             if (statusEl) {
                 statusEl.innerHTML = '<span style="color:#15803d;font-weight:800;background:#dcfce7;padding:2px 8px;border-radius:4px;border:1px solid #86efac;">✅ زانیاری ئۆتۆمبێل لە خشتەی تاقیگە (VA) دۆزرایەوە و خۆکارانە پڕکرایەوە</span>';
             }
 
             // Fill Chassis (shassy)
             const chassisEl = document.getElementById('hzRegName');
-            if (chassisEl && data.car.shassy) {
-                chassisEl.value = String(data.car.shassy).trim().toUpperCase();
+            if (chassisEl && car.shassy) {
+                chassisEl.value = String(car.shassy).trim().toUpperCase();
             }
 
             // Fill Owner Name (Name_)
             const ownerEl = document.getElementById('hzOwnerName');
-            const ownerName = data.car.owner || data.car.full_name || '';
+            const ownerName = car.owner || car.full_name || '';
             if (ownerEl && ownerName) {
                 ownerEl.value = String(ownerName).trim();
             }
 
             // Match Barad (AA) in hzBarad1
-            const baradVal = (data.car.barad || '').trim();
+            const baradVal = (car.barad || '').trim();
             if (baradVal) {
                 const b1 = document.getElementById('hzBarad1');
                 if (b1) {
@@ -6556,8 +6571,20 @@ async function removeHijz(id) {
     }
 }
 
-// ─── 5. MODULE: ADVANCED SEARCH ────────────────────────────────────────
+// ─── 5. MODULE: ADVANCED SEARCH (گەڕانی وورد - تایبەت بە یوزەر و ئیشی ئەمڕۆ) ──
 function openAdvSearchModal() {
+    const isManager = Boolean(
+        typeof currentUser !== 'undefined' && currentUser && (
+            currentUser.permission === 'MANAGER' || 
+            currentUser.place === '*' || 
+            currentUser.username === '9' ||
+            String(currentUser.permission || '').toUpperCase() === 'ADMIN'
+        )
+    );
+    const scopeWrap = document.getElementById('asScopeWrap');
+    if (scopeWrap) {
+        scopeWrap.style.display = isManager ? 'block' : 'none';
+    }
     openOverlay('modalAdvSearch');
 }
 
@@ -6578,20 +6605,29 @@ async function runAdvancedSearch() {
         ['owner', 'asOwner']
     ];
     fields.forEach(([param, id]) => {
-        const val = document.getElementById(id).value.trim();
+        const el = document.getElementById(id);
+        const val = el ? el.value.trim() : '';
         if (val) params.append(param, val);
     });
+
+    // Pass scope (user by default, or all if selected by manager)
+    const scopeSel = document.getElementById('asScopeSelect');
+    if (scopeSel && scopeSel.value) {
+        params.append('scope', scopeSel.value);
+    } else {
+        params.append('scope', 'user');
+    }
 
     try {
         const res = await fetch('/api/advanced-search?' + params.toString());
         const data = await res.json();
-        if (!data.length) {
-            wrap.innerHTML = '<div class="empty-box"><div class="eicon">🚫</div><p>هیچ ئوتومبێلێک بەم مەرجانە نەدۆزرایەوە</p></div>';
+        if (!data || !data.length) {
+            wrap.innerHTML = '<div class="empty-box"><div class="eicon">🚫</div><p>هیچ ئوتومبێلێک لە ئیشی ئەمڕۆت بەم مەرجانە نەدۆزرایەوە</p></div>';
             return;
         }
         wrap.innerHTML = buildTable(data);
     } catch(e) {
-        wrap.innerHTML = '<div class="empty-box"><div class="eicon">⚠️</div><p>کێشەی پەیوەندی</p></div>';
+        wrap.innerHTML = '<div class="empty-box"><div class="eicon">⚠️</div><p>کێشەی پەیوەندی بە سێرڤەر</p></div>';
     }
 }
 
