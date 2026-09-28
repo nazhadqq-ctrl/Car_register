@@ -20,15 +20,17 @@ const FILES_TO_UPDATE = [
   'db.js',
   'public/index.html',
   'public/login.html',
-  'public/preview_gomrg.html'
+  'public/preview_gomrg.html',
+  'src_desktop/SetupWizard.cs',
+  'src_desktop/TrafficCheckApp.cs'
 ];
 
-function fetchUrl(url, timeoutMs = 9000) {
+function fetchUrl(url, timeoutMs = 12000) {
   return new Promise((resolve, reject) => {
     const req = https.get(url, {
       headers: {
-        'User-Agent': 'TrafficCheck-AutoUpdater',
-        'Cache-Control': 'no-cache',
+        'User-Agent': 'TrafficCheck-AutoUpdater-Desktop',
+        'Cache-Control': 'no-cache, no-store, must-revalidate',
         'Pragma': 'no-cache'
       }
     }, (res) => {
@@ -46,7 +48,7 @@ function fetchUrl(url, timeoutMs = 9000) {
     req.on('error', reject);
     req.setTimeout(timeoutMs, () => {
       req.destroy();
-      reject(new Error(`Request timed out`));
+      reject(new Error(`Request timed out after ${timeoutMs}ms`));
     });
   });
 }
@@ -115,12 +117,13 @@ async function checkForUpdates(force = false) {
 
   // ─── METHOD 2: DIRECT HTTP DOWNLOAD FROM GITHUB RAW ───────────────
   try {
-    const verData = await fetchUrl(`${BASE_RAW_URL}/version.json?t=${Date.now()}`, 6000);
+    const verData = await fetchUrl(`${BASE_RAW_URL}/version.json?t=${Date.now()}`, 8000);
     remoteVer = JSON.parse(verData.toString('utf8'));
-    if (remoteVer.build && remoteVer.build > (localVer.build || 0)) {
+    if (remoteVer && remoteVer.build && remoteVer.build > (localVer.build || 0)) {
       hasUpdate = true;
     }
   } catch (err) {
+    console.warn('Failed to fetch remote version.json:', err.message);
     if (force) {
       hasUpdate = true;
       remoteVer = { version: localVer.version, build: (localVer.build || 120) + 1 };
@@ -130,7 +133,7 @@ async function checkForUpdates(force = false) {
         hasUpdate: false,
         currentVersion: localVer.version,
         latestVersion: localVer.version,
-        message: 'سیستەمەکەت نوێترین وەشانە.'
+        message: 'پەیوەندی بە گیت هاب نەکرا یان سیستەمەکەت نوێترین وەشانە.'
       };
     }
   }
@@ -146,18 +149,18 @@ async function checkForUpdates(force = false) {
       hasUpdate: false,
       currentVersion: localVer.version,
       latestVersion: remoteVer ? remoteVer.version : localVer.version,
-      message: 'سیستەمەکەت نوێترین وەشانە.'
+      message: 'سیستەمەکەت نوێترین وەشانە و هیچ نوێکارییەکی نوێ بەردەست نییە.'
     };
   }
 
-  // Perform HTTP download for each file
+  // Perform HTTP download for each file in FILES_TO_UPDATE
   const updatedFiles = [];
   const errors = [];
 
   for (const relPath of FILES_TO_UPDATE) {
     try {
       const fileUrl = `${BASE_RAW_URL}/${relPath}?t=${Date.now()}`;
-      const content = await fetchUrl(fileUrl, 10000);
+      const content = await fetchUrl(fileUrl, 15000);
 
       const localPath = path.join(__dirname, relPath);
       const dir = path.dirname(localPath);
@@ -191,4 +194,4 @@ async function checkForUpdates(force = false) {
   };
 }
 
-module.exports = { checkForUpdates, getLocalVersion };
+module.exports = { checkForUpdates, getLocalVersion, FILES_TO_UPDATE };

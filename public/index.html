@@ -1412,6 +1412,54 @@
         .btn-df-orange:hover, .btn-df-yellow-long:hover {
             box-shadow: 0 4px 12px rgba(245, 158, 11, 0.5);
         }
+
+        /* ─── PRINT STYLES FOR RAPORT DOCUMENT ─── */
+        @media print {
+            @page {
+                size: A4 portrait;
+                margin: 8mm 10mm;
+            }
+            body.printing-raport * {
+                visibility: hidden !important;
+            }
+            body.printing-raport #modalRaportPrint,
+            body.printing-raport #modalRaportPrint *,
+            body.printing-raport #raportPrintableDoc,
+            body.printing-raport #raportPrintableDoc * {
+                visibility: visible !important;
+            }
+            body.printing-raport #modalRaportPrint {
+                position: absolute !important;
+                left: 0 !important;
+                top: 0 !important;
+                width: 100% !important;
+                margin: 0 !important;
+                padding: 0 !important;
+                background: #fff !important;
+                box-shadow: none !important;
+                border: none !important;
+                display: block !important;
+            }
+            body.printing-raport .no-print {
+                display: none !important;
+            }
+            body.printing-raport #raportPrintableDoc {
+                position: absolute !important;
+                left: 0 !important;
+                top: 0 !important;
+                width: 100% !important;
+                max-width: 100% !important;
+                padding: 0 !important;
+                margin: 0 !important;
+                box-shadow: none !important;
+                border: none !important;
+                background: #fff !important;
+                color: #000 !important;
+                overflow: visible !important;
+                height: auto !important;
+                max-height: none !important;
+            }
+        }
     </style>
 </head>
 <body>
@@ -1426,6 +1474,13 @@
         </div>
     </div>
     <div class="topbar-user">
+        <!-- Active Global Place Selector & Input (Select or Write) -->
+        <div class="topbar-place-box" style="display:flex;align-items:center;gap:6px;background:rgba(255,255,255,0.14);border:1.5px solid rgba(240,200,66,0.6);padding:3px 10px;border-radius:10px;">
+            <span style="font-size:13px;font-weight:800;color:#fde047;white-space:nowrap;">📍 شوێنی پشکنین:</span>
+            <input type="text" id="topActivePlaceInput" list="globalPlaceList" style="width:160px;height:30px;background:#ffffff;color:#0f172a;font-weight:900;font-size:13px;border:none;border-radius:6px;padding:2px 8px;text-align:center;font-family:inherit;outline:none;" placeholder="شوێن هەڵبژێرە یان بنووسە..." onchange="onGlobalPlaceChange(this.value)">
+            <datalist id="globalPlaceList"></datalist>
+        </div>
+
         <div style="text-align:right">
             <div class="user-name" id="topUserName">–</div>
             <div class="user-place" id="topUserPlace">–</div>
@@ -1443,8 +1498,10 @@
 <!-- ══ NAV TABS ═════════════════════════════════════════════════════ -->
 <nav class="nav-tabs" id="navTabs">
     <a class="nav-tab active" data-page="dashboard"><span class="tab-icon">📊</span> داشبۆرد</a>
+    <a class="nav-tab" data-page="hijz" onclick="openHijzAddModal(); return false;" title="دانانی نیشانەی حجز لە سەر سوارڕەوەکان"><span class="tab-icon">🔖</span> دانانی نیشانەی حجز</a>
+    <a class="nav-tab" data-page="raport"><span class="tab-icon">📄</span> فۆڕمی ڕاپۆرت</a>
     <a class="nav-tab" data-page="search"><span class="tab-icon">🔍</span> گەڕانی ئوتومبێل</a>
-    <a class="nav-tab" data-page="suspicious"><span class="tab-icon">⚠️</span> گومانلێکراو (RAP) <span class="tab-badge" id="suspBadge">0</span></a>
+    <a class="nav-tab" data-page="suspicious"><span class="tab-icon">⚠️</span> ئۆتۆمبێلی گومانلێکراو <span class="tab-badge" id="suspBadge">0</span></a>
     <a class="nav-tab" data-page="reports"><span class="tab-icon">📋</span> ڕاپۆرت و ئامار</a>
     <a class="nav-tab" data-page="update" onclick="openSystemUpdateModal(); return false;"><span class="tab-icon">🔄</span> ئەپدەیت (نوێکردنەوە)</a>
 </nav>
@@ -1466,60 +1523,60 @@
         </div>
     </div>
 
-    <!-- ══ 4 MODERN BALANCED STAT CARDS ═══════════════════════════════ -->
+    <!-- ══ 4 MODERN STAT CARDS: TODAY'S EMPLOYEE OPERATIONS ═══════════ -->
     <div class="stats-row">
-        <!-- Card 1: Total Cars -->
-        <div class="stat-card-modern blue">
+        <!-- Card 1: Registration (تۆمارکردن) -->
+        <div class="stat-card-modern blue" onclick="openRegisterModal()" style="cursor:pointer;" title="تۆمارکردنەکانی ئەمڕۆت لە فۆرمی سەرەکی">
             <div class="stat-main-info">
-                <div class="sval" id="statTotal">…</div>
-                <div class="slabel">کۆی گشتی ئوتومبێل</div>
-                <span class="stat-scope-badge" id="statBadgeTotal">گشتی سیستەم</span>
+                <div class="sval" id="statRegToday">0</div>
+                <div class="slabel">تۆمارکردن (ئەمڕۆ)</div>
+                <span class="stat-scope-badge" id="statBadgeReg">پشکنین و چاپ</span>
             </div>
-            <div class="stat-icon-wrap">🚗</div>
+            <div class="stat-icon-wrap">📝</div>
         </div>
 
-        <!-- Card 2: Today Registered -->
-        <div class="stat-card-modern green">
+        <!-- Card 2: Customs (گومرگ) -->
+        <div class="stat-card-modern green" onclick="openGomrgModal()" style="cursor:pointer;" title="نوسراوەکانی گومرگی ئەمڕۆت">
             <div class="stat-main-info">
-                <div class="sval" id="statToday">…</div>
-                <div class="slabel">ئەمڕۆ تۆمارکراو</div>
-                <span class="stat-scope-badge" id="statBadgeToday">ئەمڕۆ</span>
+                <div class="sval" id="statGomrgToday">0</div>
+                <div class="slabel">گومرگ (ئەمڕۆ)</div>
+                <span class="stat-scope-badge" id="statBadgeGomrg">نوسراوی گومرگ</span>
             </div>
-            <div class="stat-icon-wrap">📅</div>
+            <div class="stat-icon-wrap">🛃</div>
         </div>
 
-        <!-- Card 3: Private Cars -->
-        <div class="stat-card-modern amber">
+        <!-- Card 3: Raport (ڕاپۆرت) -->
+        <div class="stat-card-modern amber" onclick="openRaportPage()" style="cursor:pointer;" title="ڕاپۆرتەکانی کێشەی ئۆتۆمبێلی ئەمڕۆت">
             <div class="stat-main-info">
-                <div class="sval" id="statPrivate">…</div>
-                <div class="slabel">تابلۆی تایبەت</div>
-                <span class="stat-scope-badge" id="statBadgePrivate">تایبەت</span>
+                <div class="sval" id="statRapToday">0</div>
+                <div class="slabel">ڕاپۆرت (ئەمڕۆ)</div>
+                <span class="stat-scope-badge" id="statBadgeRap">نوسراوی کێشە</span>
             </div>
-            <div class="stat-icon-wrap">🏠</div>
+            <div class="stat-icon-wrap">📄</div>
         </div>
 
-        <!-- Card 4: Cargo & Others -->
-        <div class="stat-card-modern purple">
+        <!-- Card 4: Hijz (حیجزکردن) - تەنها بە دەسەڵاتی ئەدمین پیشان دەدرێت -->
+        <div class="stat-card-modern purple" id="cardStatHijz" onclick="openHijzListModal()" style="display:none; cursor:pointer;" title="ئۆتۆمبێلە حیجزکراوەکانی ئەمڕۆ (تایبەت بە دەسەڵاتی ئەدمین)">
             <div class="stat-main-info">
-                <div class="sval" id="statCargo">…</div>
-                <div class="slabel">بارهەڵگر و ئەوانی تر</div>
-                <span class="stat-scope-badge" id="statBadgeCargo">بار / ئەوانی تر</span>
+                <div class="sval" id="statHijzToday">0</div>
+                <div class="slabel">حیجزکردن (ئەمڕۆ)</div>
+                <span class="stat-scope-badge" id="statBadgeHijz" style="background:#ede9fe; color:#6d28d9; font-weight:800;">👑 ئەدمین</span>
             </div>
-            <div class="stat-icon-wrap">🚛</div>
+            <div class="stat-icon-wrap">🔒</div>
         </div>
     </div>
 
-    <!-- ══ UNIFIED MODULAR SUITES (ORGANIZED FOR PERMISSIONS) ══════════ -->
-    <div class="dash-suites-container">
+    <!-- ══ UNIFIED DASHBOARD MODULES ═══════════════════════ -->
+    <div class="dash-suites-container" id="dashSuitesContainer">
 
-        <!-- SUITE 1: REGISTRATION & CUSTOMS -->
+        <!-- SUITE 1: Core Operations (ALL USERS) -->
         <div class="suite-group">
             <div class="suite-header">
                 <div class="suite-title">
                     <span style="font-size:18px;">📝</span>
                     <span>هۆبەی پشکنین و تۆمارکردنی ئوتومبێل</span>
                 </div>
-                <span class="suite-badge" style="background:#e0f2fe; color:#0369a1;">٤ بەشی سەرەکی</span>
+                <span class="suite-badge" style="background:#e0f2fe; color:#0369a1;">٥ بەشی سەرەکی</span>
             </div>
             <div class="suite-grid">
                 <!-- 1. تۆمار کردن -->
@@ -1528,7 +1585,7 @@
                         <div class="suite-card-icon" style="color:#2563eb; background:#eff6ff; border-color:#bfdbfe;">📝</div>
                         <span class="suite-card-tag">✓ تۆمارکردن</span>
                     </div>
-                    <div class="suite-card-title">تۆمار کردن (ALL)</div>
+                    <div class="suite-card-title">تۆمار کردن</div>
                     <div class="suite-card-desc">فۆرمی فەرمی پشکنین، بارکۆد و چاپکردن</div>
                     <div class="suite-card-action">کردنەوە ←</div>
                 </div>
@@ -1539,12 +1596,34 @@
                         <div class="suite-card-icon" style="color:#0284c7; background:#f0f9ff; border-color:#bae6fd;">🛃</div>
                         <span class="suite-card-tag">✓ نوسراو</span>
                     </div>
-                    <div class="suite-card-title">فۆرمی گومرگ (Gomrg)</div>
+                    <div class="suite-card-title">فۆڕمی گومرگ</div>
                     <div class="suite-card-desc">نوسراوی فەرمی بۆ بەڕێوەبەرایەتی گومرگ</div>
                     <div class="suite-card-action">کردنەوە ←</div>
                 </div>
 
-                <!-- 3. گەڕانی وورد -->
+                <!-- 3. فۆڕمی ڕاپۆرت (پیشاندانی سەرەکی بۆ هەموو بەکارهێنەران) -->
+                <div class="suite-card highlight" data-permission="raport" onclick="openRaportPage()" style="border-color:#f43f5e; background:linear-gradient(135deg,#fff1f2,#ffffff); cursor:pointer;" title="نوسراوی ڕاپۆرت سەبارەت بە کێشەی ئۆتۆمبێل">
+                    <div class="suite-card-top">
+                        <div class="suite-card-icon" style="color:#9f1239; background:#ffe4e6; border-color:#fecdd3;">📄</div>
+                        <span class="suite-card-tag" style="background:#ffe4e6; color:#be123c; font-weight:800;">✓ ڕاپۆرت</span>
+                    </div>
+                    <div class="suite-card-title" style="color:#9f1239;">فۆڕمی ڕاپۆرت</div>
+                    <div class="suite-card-desc">نوسراوی ڕاپۆرت سەبارەت بە کێشەی ئۆتۆمبێل</div>
+                    <div class="suite-card-action" style="color:#be123c; font-weight:800;">کردنەوە لە بەشی سەرەکی ←</div>
+                </div>
+
+                <!-- 4. دانانی نیشانەی حجز لە سەر سوارڕەوەکان (سەرەکی بۆ هەموو بەکارهێنەران) -->
+                <div class="suite-card highlight" onclick="openHijzAddModal()" style="border-color:#ef4444; background:linear-gradient(135deg,#fff5f5,#ffffff); cursor:pointer;" title="دانانی نیشانەی حجز لە سەر سوارڕەوەکان">
+                    <div class="suite-card-top">
+                        <div class="suite-card-icon" style="color:#dc2626; background:#fef2f2; border-color:#fecaca;">🔖</div>
+                        <span class="suite-card-tag" style="background:#fee2e2; color:#b91c1c; font-weight:800;">✓ حجزکردن</span>
+                    </div>
+                    <div class="suite-card-title" style="color:#b91c1c;">دانانی نیشانەی حجز</div>
+                    <div class="suite-card-desc">دانانی نیشانەی حجز و گلدانەوە لە سەر سوارڕەوەکان</div>
+                    <div class="suite-card-action" style="color:#dc2626; font-weight:800;">کردنەوەی فۆڕم ←</div>
+                </div>
+
+                <!-- 5. گەڕانی وورد -->
                 <div class="suite-card" data-permission="search" onclick="openAdvSearchModal()" title="گەڕانی ورد بەپێی شاسی، تابلۆ، خاوەن و بەروار">
                     <div class="suite-card-top">
                         <div class="suite-card-icon" style="color:#059669; background:#ecfdf5; border-color:#a7f3d0;">🔎</div>
@@ -1555,7 +1634,7 @@
                     <div class="suite-card-action">کردنەوە ←</div>
                 </div>
 
-                <!-- 4. تۆماری کەسی -->
+                <!-- 5. تۆماری کەسی -->
                 <div class="suite-card" data-permission="personal" onclick="openPersonalModal()" title="بینینی مێژووی ئەو ئوتومبێلانەی لەلایەن خۆتەوە تۆمارکراون">
                     <div class="suite-card-top">
                         <div class="suite-card-icon" style="color:#db2777; background:#fdf2f8; border-color:#fbcfe8;">👤</div>
@@ -1568,29 +1647,29 @@
             </div>
         </div>
 
-        <!-- SUITE 2: LEGAL, HIJZ & STATUS -->
-        <div class="suite-group">
-            <div class="suite-header">
+        <!-- SUITE 2: Admin & Management (MANAGER ONLY - hidden by default, shown via JS) -->
+        <div class="suite-group" id="suiteAdminGroup" style="display:none; border:2px solid #7c3aed; background:linear-gradient(135deg,#faf5ff,#ffffff);">
+            <div class="suite-header" style="border-bottom-color:#ede9fe;">
                 <div class="suite-title">
-                    <span style="font-size:18px;">⚖️</span>
-                    <span>بەشی یاسایی، گلدانەوە و سەرپێچییەکان</span>
+                    <span style="font-size:18px;">👑</span>
+                    <span style="color:#6d28d9;">بەڕێوەبردن، ئامار و نوێکاری سیستەم</span>
                 </div>
-                <span class="suite-badge" style="background:#fee2e2; color:#991b1b;">٤ بەشی پشکنین و حیجز</span>
+                <span class="suite-badge" style="background:linear-gradient(135deg,#7c3aed,#6d28d9);color:#fff;">👑 دەسەڵاتی مەنهەجەر</span>
             </div>
             <div class="suite-grid">
-                <!-- 5. دانانی نیشانەی حیجز -->
-                <div class="suite-card" data-permission="hijz_add" onclick="openHijzAddModal()" title="قەدەغەکردنی تۆمارکردنی سوارڕەو بە هۆکاری یاسایی یان دادگا">
+                <!-- دانانی نیشانەی حیجز -->
+                <div class="suite-card" data-permission="hijz_add" onclick="openHijzAddModal()">
                     <div class="suite-card-top">
                         <div class="suite-card-icon" style="color:#dc2626; background:#fef2f2; border-color:#fecaca;">🔖</div>
                         <span class="suite-card-tag" style="background:#fee2e2; color:#b91c1c;">🔒 یاسایی</span>
                     </div>
                     <div class="suite-card-title">دانانی نیشانەی حیجز</div>
-                    <div class="suite-card-desc">قەدەغەکردن و گلدانەوەی سوارڕەو</div>
+                    <div class="suite-card-desc">قەدەغەکردن و گلدانەوەی سواڕڕەو</div>
                     <div class="suite-card-action">کردنەوە ←</div>
                 </div>
 
-                <!-- 6. لابردنی حیجز -->
-                <div class="suite-card" data-permission="hijz_remove" onclick="openHijzListModal()" title="بینینی لیستی حیجزکراوەکان و سڕینەوەی نیشانەی حیجز بە نوسراو">
+                <!-- لابردنی حیجز -->
+                <div class="suite-card" data-permission="hijz_remove" onclick="openHijzListModal()">
                     <div class="suite-card-top">
                         <div class="suite-card-icon" style="color:#ea580c; background:#fff7ed; border-color:#fed7aa;">🗑️</div>
                         <span class="suite-card-tag" style="background:#ffedd5; color:#c2410c;">🔒 سڕینەوە</span>
@@ -1600,19 +1679,8 @@
                     <div class="suite-card-action">کردنەوە ←</div>
                 </div>
 
-                <!-- 7. تۆماری لێدراوی (RAP) -->
-                <div class="suite-card" data-permission="suspicious" onclick="switchTab('suspicious')" title="لیستی ئوتومبێلە گومانلێکراوەکان و بڕاوە و لێدراوەکان">
-                    <div class="suite-card-top">
-                        <div class="suite-card-icon" style="color:#9f1239; background:#fff1f2; border-color:#fecdd3;">⚠️</div>
-                        <span class="suite-card-tag" style="background:#ffe4e6; color:#be123c;">⚠️ RAP</span>
-                    </div>
-                    <div class="suite-card-title">تۆماری لێدراوی (RAP)</div>
-                    <div class="suite-card-desc">ئوتومبێلی گومانلێکراو و دەرنەچوو</div>
-                    <div class="suite-card-action">کردنەوە ←</div>
-                </div>
-
-                <!-- 8. هەڵەکان و دووبارە -->
-                <div class="suite-card" data-permission="duplicates" onclick="openDuplicatesModal()" title="پێداچوونەوەی تۆمارە دووبارەکان و چاککردنی هەڵەکان">
+                <!-- دووبارە -->
+                <div class="suite-card" data-permission="duplicates" onclick="openDuplicatesModal()">
                     <div class="suite-card-top">
                         <div class="suite-card-icon" style="color:#d97706; background:#fffbeb; border-color:#fde68a;">🚫</div>
                         <span class="suite-card-tag" style="background:#fef3c7; color:#b45309;">🔒 پشکنین</span>
@@ -1621,21 +1689,9 @@
                     <div class="suite-card-desc">پێداچوونەوەی دووبارە و کەم و کورتی</div>
                     <div class="suite-card-action">کردنەوە ←</div>
                 </div>
-            </div>
-        </div>
 
-        <!-- SUITE 3: ADMIN, ANALYTICS & UPDATES -->
-        <div class="suite-group">
-            <div class="suite-header">
-                <div class="suite-title">
-                    <span style="font-size:18px;">⚙️</span>
-                    <span>بەڕێوەبردن، ئامار و نوێکاری سیستەم</span>
-                </div>
-                <span class="suite-badge" style="background:#ede9fe; color:#6d28d9;">دەسەڵاتی مەنهەجەر و ئەدمین</span>
-            </div>
-            <div class="suite-grid">
                 <!-- 9. کارمەند و بەشەکان -->
-                <div class="suite-card" data-permission="staff" onclick="openStaffModal()" title="بەڕێوەبردنی بەکارهێنەران و تاقیکە و شوێنەکانی پشکنین">
+                <div class="suite-card" data-permission="staff" onclick="openStaffModal()">
                     <div class="suite-card-top">
                         <div class="suite-card-icon" style="color:#7c3aed; background:#f5f3ff; border-color:#ddd6fe;">👥</div>
                         <span class="suite-card-tag" style="background:#ede9fe; color:#6d28d9;">👑 ئەدمین</span>
@@ -1645,19 +1701,19 @@
                     <div class="suite-card-action">کردنەوە ←</div>
                 </div>
 
-                <!-- 10. ئامارەکان -->
-                <div class="suite-card" data-permission="stats" onclick="openStatsModal()" title="ئاماری گشتی پۆلێنکراو بەپێی بەشەکان و پارێزگاکان">
+                <!-- 10. ئامارەکانی گشتی -->
+                <div class="suite-card" data-permission="stats" onclick="openStatsModal()" style="border-color:#bae6fd; background:linear-gradient(135deg,#f0f9ff,#fafafa);">
                     <div class="suite-card-top">
-                        <div class="suite-card-icon" style="color:#0369a1; background:#f0f9ff; border-color:#bae6fd;">📈</div>
-                        <span class="suite-card-tag" style="background:#e0f2fe; color:#0284c7;">✓ ئامار</span>
+                        <div class="suite-card-icon" style="color:#0369a1; background:#f0f9ff; border-color:#bae6fd;">📊</div>
+                        <span class="suite-card-tag" style="background:#bae6fd; color:#0369a1;">★ ئاماری گشتی</span>
                     </div>
-                    <div class="suite-card-title">ئامارە وردەکان</div>
-                    <div class="suite-card-desc">ئاماری پۆلێنکراو بەپێی تابلۆ و جۆرەکان</div>
+                    <div class="suite-card-title">ئاماری گشتی سیستەم</div>
+                    <div class="suite-card-desc">ئامار بەپێی پارێزگا، کارمەند، جۆر و مانگ</div>
                     <div class="suite-card-action">کردنەوە ←</div>
                 </div>
 
                 <!-- 11. ڕاپۆرت -->
-                <div class="suite-card" data-permission="reports" onclick="switchTab('reports')" title="ڕاپۆرتی ڕۆژانە و چاپکردنی خشتەکان">
+                <div class="suite-card" data-permission="reports" onclick="switchTab('reports')">
                     <div class="suite-card-top">
                         <div class="suite-card-icon" style="color:#4338ca; background:#eef2ff; border-color:#c7d2fe;">📋</div>
                         <span class="suite-card-tag" style="background:#e0e7ff; color:#3730a3;">✓ چاپکردن</span>
@@ -1667,8 +1723,8 @@
                     <div class="suite-card-action">کردنەوە ←</div>
                 </div>
 
-                <!-- 12. ئەپدەیت (نوێکردنەوە) -->
-                <div class="suite-card highlight" data-permission="update" onclick="openSystemUpdateModal()" title="پشکنین و ئەپدەیتی ڕاستەوخۆ لە ڕێگەی گیت هابەوە">
+                <!-- 12. ئەپدەیت -->
+                <div class="suite-card highlight" data-permission="update" onclick="openSystemUpdateModal()">
                     <div class="suite-card-top">
                         <div class="suite-card-icon" style="color:#0284c7; background:#e0f2fe; border-color:#7dd3fc;">🔄</div>
                         <span class="suite-card-tag" style="background:#bae6fd; color:#0369a1;">👑 نوێکاری</span>
@@ -1711,6 +1767,182 @@
 
 </div>
 
+<!-- ══ RAPORT PAGE (MAIN SECTION - فۆڕمی ڕاپۆرت لە بەشی سەرەکی) ════════════ -->
+<div class="page" id="page-raport">
+    <div style="max-width: 1080px; margin: 0 auto; background: #ece9d8; border: 2.5px solid #5a738e; box-shadow: 0 8px 30px rgba(0,0,0,0.25); border-radius: 6px; overflow: hidden; font-family: 'Segoe UI', Tahoma, var(--ku), sans-serif; color: #000;">
+        <!-- Windows Form Titlebar -->
+        <div style="background: linear-gradient(90deg, #0a246a, #a6caf0); color: #fff; padding: 6px 14px; display: flex; justify-content: space-between; align-items: center; font-size: 13.5px; font-weight: 800; user-select: none;">
+            <div style="display: flex; align-items: center; gap: 8px;">
+                <span style="font-size: 15px;">📄</span>
+                <span>فۆڕمی نوسراوی ڕاپۆرتی کێشەی ئۆتۆمبێل</span>
+            </div>
+            <div style="display:flex; align-items:center; gap:6px;">
+                <button type="button" onclick="switchTab('dashboard')" style="background: rgba(255,255,255,0.2); color: #fff; border: 1px solid rgba(255,255,255,0.4); font-size: 11.5px; font-weight: 800; padding: 2px 10px; border-radius: 3px; cursor: pointer;">داشبۆرد ↩</button>
+            </div>
+        </div>
+
+        <div style="padding: 16px 20px 22px 20px; direction: rtl;">
+            <!-- Top Controls Row: Sequence, Place, Date, Title, User Badge -->
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; flex-wrap: wrap; gap: 10px;">
+                <!-- Right Side: Sequence, Place, Date -->
+                <div style="display: flex; align-items: center; gap: 16px; flex-wrap: wrap;">
+                    <div style="display: flex; align-items: center; gap: 6px;">
+                        <span style="font-size: 13.5px; font-weight: 800; color: #000;">ز - ڕۆشتوو</span>
+                        <input type="text" id="rapOutS" style="width: 130px; height: 32px; background: #ff7878; color: #ffffff; font-weight: 900; font-size: 17px; text-align: center; border: 1.5px solid #d9534f; border-radius: 3px;" readonly value="3407">
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 6px;">
+                        <span style="font-size: 13px; font-weight: 800; color: #000;">شوێنی پشکنین</span>
+                        <input type="text" id="rapPlace" list="globalPlaceList" style="width: 150px; height: 30px; font-size: 13.5px; font-weight: 800; border: 1.5px solid #0055d4; border-radius: 3px; background: #fff; text-align: center; outline: none;" placeholder="شوێنی پشکنین..." onchange="onGlobalPlaceChange(this.value)">
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 6px;">
+                        <span style="font-size: 13px; font-weight: 800; color: #000;">بەروار</span>
+                        <input type="date" id="rapDate" style="width: 140px; height: 30px; font-size: 13px; font-weight: 700; border: 1.5px solid #7f9db9; border-radius: 2px; background: #fff;">
+                    </div>
+                </div>
+
+                <!-- Center Title & User Badge -->
+                <div style="display: flex; align-items: center; gap: 14px; margin-left: auto;">
+                    <h2 style="font-size: 19px; font-weight: 900; color: #000; margin: 0;">نوسراوی ڕاپۆرت سەبارەت بە کێشەی ئۆتۆمبێل</h2>
+                    <span id="rapBadgeUser" style="background: #000; color: #fff; border: 1.5px solid #ef4444; font-weight: 900; font-size: 17px; padding: 2px 12px; border-radius: 4px;">9</span>
+                </div>
+            </div>
+
+            <!-- Cyan Search Banner: (ژمارە + تابلۆ + بەش ئنجا گەڕان) -->
+            <div style="background: #cffafe; border: 2px solid #67e8f9; border-radius: 4px; padding: 10px 14px; margin-bottom: 12px; display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap;">
+                <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+                    <!-- 1. Car Number -->
+                    <div style="display: flex; align-items: center; gap: 6px;">
+                        <span style="font-size: 13.5px; font-weight: 800; color: #0f172a;">ژمارەی ئۆتۆمبێل</span>
+                        <input type="text" id="rapSearchCarNo" placeholder="A59099" style="width: 140px; height: 32px; font-size: 15px; font-weight: 900; text-align: center; border: 1.5px solid #7f9db9; background: #fff; border-radius: 3px;" onkeydown="if(event.key==='Enter'){event.preventDefault();doRaportSearch();}">
+                    </div>
+
+                    <!-- 2. Tablo -->
+                    <div style="display: flex; align-items: center; gap: 6px;">
+                        <span style="font-size: 13.5px; font-weight: 800; color: #0f172a;">تابلۆی</span>
+                        <input list="rapSearchTabloList" id="rapSearchTablo" style="width: 140px; height: 32px; font-size: 13px; font-weight: 800; text-align: center; border: 1.5px solid #7f9db9; background: #fff; border-radius: 3px;" value="سلێمانی" placeholder="تابلۆ..." onkeydown="if(event.key==='Enter'){event.preventDefault();doRaportSearch();}">
+                        <datalist id="rapSearchTabloList"></datalist>
+                    </div>
+
+                    <!-- 3. Bash -->
+                    <div style="display: flex; align-items: center; gap: 6px;">
+                        <span style="font-size: 13.5px; font-weight: 800; color: #0f172a;">بەش</span>
+                        <input list="rapSearchBashList" id="rapSearchBash" style="width: 120px; height: 32px; font-size: 13px; font-weight: 800; text-align: center; border: 1.5px solid #7f9db9; background: #fff; border-radius: 3px;" value="تایبەت" placeholder="بەش..." onkeydown="if(event.key==='Enter'){event.preventDefault();doRaportSearch();}">
+                        <datalist id="rapSearchBashList"></datalist>
+                    </div>
+
+                    <!-- 4. Search Button -->
+                    <button type="button" id="rapBtnSearch" onclick="doRaportSearch()" style="background: #ffff00; color: #000; font-weight: 900; font-size: 14px; padding: 4px 28px; height: 32px; border: 1.5px solid #c4c400; border-radius: 3px; cursor: pointer; box-shadow: 0 1px 3px rgba(0,0,0,0.2);">بگەڕێ</button>
+                </div>
+
+                <div id="rapSearchSpinner" style="display: none; font-size: 12.5px; font-weight: 800; color: #0284c7;">
+                    ⏳ لە گەڕاندایە لە تەیبڵی تاقیگە (VA)...
+                </div>
+            </div>
+
+            <!-- Dynamic Alert Box for Search / Save feedback -->
+            <div id="rapAlertBox"></div>
+
+            <!-- Form Inputs Table/Rows -->
+            <div style="display: flex; flex-direction: column; gap: 8px;">
+                <!-- Row 1: Car No + Tablo + Bash | Car Model -->
+                <div style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
+                    <div style="flex: 1; min-width: 320px; display: flex; align-items: center; gap: 8px;">
+                        <span style="width: 125px; font-size: 13.5px; font-weight: 800; color: #000; flex-shrink: 0;">ژمارەی ئۆتۆمبێل</span>
+                        <input type="text" id="rapA" placeholder="ژمارە" style="width: 110px; height: 30px; text-align: center; font-weight: 900; font-size: 14px; border: 1.5px solid #7f9db9; background: #fff;">
+                        <select id="rapB" style="flex: 1; height: 30px; font-weight: 800; font-size: 13px; border: 1.5px solid #7f9db9; background: #fff;"></select>
+                        <select id="rapC" style="width: 100px; height: 30px; font-weight: 800; font-size: 13px; border: 1.5px solid #7f9db9; background: #fff;"></select>
+                    </div>
+                    <div style="flex: 1; min-width: 320px; display: flex; align-items: center; gap: 8px;">
+                        <span style="width: 115px; font-size: 13.5px; font-weight: 800; color: #000; flex-shrink: 0;">جۆری ئۆتۆمبێل</span>
+                        <input type="text" id="rapD" placeholder="جۆری ئۆتۆمبێل (مۆدێل)" style="flex: 1; height: 30px; font-weight: 800; font-size: 13px; border: 1.5px solid #7f9db9; background: #fff; padding: 0 8px;">
+                    </div>
+                </div>
+
+                <!-- Row 2: Chassis | Color | Model Year -->
+                <div style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
+                    <div style="flex: 1; min-width: 320px; display: flex; align-items: center; gap: 8px;">
+                        <span style="background: #fbcfe8; border: 1px solid #f472b6; padding: 5px 8px; font-size: 12px; font-weight: 800; border-radius: 2px;">ژمارەی شاسی</span>
+                        <input type="text" id="rapG" placeholder="ژمارەی شاسی سەرەکی" style="flex: 1; height: 30px; font-weight: 900; font-size: 13.5px; text-align: center; border: 1.5px solid #7f9db9; background: #fff;">
+                    </div>
+                    <div style="flex: 1; min-width: 320px; display: flex; align-items: center; gap: 10px;">
+                        <span style="width: 115px; font-size: 13.5px; font-weight: 800; color: #000; flex-shrink: 0;">ڕەنگی سوار ڕەو</span>
+                        <input type="text" id="rapF" placeholder="ڕەنگ" style="flex: 1; height: 30px; font-weight: 800; font-size: 13px; border: 1.5px solid #7f9db9; background: #fff; padding: 0 8px;">
+                        <span style="font-size: 13.5px; font-weight: 800; color: #000; margin-right: 6px;">مۆدێل</span>
+                        <input type="text" id="rapE" value="0" style="width: 80px; height: 30px; font-weight: 900; font-size: 14px; text-align: center; border: 1.5px solid #7f9db9; background: #fff;">
+                    </div>
+                </div>
+
+                <!-- Row 3: Qamara | Citizen Name -->
+                <div style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
+                    <div style="flex: 1; min-width: 320px; display: flex; align-items: center; gap: 8px;">
+                        <span style="width: 125px; font-size: 13.5px; font-weight: 800; color: #000; flex-shrink: 0;">ژمارەی قەماره</span>
+                        <input type="text" id="rapH" value="*" style="flex: 1; height: 30px; font-weight: 800; font-size: 13px; text-align: center; border: 1.5px solid #7f9db9; background: #fff;">
+                    </div>
+                    <div style="flex: 1; min-width: 320px; display: flex; align-items: center; gap: 8px;">
+                        <span style="width: 115px; font-size: 13.5px; font-weight: 800; color: #000; flex-shrink: 0;">بە ناوی هاوڵاتی</span>
+                        <input type="text" id="rapM" placeholder="ناوی سیانی هاوڵاتی" style="flex: 1; height: 30px; font-weight: 900; font-size: 14px; border: 1.5px solid #f472b6; background: #fbcfe8; padding: 0 10px; color: #000;">
+                    </div>
+                </div>
+
+                <!-- Row 4: Trailer 1 Color | Trailer 1 Chassis -->
+                <div style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
+                    <div style="flex: 1; min-width: 320px; display: flex; align-items: center; gap: 8px;">
+                        <span style="width: 125px; font-size: 13.5px; font-weight: 800; color: #000; flex-shrink: 0;">ڕەنگی عارەبانە1</span>
+                        <input type="text" id="rapJ" placeholder="ڕەنگی عەرەبانە 1" style="flex: 1; height: 30px; font-weight: 800; font-size: 13px; border: 1.5px solid #7f9db9; background: #fff; padding: 0 8px;">
+                    </div>
+                    <div style="flex: 1; min-width: 320px; display: flex; align-items: center; gap: 8px;">
+                        <span style="width: 160px; font-size: 13.5px; font-weight: 800; color: #000; flex-shrink: 0;">ژمارەی شاسی عەرەبانە</span>
+                        <input type="text" id="rapI" value="*" style="flex: 1; height: 30px; font-weight: 900; font-size: 13.5px; text-align: center; border: 1.5px solid #7f9db9; background: #fff;">
+                    </div>
+                </div>
+
+                <!-- Row 5: Trailer 2 Color | Trailer 2 Chassis -->
+                <div style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
+                    <div style="flex: 1; min-width: 320px; display: flex; align-items: center; gap: 8px;">
+                        <span style="width: 125px; font-size: 13.5px; font-weight: 800; color: #000; flex-shrink: 0;">ڕەنگی عارەبانە2</span>
+                        <input type="text" id="rapL" placeholder="ڕەنگی عەرەبانە 2" style="flex: 1; height: 30px; font-weight: 800; font-size: 13px; border: 1.5px solid #7f9db9; background: #fff; padding: 0 8px;">
+                    </div>
+                    <div style="flex: 1; min-width: 320px; display: flex; align-items: center; gap: 8px;">
+                        <span style="width: 160px; font-size: 13.5px; font-weight: 800; color: #000; flex-shrink: 0;">ژمارەی شاسی عەرەبانە2</span>
+                        <input type="text" id="rapK" value="*" style="flex: 1; height: 30px; font-weight: 900; font-size: 13.5px; text-align: center; border: 1.5px solid #7f9db9; background: #fff;">
+                    </div>
+                </div>
+
+                <!-- Row 6: Barad 2 | Barad 1 -->
+                <div style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
+                    <div style="flex: 1; min-width: 320px; display: flex; align-items: center; gap: 8px;">
+                        <span style="width: 125px; font-size: 13.5px; font-weight: 800; color: #000; flex-shrink: 0;">بەڕادی هاتووچۆ 2</span>
+                        <select id="rapR" style="flex: 1; height: 32px; font-weight: 800; font-size: 13.5px; border: 1.5px solid #93c5fd; background: #e0e7ff;"></select>
+                    </div>
+                    <div style="flex: 1; min-width: 320px; display: flex; align-items: center; gap: 8px;">
+                        <span style="width: 160px; font-size: 13.5px; font-weight: 800; color: #000; flex-shrink: 0;">بەڕادی هاتووچۆ 1</span>
+                        <select id="rapQ" style="flex: 1; height: 32px; font-weight: 800; font-size: 13.5px; border: 1.5px solid #93c5fd; background: #e0e7ff;"></select>
+                    </div>
+                </div>
+
+                <!-- Row 7: Red Badge "دەینێرین بۆتان بەمەبەستی" + Reason Input/Combobox -->
+                <div style="display: flex; gap: 8px; align-items: center; margin-top: 4px;">
+                    <input type="text" id="rapN" list="rapReasonsList" placeholder="هۆکار و تێبینی لیژنە بنووسە یان لە لیستەکە هەڵبژێرە..." style="flex: 1; height: 34px; font-weight: 700; font-size: 13.5px; border: 1.5px solid #7f9db9; background: #fff; padding: 0 10px;">
+                    <datalist id="rapReasonsList"></datalist>
+                    <span style="background: #e60000; color: #ffffff; font-weight: 900; font-size: 14px; padding: 6px 14px; border-radius: 3px; white-space: nowrap; flex-shrink: 0;">دەینێرین بۆتان بەمەبەستی</span>
+                </div>
+            </div>
+
+            <!-- Bottom Action Buttons -->
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 18px; padding-top: 14px; border-top: 1.5px solid #cbd5e1; flex-wrap: wrap; gap: 10px;">
+                <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+                    <button type="button" id="btnRapSave" onclick="saveRaportRecord()" style="background: #ff7878; color: #ffffff; font-weight: 900; font-size: 14px; padding: 7px 26px; border: 1.5px solid #d9534f; border-radius: 3px; cursor: pointer; box-shadow: 0 1px 3px rgba(0,0,0,0.2);">تۆمار کردنی زانیاری</button>
+                    <button type="button" id="btnRapPrint" onclick="printRaportLetter()" style="background: #ffff00; color: #000; font-weight: 900; font-size: 14px; padding: 7px 32px; border: 1.5px solid #c4c400; border-radius: 3px; cursor: pointer; box-shadow: 0 1px 3px rgba(0,0,0,0.2);">چاپ کردنی ڕاپۆرت</button>
+                    <button type="button" id="btnRapCorrect" onclick="updateT1FromRaport()" style="background: #ffff00; color: #000; font-weight: 800; font-size: 13.5px; padding: 7px 20px; border: 1.5px solid #c4c400; border-radius: 3px; cursor: pointer; box-shadow: 0 1px 3px rgba(0,0,0,0.2);">ڕاست کردنەوەی زانیاری لە کاتی ڕاکێشان</button>
+                </div>
+                <div>
+                    <button type="button" id="btnRapNew" onclick="resetRaportForm()" style="background: #e2e8f0; color: #0f172a; font-weight: 800; font-size: 13.5px; padding: 7px 18px; border: 1.5px solid #94a3b8; border-radius: 3px; cursor: pointer;">فۆڕمی نوێ (پاککردنەوە)</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
 <!-- ══ SEARCH PAGE ═══════════════════════════════════════════════════ -->
 <div class="page" id="page-search">
     <div class="search-box">
@@ -1743,9 +1975,15 @@
 <!-- ══ SUSPICIOUS PAGE (RAP) ═════════════════════════════════════════ -->
 <div class="page" id="page-suspicious">
     <div class="result-wrap">
-        <div class="result-head">
-            <div class="result-title">⚠️ ئوتومبێلی گومانلێکراو و لێدراوی – RAP</div>
-            <div class="result-count" id="suspCount">0</div>
+        <div class="result-head" style="display:flex;justify-content:space-between;align-items:center;">
+            <div style="display:flex;align-items:center;gap:10px;">
+                <div class="result-title">⚠️ ئوتومبێلی گومانلێکراو و لێدراو</div>
+                <div class="result-count" id="suspCount">0</div>
+            </div>
+            <button onclick="openRaportPage()" style="background:#be123c;color:#fff;border:none;padding:6px 16px;border-radius:6px;font-weight:800;font-size:12.5px;cursor:pointer;display:flex;align-items:center;gap:6px;font-family:inherit;box-shadow:0 2px 8px rgba(190,18,60,0.25);">
+                <span style="font-size:15px;">📄</span>
+                <span>فۆڕمی نوێی ڕاپۆرت</span>
+            </button>
         </div>
         <div class="table-wrap" id="suspTable">
             <div class="spin-box"><div class="spinner"></div></div>
@@ -1790,7 +2028,7 @@
                     <!-- RIGHT CORNER: شوێنی پشکنین (Inspection Place) -->
                     <div style="display:flex;align-items:center;gap:6px;background:#f8fafc;border:1.5px solid #64748b;padding:2px 8px;border-radius:4px;box-shadow:0 1px 3px rgba(0,0,0,0.08);">
                         <span style="font-size:12.5px;font-weight:800;color:#1e293b;white-space:nowrap;">شوێنی پشکنین:</span>
-                        <input type="text" id="dfD" style="width:130px;background:#ffffff;font-weight:900;font-size:13px;color:#0f172a;border:1.5px solid #94a3b8;border-radius:3px;padding:2px 6px;text-align:center;cursor:not-allowed;outline:none;" readonly disabled value="عمر عوسمان">
+                        <input type="text" id="dfD" list="globalPlaceList" style="width:150px;background:#ffffff;font-weight:900;font-size:13px;color:#0f172a;border:1.5px solid #0055d4;border-radius:3px;padding:2px 6px;text-align:center;outline:none;" placeholder="شوێنی پشکنین..." onchange="onGlobalPlaceChange(this.value)">
                     </div>
 
                     <!-- CENTER TITLE -->
@@ -2075,9 +2313,9 @@
                     <span class="df-label" style="font-size: 14.5px; font-weight: 800; margin-right: 16px;">بەروار</span>
                     <input type="date" id="gomrgDate" class="df-input" style="width: 160px; font-weight: 700; text-align: center; border-color: #94a3b8;">
 
-                    <!-- لە تاقیکەی (لە لۆگین بە هەمیشەیی ناچالاک / Disabled) -->
+                    <!-- لە تاقیکەی (شوێنی کار / پشکنین) -->
                     <span class="df-label" style="font-size: 14.5px; font-weight: 800; margin-right: 20px;">لە تاقیکەی</span>
-                    <input type="text" id="gomrgPlace" class="df-input c4-kurd" style="width: 260px; font-weight: 900; font-size: 14px; text-align: center; background: #f8fafc; color: #0f172a; border: 1.5px solid #94a3b8; cursor: not-allowed;" readonly disabled value="عمر عوسمان">
+                    <input type="text" id="gomrgPlace" list="globalPlaceList" class="df-input c4-kurd" style="width: 260px; font-weight: 900; font-size: 14px; text-align: center; background: #ffffff; color: #0f172a; border: 1.5px solid #0055d4;" placeholder="شوێنی تاقیگە..." onchange="onGlobalPlaceChange(this.value)">
                 </div>
 
                 <!-- ROW 2: SEARCH SECTION (HIGHLIGHTED PINK/SALMON BORDER) -->
@@ -2181,45 +2419,129 @@
     </div>
 </div>
 
-<!-- 3. MODAL: SET HIJZ (ADD HIJZ) -->
-<div class="overlay" id="modalHijzAdd">
-    <div class="modal">
-        <div class="modal-head">
-            <div class="modal-title">🔖 دانانی نیشانەی حیجز لەسەر ئوتومبێل</div>
-            <button class="modal-close" onclick="closeOverlay('modalHijzAdd')">✕</button>
+<!-- 3. MODAL: SET HIJZ (ADD HIJZ - دانانی نیشانەی حجز لە سەر سوارڕەوەکان) -->
+<div class="overlay" id="modalHijzAdd" style="background: rgba(0,0,0,0.65); z-index: 9999;">
+    <div class="modal" style="max-width: 820px; width: 95%; background: #ffdcb8; border: 2px solid #dfaa78; border-radius: 8px; padding: 0; box-shadow: 0 10px 30px rgba(0,0,0,0.25); overflow: hidden; font-family: var(--ku);">
+        <!-- Top bar with close button -->
+        <div style="display: flex; justify-content: space-between; align-items: center; padding: 10px 18px 0 18px;">
+            <div style="font-size: 13px; font-weight: 700; color: #7c2d12;">فۆڕمی فەرمی گلدانەوە و حیجز</div>
+            <button type="button" class="modal-close" onclick="closeOverlay('modalHijzAdd')" style="background: rgba(0,0,0,0.08); border: none; border-radius: 50%; width: 30px; height: 30px; font-size: 16px; cursor: pointer; display: flex; align-items: center; justify-content: center; color: #333;">✕</button>
         </div>
-        <div class="modal-body">
-            <div id="hijzAlert"></div>
-            <form onsubmit="handleHijzSubmit(event)">
-                <div class="form-grid cols-2">
-                    <div class="form-group">
-                        <label class="form-label">ژمارەی تابلۆ (Auto_No)</label>
-                        <input type="text" id="hPlate" class="form-input c4-kurd" required placeholder="ژمارەی تابلۆ یان مەلەف">
+
+        <div style="padding: 10px 24px 24px 24px;">
+            <!-- Header title matching screenshot -->
+            <h1 style="color: #dc2626; font-size: 26px; font-weight: 900; text-align: center; margin: 0 0 14px 0; letter-spacing: -0.5px;">دانانی نیشانەی حجز لە سەر سوارڕەوەکان</h1>
+            
+            <!-- Section title matching screenshot -->
+            <div style="color: #1d4ed8; font-size: 18px; font-weight: 800; text-align: right; margin-bottom: 12px;">ووردەکاری ئوتومبێل</div>
+
+            <!-- Auto-fill notification status -->
+            <div id="hzStatusMsg" style="min-height: 22px; margin-bottom: 8px; font-size: 12.5px; text-align: right;"></div>
+
+            <form id="formHijzAdd" onsubmit="handleHijzSubmit(event)">
+                <!-- Row 1: ژمارەی ئوتومبێل + پارێزگا + بەشی ئوتومبێل -->
+                <div style="display: flex; gap: 12px; align-items: center; margin-bottom: 12px; flex-wrap: wrap;">
+                    <!-- ژمارەی ئوتومبێل -->
+                    <div style="display: flex; align-items: center; gap: 8px; flex: 1.2; min-width: 220px;">
+                        <label for="hzAutoNo" style="font-size: 15px; font-weight: 800; white-space: nowrap; color: #000;">ژمارەی ئوتومبێل</label>
+                        <input type="text" id="hzAutoNo" class="c4-kurd" required placeholder="ژمارەی تابلۆ" oninput="debounceHijzSearch()" style="flex: 1; height: 34px; background: #fff; border: 1.5px solid #6b7280; border-radius: 3px; padding: 4px 10px; font-size: 15px; font-weight: 700; text-align: center;">
                     </div>
-                    <div class="form-group">
-                        <label class="form-label">پارێزگا / شوێن</label>
-                        <input type="text" id="hPlace" list="placeList" class="form-input c4-kurd" placeholder="سلێمانی...">
+                    
+                    <!-- پارێزگا -->
+                    <div style="flex: 1; min-width: 170px;">
+                        <select id="hzPlace" onchange="triggerHijzAutoFill()" style="width: 100%; height: 34px; background: #fff; border: 1.5px solid #6b7280; border-radius: 3px; padding: 4px 8px; font-size: 14.5px; font-weight: 700; font-family: var(--ku); cursor: pointer;">
+                            <option value="سلێمانی" selected>سلێمانی</option>
+                            <option value="هەولێر">هەولێر</option>
+                            <option value="دهۆک">دهۆک</option>
+                            <option value="کەرکوک">کەرکوک</option>
+                            <option value="هەڵەبجە">هەڵەبجە</option>
+                            <option value="گەرمیان">گەرمیان</option>
+                            <option value="ڕاپەڕین">ڕاپەڕین</option>
+                            <option value="بەغداد">بەغداد</option>
+                            <option value="نەینەوا">نەینەوا</option>
+                            <option value="بەسڕە">بەسڕە</option>
+                            <option value="سەلاحەدین">سەلاحەدین</option>
+                            <option value="دیالە">دیالە</option>
+                            <option value="ئەنبار">ئەنبار</option>
+                            <option value="بابل">بابل</option>
+                            <option value="واسط">واسط</option>
+                            <option value="کەربەلا">کەربەلا</option>
+                            <option value="نەجەف">نەجەف</option>
+                            <option value="قادسیە">قادسیە</option>
+                            <option value="موسەننا">موسەننا</option>
+                            <option value="میسان">میسان</option>
+                            <option value="زیقار">زیقار</option>
+                        </select>
                     </div>
-                    <div class="form-group">
-                        <label class="form-label">جۆری پلێت</label>
-                        <input type="text" id="hType" list="typeList" class="form-input c4-kurd" value="تایبەت">
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">شاسی ئۆتۆمبێل (Reg_Name) *</label>
-                        <input type="text" id="hChassis" class="form-input" required placeholder="شاسی بۆ حیجزکردن" style="text-transform:uppercase;">
-                    </div>
-                    <div class="form-group">
-                        <label class="form-label">بەروار</label>
-                        <input type="date" id="hDate" class="form-input">
-                    </div>
-                    <div class="form-group col-span-2">
-                        <label class="form-label">هۆکاری حیجز و تێبینی نووسراو *</label>
-                        <textarea id="hNote" class="form-textarea c4-kurd" required placeholder="هۆکاری حیجز یان حەفر یان کۆسرە بنووسە..."></textarea>
+
+                    <!-- بەشی ئوتومبێل -->
+                    <div style="display: flex; align-items: center; gap: 8px; flex: 1.2; min-width: 200px;">
+                        <label for="hzCarPlet" style="font-size: 15px; font-weight: 800; white-space: nowrap; color: #000;">بەشی ئوتومبێل</label>
+                        <select id="hzCarPlet" onchange="triggerHijzAutoFill()" style="flex: 1; height: 34px; background: #fff; border: 1.5px solid #6b7280; border-radius: 3px; padding: 4px 8px; font-size: 14.5px; font-weight: 700; font-family: var(--ku); cursor: pointer;">
+                            <option value="تایبەت" selected>تایبەت</option>
+                            <option value="کرێ">کرێ</option>
+                            <option value="بارهەڵگر">بارهەڵگر</option>
+                            <option value="کشتوکاڵ">کشتوکاڵ</option>
+                            <option value="بیناسازی">بیناسازی</option>
+                            <option value="ماتۆڕسکیل">ماتۆڕسکیل</option>
+                            <option value="پشکنین">پشکنین</option>
+                            <option value="حکومی">حکومی</option>
+                        </select>
                     </div>
                 </div>
-                <div class="modal-foot" style="margin-top:20px;padding:0;background:none;border:none;">
-                    <button type="button" class="btn-secondary" onclick="closeOverlay('modalHijzAdd')">داخستن</button>
-                    <button type="submit" class="btn-primary" style="background:#db2777;">🔒 دانانی حیجز</button>
+
+                <!-- Row 2: ژمارەی شاسی + بەرواری ڕاگرتن -->
+                <div style="display: flex; gap: 12px; align-items: center; margin-bottom: 12px; flex-wrap: wrap;">
+                    <!-- ژمارەی شاسی -->
+                    <div style="display: flex; align-items: center; gap: 8px; flex: 1.8; min-width: 280px;">
+                        <label for="hzRegName" style="font-size: 15px; font-weight: 800; white-space: nowrap; color: #000;">ژمارەی شاسی</label>
+                        <input type="text" id="hzRegName" required placeholder="VIN / ژمارەی شاسی" style="flex: 1; height: 34px; background: #fff; border: 1.5px solid #6b7280; border-radius: 3px; padding: 4px 10px; font-size: 14px; font-weight: 800; font-family: monospace; text-transform: uppercase;">
+                    </div>
+
+                    <!-- بەرواری ڕاگرتن -->
+                    <div style="display: flex; align-items: center; gap: 8px; flex: 1.2; min-width: 220px;">
+                        <label for="hzDateReleasing" style="font-size: 15px; font-weight: 800; white-space: nowrap; color: #000;">بەرواری ڕاگرتن</label>
+                        <input type="date" id="hzDateReleasing" required style="flex: 1; height: 34px; background: #fff; border: 1.5px solid #6b7280; border-radius: 3px; padding: 4px 8px; font-size: 14.5px; font-weight: 700; font-family: var(--ku);">
+                    </div>
+                </div>
+
+                <!-- Row 3: ناوی خاوەن سوارڕەو -->
+                <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 12px;">
+                    <label for="hzOwnerName" style="font-size: 15px; font-weight: 800; white-space: nowrap; color: #000; min-width: 140px;">ناوی خاوەن سوارڕەو</label>
+                    <input type="text" id="hzOwnerName" class="c4-kurd" placeholder="ناوی سیانی خاوەنی ئۆتۆمبێل" style="flex: 1; height: 34px; background: #fff; border: 1.5px solid #6b7280; border-radius: 3px; padding: 4px 10px; font-size: 14.5px; font-weight: 700;">
+                </div>
+
+                <!-- Row 4: بەڕادی هاتووچۆ (1) -->
+                <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 12px;">
+                    <label for="hzBarad1" style="font-size: 15px; font-weight: 800; white-space: nowrap; color: #000; min-width: 140px;">بەڕادی هاتووچۆ</label>
+                    <select id="hzBarad1" style="flex: 1; height: 34px; background: #fff; border: 1.5px solid #6b7280; border-radius: 3px; padding: 4px 10px; font-size: 14px; font-weight: 700; font-family: var(--ku); cursor: pointer;">
+                        <option value="">-- هەڵبژاردنی ئەفسەری بەڕاد --</option>
+                    </select>
+                </div>
+
+                <!-- Row 5: بەڕادی هاتووچۆ (2) -->
+                <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 12px;">
+                    <label for="hzBarad2" style="font-size: 15px; font-weight: 800; white-space: nowrap; color: #000; min-width: 140px;">بەڕادی هاتووچۆ</label>
+                    <select id="hzBarad2" style="flex: 1; height: 34px; background: #fff; border: 1.5px solid #6b7280; border-radius: 3px; padding: 4px 10px; font-size: 14px; font-weight: 700; font-family: var(--ku); cursor: pointer;">
+                        <option value="">-- هەڵبژاردنی ئەفسەری دووەم (ئارەزوومەندانە) --</option>
+                    </select>
+                </div>
+
+                <!-- Row 6: ووردەکاری ڕاگرتنی کار -->
+                <div style="color: #000; font-size: 16px; font-weight: 900; text-align: right; margin-top: 10px; margin-bottom: 6px;">ووردەکاری ڕاگرتنی کار</div>
+
+                <!-- Row 7: Textarea -->
+                <div style="margin-bottom: 14px;">
+                    <textarea id="hzCarNote" class="c4-kurd" rows="4" placeholder="هۆکاری حجزکردن و ڕاگرتنی کار و سەرجەم وردەکارییەکان لێرە بنووسە..." style="width: 100%; min-height: 110px; background: #fff; border: 1.5px solid #6b7280; border-radius: 3px; padding: 8px 12px; font-size: 14.5px; font-family: var(--ku); resize: vertical; box-sizing: border-box;"></textarea>
+                </div>
+
+                <!-- Row 8: Action & Footer matching screenshot -->
+                <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 10px; padding: 4px 0;">
+                    <div>
+                        <button type="submit" id="btnHijzSubmit" style="background: #ffea00; color: #000000; font-weight: 900; font-size: 16px; border: 1.5px solid #b8a600; border-radius: 3px; padding: 6px 32px; cursor: pointer; font-family: var(--ku); box-shadow: 0 2px 4px rgba(0,0,0,0.12); transition: all 0.15s ease-in-out;">تۆمار کردن</button>
+                    </div>
+                    <div style="color: red; font-size: 26px; font-weight: 900; line-height: 1; user-select: none;">*</div>
+                    <div id="hzBadgeDisplay" style="font-weight: 900; font-size: 22px; color: #111827; min-width: 24px; text-align: center;">9</div>
                 </div>
             </form>
         </div>
@@ -2326,18 +2648,44 @@
     </div>
 </div>
 
-<!-- 9. MODAL: FULL STATS -->
-<div class="overlay" id="modalStats">
-    <div class="modal">
-        <div class="modal-head">
-            <div class="modal-title">📈 ئامارەکانی پشکنینی هاتووچۆ</div>
-            <button class="modal-close" onclick="closeOverlay('modalStats')">✕</button>
+<!-- 9. MODAL: FULL STATS (Full-Screen Admin Dashboard) -->
+<div class="overlay" id="modalStats" style="padding:0;align-items:stretch;justify-content:stretch;">
+    <div style="width:100vw;height:100vh;display:flex;flex-direction:column;background:#0f172a;overflow:hidden;">
+        <!-- Header -->
+        <div style="background:linear-gradient(135deg,#0f172a,#1e3a5f);color:#fff;padding:10px 20px;display:flex;align-items:center;gap:12px;flex-shrink:0;border-bottom:2px solid #1e293b;">
+            <div style="width:34px;height:34px;border-radius:8px;background:rgba(14,165,233,0.2);border:1.5px solid #38bdf8;display:flex;align-items:center;justify-content:center;font-size:18px;">📊</div>
+            <div>
+                <div style="font-size:14px;font-weight:800;color:#e0f2fe;">ئامارەکانی گشتی و پوختەی سیستەم</div>
+                <div style="font-size:10px;color:#64748b;">بەڕێوەبەرایەتی هاتووچۆی پارێزگای سلێمانی</div>
+            </div>
+            <!-- Date Range Bar (inline with header) -->
+            <div style="display:flex;align-items:center;gap:8px;margin-right:auto;flex-wrap:wrap;">
+                <span style="color:#64748b;font-size:11px;font-weight:700;">📅</span>
+                <input type="date" id="statsDateFrom" style="padding:4px 8px;border-radius:5px;border:1px solid #334155;background:#1e293b;color:#e2e8f0;font-size:11px;font-family:inherit;">
+                <span style="color:#475569;">→</span>
+                <input type="date" id="statsDateTo" style="padding:4px 8px;border-radius:5px;border:1px solid #334155;background:#1e293b;color:#e2e8f0;font-size:11px;font-family:inherit;">
+                <button onclick="loadStatsTab()" style="padding:4px 12px;background:linear-gradient(135deg,#0284c7,#0369a1);color:#fff;border:none;border-radius:5px;font-size:11px;font-weight:800;cursor:pointer;font-family:inherit;">🔍</button>
+                <button onclick="setStatsToday()" style="padding:4px 10px;background:#1e3a5f;color:#38bdf8;border:1px solid #334155;border-radius:5px;font-size:10px;font-weight:700;cursor:pointer;font-family:inherit;">ئەمڕۆ</button>
+                <button onclick="setStatsThisMonth()" style="padding:4px 10px;background:#1e3a5f;color:#38bdf8;border:1px solid #334155;border-radius:5px;font-size:10px;font-weight:700;cursor:pointer;font-family:inherit;">مانگ</button>
+                <button onclick="setStatsThisYear()" style="padding:4px 10px;background:#1e3a5f;color:#38bdf8;border:1px solid #334155;border-radius:5px;font-size:10px;font-weight:700;cursor:pointer;font-family:inherit;">ساڵ</button>
+            </div>
+            <button onclick="closeOverlay('modalStats')" style="background:rgba(255,255,255,0.08);border:1px solid #334155;color:#94a3b8;width:30px;height:30px;border-radius:6px;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;">✕</button>
         </div>
-        <div class="modal-body" id="statsModalBody">
-            <div class="spin-box"><div class="spinner"></div></div>
+        <!-- Tabs -->
+        <div style="display:flex;background:#0a0f1a;border-bottom:2px solid #1e293b;flex-shrink:0;">
+            <button id="stab-t1" onclick="switchStatsTab('t1')" style="padding:9px 22px;border:none;background:transparent;color:#38bdf8;font-size:13px;font-weight:800;cursor:pointer;border-bottom:2px solid #38bdf8;margin-bottom:-2px;font-family:inherit;">📋 ئامارەکانی پشکنین (T1)</button>
+            <button id="stab-gomrg" onclick="switchStatsTab('gomrg')" style="padding:9px 22px;border:none;background:transparent;color:#64748b;font-size:13px;font-weight:800;cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-2px;font-family:inherit;">🛃 ئامارەکانی گومرگ</button>
+        </div>
+        <!-- Tab Content (fills all remaining height) -->
+        <div id="stab-content-t1" style="flex:1;overflow:hidden;background:#f0f4f8;">
+            <div class="spin-box" style="padding:60px 0;"><div class="spinner"></div></div>
+        </div>
+        <div id="stab-content-gomrg" style="flex:1;overflow:hidden;background:#f0f4f8;display:none;">
+            <div class="spin-box" style="padding:60px 0;"><div class="spinner"></div></div>
         </div>
     </div>
 </div>
+
 
 <!-- 10. MODAL: VEHICLE DETAIL -->
 <div class="overlay" id="detailModal">
@@ -2411,6 +2759,220 @@
             </div>
         </div>
     </div>
+<!-- (RAPORT form is now in the main section: #page-raport) -->
+
+<!-- 13. MODAL: RAPORT PRINT (چاپی فەرمی ڕاپۆرت) -->
+<div class="overlay" id="modalRaportPrint" style="background: rgba(0,0,0,0.65); z-index: 10000;">
+    <div style="width: 100%; max-width: 840px; background: #fff; border-radius: 8px; overflow: hidden; box-shadow: 0 15px 50px rgba(0,0,0,0.4); margin: 15px auto; max-height: 94vh; display: flex; flex-direction: column;">
+        <!-- Print Header Bar (no-print) -->
+        <div class="no-print" style="background: #0f172a; color: #fff; padding: 10px 16px; display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #0284c7;">
+            <div style="display: flex; align-items: center; gap: 8px; font-weight: 800; font-size: 14px;">
+                <span>🖨️</span>
+                <span>پێشبینینی چاپی نوسراوی ڕاپۆرت (فەرمی)</span>
+            </div>
+            <div style="display: flex; gap: 8px;">
+                <button type="button" onclick="doPrintRaportDocument()" style="background: #0284c7; color: #fff; border: none; font-weight: 800; font-size: 13px; padding: 6px 18px; border-radius: 5px; cursor: pointer; display: flex; align-items: center; gap: 6px;">
+                    <span>🖨️</span>
+                    <span>چاپکردن (Print)</span>
+                </button>
+                <button type="button" onclick="closeOverlay('modalRaportPrint')" style="background: #334155; color: #fff; border: none; font-size: 13px; font-weight: 700; padding: 6px 14px; border-radius: 5px; cursor: pointer;">داخستن</button>
+            </div>
+        </div>
+
+        <!-- Printable Document Area -->
+        <div id="raportPrintableDoc" style="padding: 24px 34px; overflow-y: auto; flex: 1; background: #fff; color: #000; direction: rtl; font-family: 'Speda', Tahoma, 'Segoe UI', Arial, sans-serif; font-size: 13.5px;">
+            
+            <!-- 1. Header (3 Columns) -->
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px;">
+                <!-- Right Column (Kurdish) -->
+                <div style="text-align: right; width: 35%; font-size: 14px; font-weight: 700; line-height: 1.7; color: #000;">
+                    <div>بەڕێوەبەرایەتی هاتووچۆی پارێزگای سلێمانی</div>
+                    <div style="margin-top: 3px;">بەڕێوەبەرایەتی بەشی تۆمار</div>
+                    <div style="margin-top: 3px; font-size: 15px;">هۆبەی &nbsp;<span style="font-family: Arial, sans-serif; font-weight: 700; font-size: 16px;">OPVI</span></div>
+                </div>
+
+                <!-- Center Column (Logo & English) -->
+                <div style="text-align: center; width: 36%;">
+                    <img src="/img/kurdistan_traffic_logo.png" style="height: 66px; object-fit: contain; margin-bottom: 4px;" alt="Traffic Logo" onerror="this.style.display='none'">
+                    <div style="font-family: Arial, sans-serif; font-size: 9.5px; font-weight: 500; line-height: 1.35; direction: ltr; color: #000;">
+                        <div>Ministry of InteriorGeneral Directorate of Traffic</div>
+                        <div>Sulaimany Traffic Directorate</div>
+                        <div>Registration Affair</div>
+                    </div>
+                </div>
+
+                <!-- Left Column (Place) -->
+                <div style="text-align: center; width: 28%; font-size: 14px; font-weight: 700; line-height: 1.7; color: #000;">
+                    <div>شوێنی پشکنین</div>
+                    <div id="pDocPlace" style="margin-top: 4px; font-weight: 700;">بێستون</div>
+                </div>
+            </div>
+
+            <!-- 2. Ref & Date Row (Above HR) -->
+            <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-top: 14px; margin-bottom: 6px; font-size: 13.5px; font-weight: 700; color: #000;">
+                <!-- Left (English) -->
+                <div style="direction: ltr; font-family: Arial, sans-serif; line-height: 1.5; text-align: left;">
+                    <div>No. &nbsp;&nbsp;<span id="pDocS_en" style="font-family: Arial, sans-serif;">3405</span></div>
+                    <div>Date &nbsp;<span id="pDocDate_en" style="font-family: Arial, sans-serif;">2026-09-23</span></div>
+                </div>
+
+                <!-- Right (Kurdish) -->
+                <div style="direction: rtl; line-height: 1.5; text-align: right;">
+                    <div>ژمارە : &nbsp;&nbsp;<span id="pDocS" style="font-family: Arial, sans-serif;">3405</span></div>
+                    <div>بەروار : &nbsp;<span id="pDocDate" style="font-family: Arial, sans-serif;">2026-09-23</span></div>
+                </div>
+            </div>
+
+            <!-- Solid Dividing Line -->
+            <div style="border-bottom: 1.5px solid #000; width: 100%; margin: 8px 0 16px 0;"></div>
+
+            <!-- 3. Recipient & Subject -->
+            <div style="text-align: center; margin-bottom: 18px; color: #000;">
+                <div style="font-size: 16px; font-weight: 700; margin-bottom: 6px;">
+                    بۆ &nbsp; بەڕێز &nbsp;/ &nbsp; بەڕێوەبەری بەشی تۆمار
+                </div>
+                <div style="font-size: 15px; font-weight: 700; display: inline-block; border-bottom: 1.5px solid #000; padding-bottom: 2px;">
+                    بابەت / ڕاپۆرتی پشکنین
+                </div>
+            </div>
+
+            <!-- 4. Specifications Stepped Grid -->
+            <div style="width: 100%; margin-bottom: 2px; color: #000;">
+                
+                <!-- Sub-row 1: Car No. Header (Right aligned ~58% width) -->
+                <div style="display: flex; justify-content: flex-end; margin-bottom: -1.2px;">
+                    <div style="width: 58%; display: flex; border: 1.2px solid #000; border-collapse: collapse; font-weight: 700; font-size: 13px; min-height: 28px; align-items: stretch;">
+                        <div style="width: 28%; border-left: 1.2px solid #000; display: flex; align-items: center; justify-content: center; padding: 2px 4px; text-align: center;" id="pDocTablo">کاتی دهۆک</div>
+                        <div style="width: 22%; border-left: 1.2px solid #000; display: flex; align-items: center; justify-content: center; padding: 2px 4px; text-align: center;" id="pDocBash">بار</div>
+                        <div style="width: 20%; border-left: 1.2px solid #000; display: flex; align-items: center; justify-content: center; padding: 2px 4px; text-align: center; font-family: Arial, sans-serif; font-size: 14px; font-weight: 700;" id="pDocPlateNo">DS274</div>
+                        <div style="width: 6%; border-left: 1.2px solid #000; display: flex; align-items: center; justify-content: center;">:</div>
+                        <div style="width: 44%; display: flex; align-items: center; justify-content: flex-start; padding: 2px 6px; white-space: nowrap;">دوای پشکنینی ئوتومبێلی ژمارە</div>
+                    </div>
+                </div>
+
+                <!-- Row 2: Full Width Car Type Row -->
+                <div style="width: 100%; border: 1.2px solid #000; display: flex; align-items: center; min-height: 38px; font-weight: 700; font-size: 13px; margin-bottom: -1.2px; box-sizing: border-box;">
+                    <div style="flex: 1; padding: 4px 10px; text-align: center; font-size: 13px; line-height: 1.5;" id="pDocModel">
+                        مان راس تریله تاک ویل جوت تایه دبل قماره تریله لوری مقبط بجادر متحرک 3 دنکیر تاک تایه 42 طن
+                    </div>
+                    <div style="width: 25px; text-align: center; border-right: none;">:</div>
+                    <div style="width: 135px; text-align: right; padding-right: 8px; white-space: nowrap;">جۆری ئوتومبێل</div>
+                </div>
+
+                <!-- Rows 3-8: Stepped Twin Columns (Left ~30%, Right 58%, Gap ~12%) -->
+                <div style="display: flex; justify-content: space-between; align-items: flex-start; width: 100%; box-sizing: border-box;">
+                    
+                    <!-- Left Mini Grid (Width ~30%) -->
+                    <div style="width: 30%; box-sizing: border-box;">
+                        <!-- Left Row 1 (Aligns with Model/Year) -->
+                        <div style="display: flex; border: 1.2px solid #000; min-height: 27px; align-items: stretch; font-weight: 700; font-size: 13px; margin-bottom: -1.2px;">
+                            <div style="flex: 1; display: flex; align-items: center; justify-content: center; padding: 2px 6px; border-left: 1.2px solid #000;" id="pDocColor">سوور</div>
+                            <div style="width: 22px; display: flex; align-items: center; justify-content: center; border-left: 1.2px solid #000;">:</div>
+                            <div style="width: 48px; display: flex; align-items: center; justify-content: center;">ڕەنگی</div>
+                        </div>
+
+                        <!-- Left Spacer 2 (Aligns with Chassis) -->
+                        <div style="min-height: 27px; margin-bottom: -1.2px;"></div>
+
+                        <!-- Left Spacer 3 (Aligns with Qamara) -->
+                        <div style="min-height: 27px; margin-bottom: -1.2px;"></div>
+
+                        <!-- Left Row 4 (Aligns with Arabana 1) -->
+                        <div style="display: flex; border: 1.2px solid #000; min-height: 27px; align-items: stretch; font-weight: 700; font-size: 13px; margin-bottom: -1.2px;">
+                            <div style="flex: 1; display: flex; align-items: center; justify-content: center; padding: 2px 6px; border-left: 1.2px solid #000;" id="pDocA1Color">نەوتی</div>
+                            <div style="width: 22px; display: flex; align-items: center; justify-content: center; border-left: 1.2px solid #000;">:</div>
+                            <div style="width: 48px; display: flex; align-items: center; justify-content: center;">ڕەنگی</div>
+                        </div>
+
+                        <!-- Left Row 5 (Aligns with Arabana 2) -->
+                        <div style="display: flex; border: 1.2px solid #000; min-height: 27px; align-items: stretch; font-weight: 700; font-size: 13px;">
+                            <div style="flex: 1; display: flex; align-items: center; justify-content: center; padding: 2px 6px; border-left: 1.2px solid #000;" id="pDocA2Color">*</div>
+                            <div style="width: 22px; display: flex; align-items: center; justify-content: center; border-left: 1.2px solid #000;">:</div>
+                            <div style="width: 48px; display: flex; align-items: center; justify-content: center;">ڕەنگی</div>
+                        </div>
+
+                        <!-- Left Spacer 6 (Aligns with Owner) -->
+                        <div style="min-height: 27px;"></div>
+                    </div>
+
+                    <!-- Right Grid (Width 58%) -->
+                    <div style="width: 58%; box-sizing: border-box;">
+                        <!-- Right Row 1: Model Year -->
+                        <div style="display: flex; border: 1.2px solid #000; min-height: 27px; align-items: stretch; font-weight: 700; font-size: 13px; margin-bottom: -1.2px;">
+                            <div style="flex: 1; display: flex; align-items: center; justify-content: center; font-family: Arial, sans-serif; font-size: 13.5px;" id="pDocYear">2018</div>
+                            <div style="width: 25px; border-right: 1.2px solid #000; border-left: 1.2px solid #000; display: flex; align-items: center; justify-content: center;">:</div>
+                            <div style="width: 135px; display: flex; align-items: center; justify-content: flex-start; padding-right: 8px;">مۆدێل</div>
+                        </div>
+
+                        <!-- Right Row 2: Chassis -->
+                        <div style="display: flex; border: 1.2px solid #000; min-height: 27px; align-items: stretch; font-weight: 700; font-size: 13px; margin-bottom: -1.2px;">
+                            <div style="flex: 1; display: flex; align-items: center; justify-content: center; font-family: Arial, sans-serif; font-size: 13.5px; letter-spacing: 0.5px;" id="pDocChassis">WMA06XZZ9JM790078</div>
+                            <div style="width: 25px; border-right: 1.2px solid #000; border-left: 1.2px solid #000; display: flex; align-items: center; justify-content: center;">:</div>
+                            <div style="width: 135px; display: flex; align-items: center; justify-content: flex-start; padding-right: 8px;">ژمارەی شاسی</div>
+                        </div>
+
+                        <!-- Right Row 3: Cabin / Qamara -->
+                        <div style="display: flex; border: 1.2px solid #000; min-height: 27px; align-items: stretch; font-weight: 700; font-size: 13px; margin-bottom: -1.2px;">
+                            <div style="flex: 1; display: flex; align-items: center; justify-content: center; font-family: Arial, sans-serif; font-size: 14px;" id="pDocQamara">*</div>
+                            <div style="width: 25px; border-right: 1.2px solid #000; border-left: 1.2px solid #000; display: flex; align-items: center; justify-content: center;">:</div>
+                            <div style="width: 135px; display: flex; align-items: center; justify-content: flex-start; padding-right: 8px;">ژمارەی لاشە</div>
+                        </div>
+
+                        <!-- Right Row 4: Trailer 1 Chassis -->
+                        <div style="display: flex; border: 1.2px solid #000; min-height: 27px; align-items: stretch; font-weight: 700; font-size: 13px; margin-bottom: -1.2px;">
+                            <div style="flex: 1; display: flex; align-items: center; justify-content: center; font-family: Arial, sans-serif; font-size: 13.5px; letter-spacing: 0.5px;" id="pDocA1Chassis">WSMS6980000757042</div>
+                            <div style="width: 25px; border-right: 1.2px solid #000; border-left: 1.2px solid #000; display: flex; align-items: center; justify-content: center;">:</div>
+                            <div style="width: 135px; display: flex; align-items: center; justify-content: flex-start; padding-right: 8px;">ژ.شاسی عەرەبانە1</div>
+                        </div>
+
+                        <!-- Right Row 5: Trailer 2 Chassis -->
+                        <div style="display: flex; border: 1.2px solid #000; min-height: 27px; align-items: stretch; font-weight: 700; font-size: 13px; margin-bottom: -1.2px;">
+                            <div style="flex: 1; display: flex; align-items: center; justify-content: center; font-family: Arial, sans-serif; font-size: 14px;" id="pDocA2Chassis">*</div>
+                            <div style="width: 25px; border-right: 1.2px solid #000; border-left: 1.2px solid #000; display: flex; align-items: center; justify-content: center;">:</div>
+                            <div style="width: 135px; display: flex; align-items: center; justify-content: flex-start; padding-right: 8px;">ژ.شاسی عەرەبانە2</div>
+                        </div>
+
+                        <!-- Right Row 6: Owner Name -->
+                        <div style="display: flex; border: 1.2px solid #000; min-height: 27px; align-items: stretch; font-weight: 700; font-size: 13px;">
+                            <div style="flex: 1; display: flex; align-items: center; justify-content: center; font-size: 13.5px;" id="pDocOwner">حسن احمد عبدالله</div>
+                            <div style="width: 25px; border-right: 1.2px solid #000; border-left: 1.2px solid #000; display: flex; align-items: center; justify-content: center;">:</div>
+                            <div style="width: 135px; display: flex; align-items: center; justify-content: flex-start; padding-right: 8px;">بەناوی هاوڵاتی</div>
+                        </div>
+                    </div>
+
+                </div>
+            </div>
+
+            <!-- 5. Purpose Box (بۆتان دەنێرین بە مەبەستی :-) -->
+            <div style="margin-top: 14px; width: 100%;">
+                <!-- Right-aligned Purpose Label Box -->
+                <div style="display: flex; justify-content: flex-end; margin-bottom: -1.2px;">
+                    <div style="width: 39%; border: 1.2px solid #000; padding: 4px 10px; font-weight: 700; font-size: 13.5px; text-align: center; background: #fff;">
+                        بۆتان دەنێرین بە مەبەستی :-
+                    </div>
+                </div>
+
+                <!-- Full Width Reason Content Box -->
+                <div style="width: 100%; border: 1.2px solid #000; padding: 8px 14px; font-size: 13.5px; font-weight: 700; line-height: 1.8; color: #000; min-height: 52px; box-sizing: border-box; text-align: right;" id="pDocReason">
+                    شاسی حفری خۆڕکە لێیداوە و چەند ژمارەیەکی ناخوێنرێتەوە. وەژمارەکانی تری پاک بکرێنەوە نامینن. بدرێت بە لیژنەی هاوبەش.
+                </div>
+            </div>
+
+            <!-- 6. Respectful Closing -->
+            <div style="text-align: center; margin-top: 36px; font-size: 14.5px; font-weight: 700; color: #000;">
+                فەرمانتان لەگەڵ ڕێزدا
+            </div>
+
+            <!-- 7. Signatures Row -->
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 55px; padding: 0 16px; font-size: 14px; font-weight: 700; color: #000;">
+                <div style="text-align: center; width: 22%;">ڕێکخەر</div>
+                <div style="text-align: center; width: 22%;">بەڕادی پشکنەر</div>
+                <div style="text-align: center; width: 22%;">بەڕادی پشکنەر</div>
+                <div style="text-align: center; width: 22%;">ئەفسەری پشکنین</div>
+            </div>
+
+        </div>
+    </div>
 </div>
 
 <!-- DATALISTS FOR AUTOCOMPLETE & C4KURD COMBOBOXES -->
@@ -2458,6 +3020,75 @@
 <script>
 // ─── AUTH & INITIALIZATION ──────────────────────────────────────────────
 let currentUser = null;
+let globalActivePlace = '';
+let globalPlacesList = [];
+
+async function loadGlobalPlaces() {
+    try {
+        const res = await fetch('/api/places');
+        const list = await res.json();
+        if (Array.isArray(list) && list.length > 0) {
+            globalPlacesList = list;
+            const dl = document.getElementById('globalPlaceList');
+            if (dl) {
+                dl.innerHTML = list.map(p => `<option value="${p}">`).join('');
+            }
+        }
+    } catch(e) {
+        console.warn('Could not load global places:', e);
+    }
+}
+
+function getActivePlace() {
+    if (globalActivePlace !== undefined && globalActivePlace !== null && globalActivePlace.trim() !== '') {
+        return globalActivePlace.trim();
+    }
+    const saved = localStorage.getItem('activePlace');
+    if (saved !== undefined && saved !== null && saved.trim() !== '') {
+        return saved.trim();
+    }
+    if (currentUser && currentUser.place !== undefined && currentUser.place !== null && currentUser.place.trim() !== '') {
+        return currentUser.place.trim();
+    }
+    return '';
+}
+
+function setActivePlace(placeName) {
+    if (placeName === undefined || placeName === null) return;
+    const clean = String(placeName).trim();
+    globalActivePlace = clean;
+    localStorage.setItem('activePlace', clean);
+
+    const topInput = document.getElementById('topActivePlaceInput');
+    if (topInput && topInput.value !== clean) {
+        topInput.value = clean;
+    }
+
+    const dfD = document.getElementById('dfD');
+    if (dfD && dfD.value !== clean) {
+        dfD.value = clean;
+    }
+
+    const gomrgPlace = document.getElementById('gomrgPlace');
+    if (gomrgPlace && gomrgPlace.value !== clean) {
+        gomrgPlace.value = clean;
+    }
+
+    const rapPlace = document.getElementById('rapPlace');
+    if (rapPlace && rapPlace.value !== clean) {
+        rapPlace.value = clean;
+    }
+
+    const hPlace = document.getElementById('hPlace');
+    if (hPlace && hPlace.value !== clean) {
+        hPlace.value = clean;
+    }
+}
+
+function onGlobalPlaceChange(val) {
+    setActivePlace(val);
+}
+
 async function init() {
     try {
         const r = await fetch('/api/me');
@@ -2465,7 +3096,17 @@ async function init() {
         if (!d.loggedIn) { window.location.href = '/login.html'; return; }
         currentUser = d.user;
         document.getElementById('topUserName').textContent  = currentUser.name || currentUser.username || '-';
-        document.getElementById('topUserPlace').textContent = currentUser.permission ? `${currentUser.permission} - ${currentUser.place||''}` : (currentUser.place || '-');
+        document.getElementById('topUserPlace').textContent = currentUser.permission ? `${currentUser.permission}` : (currentUser.place || '-');
+
+        // Preload places and sync active place directly from user's record in Tbl_User
+        await loadGlobalPlaces();
+        let startingPlace = '';
+        if (currentUser && currentUser.place !== undefined && currentUser.place !== null && currentUser.place.trim() !== '') {
+            startingPlace = currentUser.place.trim();
+        } else {
+            startingPlace = (localStorage.getItem('activePlace') || '').trim();
+        }
+        setActivePlace(startingPlace);
 
         // Preload metadata
         loadStats();
@@ -2477,11 +3118,30 @@ async function init() {
         setupAutoEnglishUpper();
         renderLiveBarcode('TC00000000');
         setupBarcodeScannerListener();
+        applyPermissionsUI();
     } catch(e) {
         console.error('Init error:', e);
     }
 }
 init();
+
+// ─── PERMISSIONS UI ─────────────────────────────────────────────────
+function applyPermissionsUI() {
+    if (!currentUser) return;
+    const isManager = Boolean(
+        currentUser.permission === 'MANAGER' || currentUser.place === '*' ||
+        currentUser.username === '9' ||
+        String(currentUser.permission || '').toUpperCase() === 'ADMIN'
+    );
+    const adminGroup = document.getElementById('suiteAdminGroup');
+    if (adminGroup) {
+        adminGroup.style.display = isManager ? '' : 'none';
+    }
+    const cardHijz = document.getElementById('cardStatHijz');
+    if (cardHijz) {
+        cardHijz.style.display = isManager ? '' : 'none';
+    }
+}
 
 function setDate() {
     const d = new Date();
@@ -3668,6 +4328,9 @@ function switchTab(page) {
     const pg = document.getElementById('page-' + page);
     if (pg) pg.classList.add('active');
     window.scrollTo({ top: 0, behavior: 'smooth' });
+    if (page === 'raport' && typeof initRaportForm === 'function') {
+        initRaportForm();
+    }
 }
 
 document.querySelectorAll('.nav-tab').forEach(tab => {
@@ -3744,11 +4407,10 @@ function openRegisterModal() {
         if (currentUser) {
             const badge = document.getElementById('dfUserBadge');
             if (badge) badge.textContent = currentUser.username || currentUser.id || '9';
-            const userPlace = currentUser.place || currentUser.Place_ || 'عمر عوسمان';
             const dfD = document.getElementById('dfD');
             if (dfD) {
-                dfD.value = userPlace;
-                dfD.disabled = true;
+                dfD.value = getActivePlace();
+                dfD.disabled = false;
             }
         }
         if (!loadedVehicleId) {
@@ -3787,11 +4449,10 @@ function dfResetNew() {
     setVal('dfC', 'تایبەت');
     if (typeof setBashValue === 'function') setBashValue('تایبەت');
     
-    // Set inspection place based on logged in user and disable it
-    const userPlace = (currentUser && (currentUser.place || currentUser.Place_)) ? (currentUser.place || currentUser.Place_) : 'عمر عوسمان';
-    setVal('dfD', userPlace);
+    // Set inspection place based on active place and keep editable
+    setVal('dfD', getActivePlace());
     const dfDEl = document.getElementById('dfD');
-    if (dfDEl) dfDEl.disabled = true;
+    if (dfDEl) dfDEl.disabled = false;
 
     setVal('dfTo', 'هاتووچۆی پارێزگای سلێمانی');
     setVal('dfDD', new Date().toISOString().slice(0, 10));
@@ -4270,7 +4931,7 @@ function getFormPayload() {
         A: val('dfA'),
         B: val('dfB'),
         C: val('dfC'),
-        D: val('dfD') || (currentUser && (currentUser.place || currentUser.Place_)) || 'عمر عوسمان',
+        D: val('dfD') || getActivePlace(),
         To: val('dfTo') || 'هاتووچۆی پارێزگای سلێمانی',
         E: val('dfE'),
         F: val('dfF'),
@@ -5081,13 +5742,12 @@ async function openGomrgModal() {
             if (badge) badge.textContent = currentUser.username || currentUser.id || '9';
         }
 
-        // 2. Set user's place from login as readonly / disabled
-        const userPlace = (currentUser && (currentUser.place || currentUser.Place_)) || 'عمر عوسمان';
+        // 2. Set user's place from active place and keep editable
         const placeInput = document.getElementById('gomrgPlace');
         if (placeInput) {
-            placeInput.value = userPlace;
-            placeInput.disabled = true;
-            placeInput.readOnly = true;
+            placeInput.value = getActivePlace();
+            placeInput.disabled = false;
+            placeInput.readOnly = false;
         }
 
         // 3. Set date to today
@@ -5318,7 +5978,7 @@ function renderSingleGomrgDocument(d) {
         }
     }
     const userName = rawUser;
-    const placeName = d.place || (currentUser && (currentUser.place || currentUser.Place_)) || 'پێشەنگ';
+    const placeName = d.place || getActivePlace() || (currentUser && (currentUser.place || currentUser.Place_)) || '';
     const cleanQamara = (d.qamara && d.qamara !== '*') ? d.qamara : '';
     const cleanAShassy = (d.A_shassy && d.A_shassy !== '*') ? d.A_shassy : (d.A_shassy || '*');
     const cleanBB = (d.BB && d.BB !== '*') ? d.BB : '';
@@ -5492,7 +6152,7 @@ function gomrgPrintForm(customData) {
     const d = customData || {
         IDD: getVal('gomrgIDD') || '531571',
         date_insert: getVal('gomrgDate') || new Date().toISOString().slice(0, 10),
-        place: getVal('gomrgPlace') || (currentUser && (currentUser.place || currentUser.Place_)) || 'پێشەنگ',
+        place: getVal('gomrgPlace') || getActivePlace() || (currentUser && (currentUser.place || currentUser.Place_)) || '',
         car_n: getVal('gomrgCarN') || getVal('gomrgSearchCarN') || '',
         bash: getVal('gomrgBash') || getVal('gomrgSearchBash') || 'بار',
         parezga: getVal('gomrgParezga') || getVal('gomrgSearchPlet') || 'سلێمانی',
@@ -5637,23 +6297,183 @@ function gomrgPrintForm(customData) {
     }, 250);
 }
 
-// ─── 3. MODULE: SET HIJZ ───────────────────────────────────────────────
+// ─── 3. MODULE: SET HIJZ (فۆرمی دانانی نیشانەی حجز لە سەر سوارڕەوەکان) ─────────
+let hijzSearchTimer = null;
+let cachedBaradsList = [];
+
+async function loadHijzBarads() {
+    try {
+        if (!cachedBaradsList || cachedBaradsList.length === 0) {
+            const res = await fetch('/api/barads');
+            if (res.ok) {
+                cachedBaradsList = await res.json();
+            }
+        }
+        const b1 = document.getElementById('hzBarad1');
+        const b2 = document.getElementById('hzBarad2');
+        if (Array.isArray(cachedBaradsList) && cachedBaradsList.length > 0) {
+            let opts1 = '<option value="">-- هەڵبژاردنی ئەفسەری بەڕاد --</option>';
+            let opts2 = '<option value="">-- هەڵبژاردنی ئەفسەری دووەم (ئارەزوومەندانە) --</option>';
+            cachedBaradsList.forEach(b => {
+                const clean = String(b).trim();
+                if (clean) {
+                    opts1 += `<option value="${clean}">${clean}</option>`;
+                    opts2 += `<option value="${clean}">${clean}</option>`;
+                }
+            });
+            if (b1) b1.innerHTML = opts1;
+            if (b2) b2.innerHTML = opts2;
+        }
+    } catch(err) {
+        console.error('Failed to load barads list:', err);
+    }
+}
+
 function openHijzAddModal() {
-    document.getElementById('hijzAlert').innerHTML = '';
-    document.getElementById('hDate').value = new Date().toISOString().slice(0,10);
+    // Reset fields
+    const elAutoNo = document.getElementById('hzAutoNo');
+    const elRegName = document.getElementById('hzRegName');
+    const elOwner = document.getElementById('hzOwnerName');
+    const elNote = document.getElementById('hzCarNote');
+    const elDate = document.getElementById('hzDateReleasing');
+    const elPlace = document.getElementById('hzPlace');
+    const elPlet = document.getElementById('hzCarPlet');
+    const elStatus = document.getElementById('hzStatusMsg');
+    const elBadge = document.getElementById('hzBadgeDisplay');
+
+    if (elAutoNo) elAutoNo.value = '';
+    if (elRegName) elRegName.value = '';
+    if (elOwner) elOwner.value = '';
+    if (elNote) elNote.value = '';
+    if (elPlace) elPlace.value = 'سلێمانی';
+    if (elPlet) elPlet.value = 'تایبەت';
+    if (elStatus) elStatus.innerHTML = '';
+    if (elDate) elDate.value = new Date().toISOString().slice(0, 10);
+    
+    // Display user code or 9 badge
+    if (elBadge) {
+        const u = (typeof currentUser !== 'undefined' && currentUser && currentUser.username) ? currentUser.username : '9';
+        elBadge.textContent = u;
+    }
+
+    // Populate Barads comboboxes from table Barad
+    loadHijzBarads();
+
     openOverlay('modalHijzAdd');
+    setTimeout(() => { if (elAutoNo) elAutoNo.focus(); }, 150);
+}
+
+function debounceHijzSearch() {
+    clearTimeout(hijzSearchTimer);
+    hijzSearchTimer = setTimeout(triggerHijzAutoFill, 350);
+}
+
+async function triggerHijzAutoFill() {
+    const autoNo = document.getElementById('hzAutoNo')?.value?.trim();
+    const place = document.getElementById('hzPlace')?.value?.trim() || 'سلێمانی';
+    const plet = document.getElementById('hzCarPlet')?.value?.trim() || 'تایبەت';
+    const statusEl = document.getElementById('hzStatusMsg');
+
+    if (!autoNo || autoNo.length < 1) {
+        if (statusEl) statusEl.innerHTML = '';
+        return;
+    }
+
+    if (statusEl) {
+        statusEl.innerHTML = '<span style="color:#0284c7;font-weight:700;">🔄 گەڕان لە خشتەی تاقیگە (VA)...</span>';
+    }
+
+    try {
+        const url = `/api/hijz/search-va?car_n=${encodeURIComponent(autoNo)}&plet=${encodeURIComponent(place)}&bash=${encodeURIComponent(plet)}`;
+        const res = await fetch(url);
+        const data = await res.json();
+
+        if (data.found && data.car) {
+            if (statusEl) {
+                statusEl.innerHTML = '<span style="color:#15803d;font-weight:800;background:#dcfce7;padding:2px 8px;border-radius:4px;border:1px solid #86efac;">✅ زانیاری ئۆتۆمبێل لە خشتەی تاقیگە (VA) دۆزرایەوە و خۆکارانە پڕکرایەوە</span>';
+            }
+
+            // Fill Chassis (shassy)
+            const chassisEl = document.getElementById('hzRegName');
+            if (chassisEl && data.car.shassy) {
+                chassisEl.value = String(data.car.shassy).trim().toUpperCase();
+            }
+
+            // Fill Owner Name (Name_)
+            const ownerEl = document.getElementById('hzOwnerName');
+            const ownerName = data.car.owner || data.car.full_name || '';
+            if (ownerEl && ownerName) {
+                ownerEl.value = String(ownerName).trim();
+            }
+
+            // Match Barad (AA) in hzBarad1
+            const baradVal = (data.car.barad || '').trim();
+            if (baradVal) {
+                const b1 = document.getElementById('hzBarad1');
+                if (b1) {
+                    let matched = false;
+                    for (let i = 0; i < b1.options.length; i++) {
+                        if (b1.options[i].value === baradVal || b1.options[i].text === baradVal) {
+                            b1.selectedIndex = i;
+                            matched = true;
+                            break;
+                        }
+                    }
+                    if (!matched) {
+                        const opt = document.createElement('option');
+                        opt.value = baradVal;
+                        opt.textContent = baradVal;
+                        b1.appendChild(opt);
+                        b1.value = baradVal;
+                    }
+                }
+            }
+        } else {
+            if (statusEl) {
+                statusEl.innerHTML = '<span style="color:#b45309;font-weight:700;background:#fef3c7;padding:2px 8px;border-radius:4px;border:1px solid #fde68a;">ℹ️ داتای ئەم ئۆتۆمبێلە لە خشتەی تاقیگە (VA) نەبوو، تکایە خۆت بە دەستی پڕی بکەرەوە</span>';
+            }
+        }
+    } catch(err) {
+        console.error('Hijz search VA fetch error:', err);
+        if (statusEl) statusEl.innerHTML = '';
+    }
 }
 
 async function handleHijzSubmit(e) {
     e.preventDefault();
+    const btn = document.getElementById('btnHijzSubmit');
+    const autoNo = document.getElementById('hzAutoNo')?.value?.trim();
+    const place = document.getElementById('hzPlace')?.value?.trim() || 'سلێمانی';
+    const carPlet = document.getElementById('hzCarPlet')?.value?.trim() || 'تایبەت';
+    const regName = document.getElementById('hzRegName')?.value?.trim().toUpperCase();
+    const dateReleasing = document.getElementById('hzDateReleasing')?.value;
+    const ownerName = document.getElementById('hzOwnerName')?.value?.trim();
+    const barad1 = document.getElementById('hzBarad1')?.value?.trim();
+    const barad2 = document.getElementById('hzBarad2')?.value?.trim();
+    const carNote = document.getElementById('hzCarNote')?.value?.trim();
+
+    if (!autoNo && !regName) {
+        alert('تکایە بەلایەنی کەمەوە ژمارەی ئوتومبێل یان ژمارەی شاسی بنووسە!');
+        return;
+    }
+
+    if (btn) {
+        btn.disabled = true;
+        btn.textContent = 'تۆمار دەکرێت...';
+    }
+
     const payload = {
-        Auto_No: document.getElementById('hPlate').value.trim(),
-        Place_: document.getElementById('hPlace').value.trim(),
-        Car_Plet: document.getElementById('hType').value.trim(),
-        Reg_Name: document.getElementById('hChassis').value.trim().toUpperCase(),
-        Date_Releasing: document.getElementById('hDate').value,
-        car_Note: document.getElementById('hNote').value.trim()
+        Auto_No: autoNo,
+        Place_: place,
+        Car_Plet: carPlet,
+        Reg_Name: regName,
+        Date_Releasing: dateReleasing,
+        owner_name: ownerName,
+        Barad1: barad1,
+        Barad2: barad2,
+        car_Note: carNote
     };
+
     try {
         const res = await fetch('/api/hijz', {
             method: 'POST',
@@ -5662,13 +6482,20 @@ async function handleHijzSubmit(e) {
         });
         const d = await res.json();
         if (d.success) {
-            showToast('✅ ' + d.message);
+            showToast('✅ ' + (d.message || 'نیشانەی حجز بە سەرکەوتوویی لەسەر سوارڕەوەکە دانرا'));
             closeOverlay('modalHijzAdd');
+            if (typeof fetchStats === 'function') fetchStats();
+            if (typeof fetchDashboardStats === 'function') fetchDashboardStats();
         } else {
-            document.getElementById('hijzAlert').innerHTML = `<div class="alert-box alert-danger">⚠️ ${d.error || 'هەڵە'}</div>`;
+            alert('⚠️ هەڵە لە تۆمارکردنی حجز: ' + (d.error || 'نەتوانرا تۆمار بکرێت'));
         }
     } catch(err) {
-        document.getElementById('hijzAlert').innerHTML = `<div class="alert-box alert-danger">⚠️ کێشەی سێرڤەر</div>`;
+        alert('⚠️ کێشەی پەیوەندی بە سێرڤەرەوە هەیە');
+    } finally {
+        if (btn) {
+            btn.disabled = false;
+            btn.textContent = 'تۆمار کردن';
+        }
     }
 }
 
@@ -5905,38 +6732,326 @@ function searchExactChassis(ch) {
 }
 
 // ─── 9. MODULE: FULL STATS ─────────────────────────────────────────────
+let _activeStatsTab = 't1';
+
 function openStatsModal() {
     openOverlay('modalStats');
-    loadFullStatsModal();
+    // Set default date range (this month for fast loading)
+    const today = new Date();
+    const y = today.getFullYear();
+    const m = String(today.getMonth() + 1).padStart(2, '0');
+    const todayStr = today.toISOString().slice(0,10);
+    const fromStr  = `${y}-${m}-01`;
+    const elFrom = document.getElementById('statsDateFrom');
+    const elTo   = document.getElementById('statsDateTo');
+    if (elFrom && !elFrom.value) { elFrom.value = fromStr; }
+    if (elTo   && !elTo.value)   { elTo.value   = todayStr; }
+    _activeStatsTab = 't1';
+    switchStatsTab('t1');
+    loadStatsTab();
 }
+
+function setStatsToday() {
+    const t = new Date().toISOString().slice(0,10);
+    document.getElementById('statsDateFrom').value = t;
+    document.getElementById('statsDateTo').value = t;
+    loadStatsTab();
+}
+function setStatsThisMonth() {
+    const n = new Date();
+    document.getElementById('statsDateFrom').value = `${n.getFullYear()}-${String(n.getMonth()+1).padStart(2,'0')}-01`;
+    document.getElementById('statsDateTo').value = n.toISOString().slice(0,10);
+    loadStatsTab();
+}
+function setStatsThisYear() {
+    const n = new Date();
+    document.getElementById('statsDateFrom').value = `${n.getFullYear()}-01-01`;
+    document.getElementById('statsDateTo').value = n.toISOString().slice(0,10);
+    loadStatsTab();
+}
+
+function switchStatsTab(tab) {
+    _activeStatsTab = tab;
+    ['t1','gomrg'].forEach(t => {
+        const btn  = document.getElementById(`stab-${t}`);
+        const cont = document.getElementById(`stab-content-${t}`);
+        if (!btn || !cont) return;
+        if (t === tab) {
+            btn.style.color         = '#38bdf8';
+            btn.style.borderBottom  = '2px solid #38bdf8';
+            btn.style.marginBottom  = '-2px';
+            cont.style.display      = 'block';
+        } else {
+            btn.style.color         = '#64748b';
+            btn.style.borderBottom  = 'none';
+            btn.style.marginBottom  = '0';
+            cont.style.display      = 'none';
+        }
+    });
+}
+
+function loadStatsTab() {
+    if (_activeStatsTab === 't1') loadDetailedStats();
+    else if (_activeStatsTab === 'gomrg') loadGomrgStats();
+}
+
+// ── Helper: build a single DataGrid column ───────────────────────────
+function buildGroupedGrid(title, icon, rows, groupKey, labelKey, countKey) {
+    if (!rows || !rows.length) return `<div style="padding:30px 12px;text-align:center;color:#94a3b8;font-size:13px;">هیچ داتایەک نەدۆزرایەوە</div>`;
+
+    // Group rows by date
+    const byDate = {};
+    rows.forEach(r => {
+        const d = r[groupKey] ? String(r[groupKey]).slice(0,10) : 'نەزانراو';
+        if (!byDate[d]) byDate[d] = [];
+        byDate[d].push(r);
+    });
+
+    const colLabel = labelKey === 'writer' ? 'نوسەر' : labelKey === 'barad' ? 'بەراد'
+        : (labelKey === 'place_' || labelKey === 'place') ? 'شوێن' : 'یوزەر';
+
+    let html = `<div style="display:flex;flex-direction:column;height:100%;background:#fff;border-left:1.5px solid #e2e8f0;">
+        <div style="padding:10px 14px;background:linear-gradient(135deg,#f8fafc,#f1f5f9);border-bottom:1.5px solid #e2e8f0;display:flex;align-items:center;gap:8px;flex-shrink:0;">
+            <span style="font-size:15px;">${icon}</span>
+            <span style="font-size:13px;font-weight:800;color:#1e293b;">${title}</span>
+            <span style="margin-right:auto;background:#dbeafe;color:#1d4ed8;font-size:10px;font-weight:800;padding:2px 8px;border-radius:12px;">${rows.length}</span>
+        </div>
+        <div style="flex:1;overflow-y:auto;">
+        <table style="width:100%;border-collapse:collapse;font-size:12px;">
+            <thead><tr style="background:#f8fafc;position:sticky;top:0;z-index:1;">
+                <th style="padding:7px 10px;text-align:right;font-weight:800;color:#475569;border-bottom:1.5px solid #e2e8f0;font-size:11px;">بەروار</th>
+                <th style="padding:7px 10px;text-align:right;font-weight:800;color:#475569;border-bottom:1.5px solid #e2e8f0;font-size:11px;">${colLabel}</th>
+                <th style="padding:7px 10px;text-align:center;font-weight:800;color:#475569;border-bottom:1.5px solid #e2e8f0;font-size:11px;">ژمار</th>
+            </tr></thead>
+            <tbody>`;
+
+    const dates = Object.keys(byDate).sort((a,b) => b.localeCompare(a));
+    dates.forEach((date, di) => {
+        const dateRows = byDate[date];
+        const dayTotal = dateRows.reduce((s,r) => s + (r[countKey]||0), 0);
+        html += `<tr style="background:#eff6ff;">
+            <td colspan="2" style="padding:5px 10px;font-weight:800;color:#1d4ed8;font-size:11px;border-bottom:1px solid #dbeafe;">📅 ${date}</td>
+            <td style="padding:5px 10px;text-align:center;font-weight:800;border-bottom:1px solid #dbeafe;">
+                <span style="background:#dbeafe;color:#1d4ed8;padding:1px 7px;border-radius:10px;font-size:10px;">${dayTotal.toLocaleString()}</span>
+            </td>
+        </tr>`;
+        dateRows.forEach(r => {
+            html += `<tr onmouseover="this.style.background='#f0f9ff'" onmouseout="this.style.background=''">
+                <td style="padding:4px 10px 4px 20px;color:#94a3b8;font-size:10px;border-bottom:1px solid #f1f5f9;">└</td>
+                <td style="padding:4px 10px;color:#334155;font-weight:700;border-bottom:1px solid #f1f5f9;font-size:12px;">${r[labelKey]||'-'}</td>
+                <td style="padding:4px 10px;text-align:center;border-bottom:1px solid #f1f5f9;">
+                    <span style="background:#f0fdf4;color:#16a34a;padding:1px 8px;border-radius:10px;font-size:11px;font-weight:800;">${(r[countKey]||0).toLocaleString()}</span>
+                </td>
+            </tr>`;
+        });
+    });
+
+    html += `</tbody></table></div></div>`;
+    return html;
+}
+
+// ── T1 Detailed Stats ─────────────────────────────────────────────────
+async function loadDetailedStats() {
+    const wrap = document.getElementById('stab-content-t1');
+    wrap.innerHTML = '<div class="spin-box" style="padding:60px 0;"><div class="spinner"></div></div>';
+    try {
+        const from = document.getElementById('statsDateFrom').value;
+        const to   = document.getElementById('statsDateTo').value;
+        const d = await fetch(`/api/stats/detailed?from=${from}&to=${to}`).then(r=>r.json());
+        if (d.error) { wrap.innerHTML = `<div class="empty-box" style="padding:30px;">${d.error}</div>`; return; }
+
+        const fmt = n => (n||0).toLocaleString();
+
+        // Summary KPI bar
+        const total = d.byDate ? d.byDate.reduce((s,r)=>s+(r.cnt||0),0) : 0;
+        const sc = [
+            {icon:'📋', label:'کۆی تۆمار', val: fmt(total), clr:'#0284c7'},
+            {icon:'👤', label:'کارمەند', val: [...new Set((d.byWriter||[]).map(r=>r.writer))].length, clr:'#7c3aed'},
+            {icon:'🏷', label:'بەراد', val: [...new Set((d.byBarad||[]).map(r=>r.barad))].length, clr:'#059669'},
+            {icon:'📍', label:'شوێن', val: [...new Set((d.byPlace||[]).map(r=>r.place_))].length, clr:'#d97706'},
+        ];
+        let kpi = `<div style="display:flex;gap:0;background:#1e293b;border-bottom:1px solid #334155;flex-shrink:0;">`;
+        sc.forEach(c => {
+            kpi += `<div style="flex:1;padding:10px 14px;border-left:1px solid #334155;text-align:center;">
+                <div style="font-size:11px;color:#64748b;font-weight:700;">${c.icon} ${c.label}</div>
+                <div style="font-size:20px;font-weight:900;color:#f1f5f9;margin-top:2px;">${c.val}</div>
+            </div>`;
+        });
+        kpi += `</div>`;
+
+        // 3 grids side by side — each fills remaining height and scrolls independently
+        const g1 = buildGroupedGrid('ئامارەکان بەپێی نوسەر', '👤', d.byWriter, 'date_', 'writer', 'cnt');
+        const g2 = buildGroupedGrid('ئامارەکان بەپێی بەراد', '🏷', d.byBarad,  'date_', 'barad',  'cnt');
+        const g3 = buildGroupedGrid('ئامارەکان بەپێی شوێن', '📍', d.byPlace,  'date_', 'place_', 'cnt');
+
+        wrap.style.display = 'flex';
+        wrap.style.flexDirection = 'column';
+        wrap.style.overflow = 'hidden';
+        wrap.innerHTML = kpi + `<div style="flex:1;display:grid;grid-template-columns:1fr 1fr 1fr;overflow:hidden;">` + g1 + g2 + g3 + `</div>`;
+    } catch(e) {
+        console.error('Detailed stats error:', e);
+        wrap.innerHTML = '<div class="empty-box" style="padding:40px;"><div class="eicon">⚠️</div><p>کێشەی بارکردنی ئامار</p></div>';
+    }
+}
+
+// ── Gomrg Stats ───────────────────────────────────────────────────────
+async function loadGomrgStats() {
+    const wrap = document.getElementById('stab-content-gomrg');
+    wrap.innerHTML = '<div class="spin-box" style="padding:60px 0;"><div class="spinner"></div></div>';
+    try {
+        const from = document.getElementById('statsDateFrom').value;
+        const to   = document.getElementById('statsDateTo').value;
+        const d = await fetch(`/api/stats/gomrg?from=${from}&to=${to}`).then(r=>r.json());
+        if (d.error) { wrap.innerHTML = `<div class="empty-box" style="padding:30px;">${d.error}</div>`; return; }
+
+        const fmt = n => (n||0).toLocaleString();
+        const total = d.byDate ? d.byDate.reduce((s,r)=>s+(r.cnt||0),0) : 0;
+
+        // Summary KPI bar
+        const sc = [
+            {icon:'🛃', label:'کۆی گومرگ', val: fmt(total), clr:'#0284c7'},
+            {icon:'📍', label:'شوێن',       val: [...new Set((d.byPlace||[]).map(r=>r.place))].length,    clr:'#d97706'},
+            {icon:'👤', label:'یوزەر',      val: [...new Set((d.byUser||[]).map(r=>r.username))].length,  clr:'#7c3aed'},
+        ];
+        let kpi = `<div style="display:flex;gap:0;background:#1e293b;border-bottom:1px solid #334155;flex-shrink:0;">`;
+        sc.forEach(c => {
+            kpi += `<div style="flex:1;padding:10px 14px;border-left:1px solid #334155;text-align:center;">
+                <div style="font-size:11px;color:#64748b;font-weight:700;">${c.icon} ${c.label}</div>
+                <div style="font-size:20px;font-weight:900;color:#f1f5f9;margin-top:2px;">${c.val}</div>
+            </div>`;
+        });
+        kpi += `</div>`;
+
+        // 2 grids side by side
+        const g1 = buildGroupedGrid('ئامارەکانی گومرگ بەپێی شوێن', '📍', d.byPlace, 'date_', 'place',    'cnt');
+        const g2 = buildGroupedGrid('ئامارەکانی گومرگ بەپێی یوزەر', '👤', d.byUser,  'date_', 'username', 'cnt');
+
+        wrap.style.display = 'flex';
+        wrap.style.flexDirection = 'column';
+        wrap.style.overflow = 'hidden';
+        wrap.innerHTML = kpi + `<div style="flex:1;display:grid;grid-template-columns:1fr 1fr;overflow:hidden;">` + g1 + g2 + `</div>`;
+    } catch(e) {
+        console.error('Gomrg stats error:', e);
+        wrap.innerHTML = '<div class="empty-box" style="padding:40px;"><div class="eicon">⚠️</div><p>کێشەی بارکردنی ئاماری گومرگ</p></div>';
+    }
+}
+
+
 
 async function loadFullStatsModal() {
     const wrap = document.getElementById('statsModalBody');
-    wrap.innerHTML = '<div class="spin-box"><div class="spinner"></div></div>';
+    wrap.innerHTML = '<div class="spin-box" style="padding:60px 0;"><div class="spinner"></div></div>';
     try {
-        const d = await fetch('/api/stats').then(r=>r.json());
-        let html = `
-            <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:18px;">
-                <div class="stat-card"><div class="sicon">🚗</div><div><div class="sval">${(d.total||0).toLocaleString()}</div><div class="slabel">کۆی ئوتومبێل</div></div></div>
-                <div class="stat-card green"><div class="sicon">📅</div><div><div class="sval">${(d.today||0).toLocaleString()}</div><div class="slabel">ئەمڕۆ تۆمارکراو</div></div></div>
-            </div>
-            <h4 style="color:var(--primary);margin-bottom:10px;font-size:14px;">دابەشبوون بەپێی جۆری ئوتومبێل:</h4>
-            <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:10px;">
-        `;
-        if (d.byType) {
-            d.byType.forEach(row => {
-                html += `
-                    <div class="d-item" style="display:flex;justify-content:space-between;align-items:center;">
-                        <span class="d-label" style="font-size:13px;color:var(--text);font-weight:700;">${row.type_||'نەزانراو'}</span>
-                        <span class="badge badge-cargo">${(row.cnt||0).toLocaleString()}</span>
+        // Try manager full stats first, fall back to basic stats
+        let d, isFull = false;
+        try {
+            const r = await fetch('/api/stats/full');
+            if (r.ok) { d = await r.json(); isFull = true; }
+            else { d = await fetch('/api/stats').then(x=>x.json()); }
+        } catch { d = await fetch('/api/stats').then(x=>x.json()); }
+
+        const fmt = n => (n||0).toLocaleString();
+
+        // ── Top 4 KPI Cards ──
+        let kpi = `<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:14px;padding:20px 20px 0;">`;
+        const cards = [
+            {icon:'🚗', val: fmt(d.total),  label:'کۆی گشتی', sub:'ئوتومبێل', color:'#0284c7', bg:'#e0f2fe'},
+            {icon:'📅', val: fmt(d.today),  label:'ئەمڕۆ',    sub:'تۆمارکراو',color:'#10b981', bg:'#dcfce7'},
+            {icon:'📆', val: fmt(d.week||0), label:'٧ ڕۆژ',   sub:'کۆیەکی', color:'#f59e0b', bg:'#fef3c7'},
+            {icon:'🗓',  val: fmt(d.month||0),label:'٣٠ ڕۆژ', sub:'کۆیەکی', color:'#8b5cf6', bg:'#ede9fe'},
+        ];
+        cards.forEach(c => {
+            kpi += `<div style="background:#fff;border-radius:14px;padding:18px 16px;border:1.5px solid #e2e8f0;box-shadow:0 2px 10px rgba(0,0,0,0.04);">
+                <div style="font-size:26px;margin-bottom:8px;">${c.icon}</div>
+                <div style="font-size:26px;font-weight:900;color:#0f172a;line-height:1;">${c.val}</div>
+                <div style="font-size:13px;font-weight:800;color:#334155;margin-top:5px;">${c.label}</div>
+                <div style="font-size:11px;color:#94a3b8;margin-top:2px;font-weight:600;">${c.sub}</div>
+            </div>`;
+        });
+        kpi += `</div>`;
+
+        // ── Section: By Type ──
+        let byTypeSec = `<div style="margin:20px 20px 0;background:#fff;border-radius:14px;border:1.5px solid #e2e8f0;overflow:hidden;">
+            <div style="padding:14px 18px;background:#f8fafc;border-bottom:1px solid #e2e8f0;font-weight:800;color:#1e293b;font-size:14px;">🚘 دابەشبوون بەپێی جۆری ئوتومبێل</div>
+            <div style="padding:14px;display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:10px;">`;
+        (d.byType||[]).forEach(row => {
+            const pct = d.total ? Math.round((row.cnt/d.total)*100) : 0;
+            byTypeSec += `<div style="padding:12px;background:#f8fafc;border-radius:10px;border:1px solid #e2e8f0;">
+                <div style="font-size:13px;font-weight:800;color:#334155;margin-bottom:6px;">${row.type_||'نەزانراو'}</div>
+                <div style="font-size:22px;font-weight:900;color:#0284c7;">${fmt(row.cnt)}</div>
+                <div style="height:4px;background:#e2e8f0;border-radius:4px;margin-top:8px;">
+                    <div style="height:100%;width:${pct}%;background:linear-gradient(90deg,#0284c7,#38bdf8);border-radius:4px;"></div>
+                </div>
+                <div style="font-size:10px;color:#94a3b8;margin-top:4px;font-weight:700;">${pct}% لە کۆ</div>
+            </div>`;
+        });
+        byTypeSec += `</div></div>`;
+
+        // ── Section: By Province ──
+        let byProvSec = '';
+        if (isFull && d.byProvince && d.byProvince.length) {
+            byProvSec = `<div style="margin:16px 20px 0;background:#fff;border-radius:14px;border:1.5px solid #e2e8f0;overflow:hidden;">
+                <div style="padding:14px 18px;background:#f8fafc;border-bottom:1px solid #e2e8f0;font-weight:800;color:#1e293b;font-size:14px;">📍 دابەشبوون بەپێی پارێزگا</div>
+                <div style="padding:14px;">`;
+            d.byProvince.forEach((row,i) => {
+                const colors = ['#0284c7','#10b981','#f59e0b','#8b5cf6','#ec4899','#14b8a6','#ef4444','#64748b'];
+                const clr = colors[i % colors.length];
+                const pct = d.total ? Math.round((row.cnt/d.total)*100) : 0;
+                byProvSec += `<div style="display:flex;align-items:center;gap:12px;margin-bottom:10px;">
+                    <div style="width:120px;font-size:13px;font-weight:800;color:#334155;flex-shrink:0;">${row.province||'نەزانراو'}</div>
+                    <div style="flex:1;height:24px;background:#f1f5f9;border-radius:6px;overflow:hidden;">
+                        <div style="height:100%;width:${Math.max(pct,3)}%;background:${clr};border-radius:6px;display:flex;align-items:center;padding:0 8px;">
+                            <span style="font-size:11px;color:#fff;font-weight:800;">${pct > 8 ? fmt(row.cnt) : ''}</span>
+                        </div>
                     </div>
-                `;
+                    <div style="width:55px;font-size:13px;font-weight:900;color:#0f172a;text-align:left;">${fmt(row.cnt)}</div>
+                </div>`;
             });
+            byProvSec += `</div></div>`;
         }
-        html += `</div>`;
-        wrap.innerHTML = html;
+
+        // ── Section: Top Users ──
+        let byUserSec = '';
+        if (isFull && d.byUser && d.byUser.length) {
+            byUserSec = `<div style="margin:16px 20px 0;background:#fff;border-radius:14px;border:1.5px solid #e2e8f0;overflow:hidden;">
+                <div style="padding:14px 18px;background:#f8fafc;border-bottom:1px solid #e2e8f0;font-weight:800;color:#1e293b;font-size:14px;">👤 بەرفرەی کارمەندانی چالاک (TOP 15)</div>
+                <div style="padding:14px;display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px;">`;
+            d.byUser.forEach((row,i) => {
+                const medal = i===0?'🥇':i===1?'🥈':i===2?'🥉':'🎖';
+                byUserSec += `<div style="display:flex;align-items:center;gap:10px;padding:10px;background:#f8fafc;border-radius:10px;border:1px solid #e2e8f0;">
+                    <div style="font-size:20px;">${medal}</div>
+                    <div>
+                        <div style="font-size:13px;font-weight:800;color:#0f172a;">${row.username||'-'}</div>
+                        <div style="font-size:12px;color:#0284c7;font-weight:700;">${fmt(row.cnt)} تۆمار</div>
+                    </div>
+                </div>`;
+            });
+            byUserSec += `</div></div>`;
+        }
+
+        // ── Section: Monthly Trend ──
+        let byMonthSec = '';
+        if (isFull && d.byMonth && d.byMonth.length) {
+            const maxCnt = Math.max(...d.byMonth.map(r=>r.cnt), 1);
+            byMonthSec = `<div style="margin:16px 20px 20px;background:#fff;border-radius:14px;border:1.5px solid #e2e8f0;overflow:hidden;">
+                <div style="padding:14px 18px;background:#f8fafc;border-bottom:1px solid #e2e8f0;font-weight:800;color:#1e293b;font-size:14px;">📈 ئاماری مانگانەی ئەم ساڵە</div>
+                <div style="padding:20px 14px;display:flex;align-items:flex-end;gap:8px;height:160px;">`;
+            d.byMonth.forEach(row => {
+                const h = Math.round((row.cnt/maxCnt)*110);
+                const mo = (row.month||'').substring(5);
+                byMonthSec += `<div style="flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;">
+                    <div style="font-size:10px;color:#64748b;font-weight:700;">${fmt(row.cnt)}</div>
+                    <div style="width:100%;height:${h}px;background:linear-gradient(180deg,#38bdf8,#0284c7);border-radius:4px 4px 0 0;"></div>
+                    <div style="font-size:10px;color:#94a3b8;font-weight:600;">${mo}</div>
+                </div>`;
+            });
+            byMonthSec += `</div></div>`;
+        }
+
+        wrap.innerHTML = kpi + byTypeSec + byProvSec + byUserSec + byMonthSec;
     } catch(e) {
-        wrap.innerHTML = '<div class="empty-box"><p>کێشەی بارکردنی ئامار</p></div>';
+        console.error('Stats error:', e);
+        wrap.innerHTML = '<div class="empty-box" style="padding:40px;"><div class="eicon">⚠️</div><p>کێشەی بارکردنی ئامار</p></div>';
     }
 }
 
@@ -6008,6 +7123,426 @@ function buildTable(rows) {
     return `<table>${head}<tbody>${body}</tbody></table>`;
 }
 
+// ─── MODULE: RAPORT (RAP FORM & PRINT) ──────────────────────────────
+let _raportLookupsLoaded = false;
+let _raportCurrentId = null;
+
+function openRaportPage(id) {
+    switchTab('raport');
+    initRaportForm(id);
+}
+
+function openRaportModal(id) {
+    openRaportPage(id);
+}
+
+function resetRaportForm() {
+    _raportCurrentId = null;
+    const ids = ['rapA', 'rapD', 'rapF', 'rapG', 'rapJ', 'rapL', 'rapM', 'rapN', 'rapSearchCarNo'];
+    ids.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) el.value = '';
+    });
+    const defaults = { rapE: '0', rapH: '*', rapI: '*', rapK: '*' };
+    Object.entries(defaults).forEach(([id, val]) => {
+        const el = document.getElementById(id);
+        if (el) el.value = val;
+    });
+    const alertBox = document.getElementById('rapAlertBox');
+    if (alertBox) alertBox.innerHTML = '';
+    initRaportForm();
+}
+
+async function initRaportForm(id) {
+    _raportCurrentId = id || null;
+
+    // Set today's date
+    const today = new Date().toISOString().slice(0, 10);
+    const dateInput = document.getElementById('rapDate');
+    if (dateInput && !dateInput.value) dateInput.value = today;
+
+    // Load lookups & next sequence
+    try {
+        const res = await fetch('/api/raport/init');
+        const d = await res.json();
+        if (d.success) {
+            // Sequence S
+            const outS = document.getElementById('rapOutS');
+            if (outS && !id) outS.value = d.nextS;
+
+            // Current user badge
+            const badgeUser = document.getElementById('rapBadgeUser');
+            if (badgeUser) badgeUser.textContent = d.currentUser?.username || '9';
+
+            // Populate and set active place
+            const placeInput = document.getElementById('rapPlace');
+            if (placeInput && !id) {
+                placeInput.value = getActivePlace();
+            }
+
+            // Populate tablos datalist and dropdowns
+            const sTabloList = document.getElementById('rapSearchTabloList');
+            const sTablo = document.getElementById('rapSearchTablo');
+            const rapB = document.getElementById('rapB');
+            if (sTabloList && (!_raportLookupsLoaded || sTabloList.options.length <= 1)) {
+                const tabloOpts = (d.tablos || []).map(t => `<option value="${t}">${t}</option>`).join('');
+                sTabloList.innerHTML = (d.tablos || []).map(t => `<option value="${t}">`).join('');
+                if (rapB) rapB.innerHTML = tabloOpts;
+                if (sTablo && !sTablo.value) sTablo.value = 'سلێمانی';
+                if (rapB && !rapB.value) rapB.value = 'سلێمانی';
+            }
+
+            // Populate bashes datalist and dropdowns
+            const sBashList = document.getElementById('rapSearchBashList');
+            const sBash = document.getElementById('rapSearchBash');
+            const rapC = document.getElementById('rapC');
+            if (sBashList && (!_raportLookupsLoaded || sBashList.options.length <= 1)) {
+                const bashOpts = (d.bashes || []).map(b => `<option value="${b}">${b}</option>`).join('');
+                sBashList.innerHTML = (d.bashes || []).map(b => `<option value="${b}">`).join('');
+                if (rapC) rapC.innerHTML = bashOpts;
+                if (sBash && !sBash.value) sBash.value = 'تایبەت';
+                if (rapC && !rapC.value) rapC.value = 'تایبەت';
+            }
+
+            // Populate barads dropdowns
+            const rapQ = document.getElementById('rapQ');
+            const rapR = document.getElementById('rapR');
+            if (rapQ && (!_raportLookupsLoaded || rapQ.options.length <= 1)) {
+                const baradOpts = '<option value="">-- هەڵبژێرە --</option>' + 
+                    (d.barads || []).map(b => `<option value="${b}">${b}</option>`).join('');
+                rapQ.innerHTML = baradOpts;
+                rapR.innerHTML = baradOpts;
+            }
+
+            // Populate reasons datalist
+            const rList = document.getElementById('rapReasonsList');
+            if (rList) {
+                rList.innerHTML = (d.reasons || []).map(r => `<option value="${r}">`).join('');
+            }
+
+            _raportLookupsLoaded = true;
+        }
+    } catch (err) {
+        console.error('Error initializing raport form:', err);
+    }
+
+    // Setup Enter key navigation for desktop rapid entry
+    const rapContainer = document.getElementById('page-raport');
+    if (rapContainer && !rapContainer._enterInit) {
+        rapContainer._enterInit = true;
+        rapContainer.addEventListener('keydown', function(e) {
+            if (e.key === 'Enter') {
+                const target = e.target;
+                if (target.id === 'rapSearchCarNo' || target.id === 'rapSearchTablo' || target.id === 'rapSearchBash') {
+                    e.preventDefault();
+                    doRaportSearch();
+                    return;
+                }
+                if (target.tagName === 'BUTTON') return;
+                if (target.tagName === 'INPUT' || target.tagName === 'SELECT') {
+                    e.preventDefault();
+                    const inputs = Array.from(rapContainer.querySelectorAll(
+                        '#rapA, #rapB, #rapC, #rapD, #rapG, #rapF, #rapE, #rapH, #rapM, #rapJ, #rapI, #rapL, #rapK, #rapR, #rapQ, #rapN'
+                    ));
+                    const idx = inputs.indexOf(target);
+                    if (idx > -1) {
+                        const next = e.shiftKey ? inputs[idx - 1] : inputs[idx + 1];
+                        if (next) {
+                            next.focus();
+                            if (next.select && next.tagName === 'INPUT') next.select();
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+    // If opening an existing report by ID
+    if (id) {
+        loadRaportRecord(id);
+    } else {
+        const sCar = document.getElementById('rapSearchCarNo');
+        if (sCar) {
+            setTimeout(() => sCar.focus(), 150);
+        }
+    }
+}
+
+async function loadRaportRecord(id) {
+    try {
+        const res = await fetch(`/api/raport/${id}`);
+        const json = await res.json();
+        if (json.success && json.data) {
+            const r = json.data;
+            document.getElementById('rapOutS').value = r.S || '';
+            document.getElementById('rapA').value = r.A || '';
+            document.getElementById('rapB').value = r.B || '';
+            document.getElementById('rapC').value = r.C || '';
+            document.getElementById('rapD').value = r.D || '';
+            document.getElementById('rapE').value = r.E || '0';
+            document.getElementById('rapF').value = r.F || '';
+            document.getElementById('rapG').value = r.G || '';
+            document.getElementById('rapH').value = r.H || '*';
+            document.getElementById('rapI').value = r.I || '*';
+            document.getElementById('rapJ').value = r.J || '';
+            document.getElementById('rapK').value = r.K || '*';
+            document.getElementById('rapL').value = r.L || '';
+            document.getElementById('rapM').value = r.M || '';
+            document.getElementById('rapN').value = r.N || '';
+            if (r.O) document.getElementById('rapDate').value = String(r.O).slice(0, 10);
+            if (r.P) document.getElementById('rapPlace').value = r.P;
+            if (r.Q) document.getElementById('rapQ').value = r.Q;
+            if (r.R) document.getElementById('rapR').value = r.R;
+        }
+    } catch (e) {
+        console.error('Error loading raport row:', e);
+    }
+}
+
+async function doRaportSearch() {
+    const rawCarNo = (document.getElementById('rapSearchCarNo')?.value || '').trim();
+    const tablo = (document.getElementById('rapSearchTablo')?.value || '').trim();
+    const bash  = (document.getElementById('rapSearchBash')?.value  || '').trim();
+
+    if (!rawCarNo) {
+        alert('تکایە ژمارەی ئۆتۆمبێل بنووسە بۆ گەڕان');
+        document.getElementById('rapSearchCarNo')?.focus();
+        return;
+    }
+
+    const spinner = document.getElementById('rapSearchSpinner');
+    if (spinner) spinner.style.display = 'block';
+    const alertBox = document.getElementById('rapAlertBox');
+    if (alertBox) alertBox.innerHTML = '';
+
+    try {
+        const url = `/api/raport/search-car?plate=${encodeURIComponent(rawCarNo)}&tablo=${encodeURIComponent(tablo)}&bash=${encodeURIComponent(bash)}`;
+        const res = await fetch(url);
+        const d = await res.json();
+
+        if (d.success && d.data) {
+            const row = d.data;
+            document.getElementById('rapA').value = row.car_no || rawCarNo;
+            if (row.tablo && row.tablo !== '*') document.getElementById('rapB').value = row.tablo;
+            if (row.bash  && row.bash  !== '*') document.getElementById('rapC').value = row.bash;
+            document.getElementById('rapD').value = row.model || '';
+            document.getElementById('rapE').value = row.year || '0';
+            document.getElementById('rapF').value = row.color || '';
+            document.getElementById('rapG').value = row.chassis || '';
+            document.getElementById('rapH').value = row.qamara || '*';
+            document.getElementById('rapM').value = row.owner || '';
+            document.getElementById('rapI').value = row.arabana1_chassis || '*';
+            document.getElementById('rapJ').value = row.arabana1_color || '';
+            document.getElementById('rapK').value = row.arabana2_chassis || '*';
+            document.getElementById('rapL').value = row.arabana2_color || '';
+            if (row.barad1) document.getElementById('rapQ').value = row.barad1;
+            if (row.place && row.place !== '*') document.getElementById('rapPlace').value = row.place;
+
+            if (alertBox) {
+                const srcText = d.source === 'VA' ? 'تەیبڵی تاقیگە (VA)' : 'تۆماری ئۆتۆمبێل (T1)';
+                alertBox.innerHTML = `
+                    <div style="background:#ecfdf5; border:1.5px solid #a7f3d0; color:#065f46; padding:8px 14px; border-radius:4px; margin-bottom:10px; font-weight:800; font-size:13.5px; display:flex; align-items:center; justify-content:space-between;">
+                        <span>✅ داتاکان لە ${srcText} بە سەرکەوتوویی هێنرانەوە و پڕکرانەوە</span>
+                        <button type="button" onclick="this.parentElement.remove()" style="background:none; border:none; cursor:pointer; font-size:16px;">✕</button>
+                    </div>
+                `;
+            }
+
+            // Focus on reason input
+            document.getElementById('rapN')?.focus();
+        } else {
+            // Not found in DB: pre-fill entered car number, tablo, bash so user can write directly
+            document.getElementById('rapA').value = rawCarNo;
+            if (tablo && tablo !== '*') document.getElementById('rapB').value = tablo;
+            if (bash  && bash  !== '*') document.getElementById('rapC').value = bash;
+            
+            if (alertBox) {
+                alertBox.innerHTML = `
+                    <div style="background:#fffbeb; border:1.5px solid #fde68a; color:#92400e; padding:8px 14px; border-radius:4px; margin-bottom:10px; font-weight:800; font-size:13.5px; display:flex; align-items:center; justify-content:space-between;">
+                        <span>⚠️ هیچ ئۆتۆمبێلێک لە تاقیگە (VA) نەدۆزرایەوە بەم زانیارییانەوە، دەتوانیت بە دەست زانیارییەکان بنووسیت.</span>
+                        <button type="button" onclick="this.parentElement.remove()" style="background:none; border:none; cursor:pointer; font-size:16px;">✕</button>
+                    </div>
+                `;
+            }
+            document.getElementById('rapD')?.focus();
+        }
+    } catch (err) {
+        console.error('Raport search error:', err);
+        if (alertBox) {
+            alertBox.innerHTML = `
+                <div style="background:#fef2f2; border:1.5px solid #fecaca; color:#991b1b; padding:8px 14px; border-radius:4px; margin-bottom:10px; font-weight:800; font-size:13.5px;">
+                    ❌ کێشە لە گەڕان: ${err.message}
+                </div>
+            `;
+        }
+    } finally {
+        if (spinner) spinner.style.display = 'none';
+    }
+}
+
+async function saveRaportRecord() {
+    const a = (document.getElementById('rapA')?.value || '').trim();
+    if (!a) {
+        alert('تکایە ژمارەی ئۆتۆمبێل دیاری بکە');
+        document.getElementById('rapA')?.focus();
+        return;
+    }
+
+    const sVal = parseInt(document.getElementById('rapOutS')?.value, 10) || 0;
+    const body = {
+        A: a,
+        B: document.getElementById('rapB')?.value || '',
+        C: document.getElementById('rapC')?.value || '',
+        D: document.getElementById('rapD')?.value || '',
+        E: document.getElementById('rapE')?.value || '0',
+        F: document.getElementById('rapF')?.value || '',
+        G: document.getElementById('rapG')?.value || '',
+        H: document.getElementById('rapH')?.value || '*',
+        I: document.getElementById('rapI')?.value || '*',
+        J: document.getElementById('rapJ')?.value || '',
+        K: document.getElementById('rapK')?.value || '*',
+        L: document.getElementById('rapL')?.value || '',
+        M: document.getElementById('rapM')?.value || '',
+        N: document.getElementById('rapN')?.value || '',
+        P: (document.getElementById('rapPlace')?.value || '').trim() || getActivePlace(),
+        place: (document.getElementById('rapPlace')?.value || '').trim() || getActivePlace(),
+        Q: document.getElementById('rapQ')?.value || '',
+        R: document.getElementById('rapR')?.value || '',
+        S: sVal,
+        UUser: (currentUser && (currentUser.name || currentUser.username)) || (window.currentUser && (window.currentUser.name || window.currentUser.username)) || ''
+    };
+
+    const btn = document.getElementById('btnRapSave');
+    if (btn) { btn.disabled = true; btn.textContent = '⏳ پاشەکەوت دەکرێت...'; }
+
+    try {
+        const res = await fetch('/api/raport', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(body)
+        });
+        const d = await res.json();
+        if (d.success) {
+            alert(d.message || 'ڕاپۆرت بە سەرکەوتوویی لە هەردوو تەیبڵی (RAP) و (حیجز) تۆمارکرا');
+            if (d.nextS) {
+                document.getElementById('rapOutS').value = d.nextS;
+            }
+            // Refresh suspicious page table if open
+            if (typeof loadSuspicious === 'function') loadSuspicious();
+
+            // Ask to print
+            if (confirm('زانیارییەکان بە سەرکەوتوویی لە هەردوو تەیبڵدا تۆمارکران. ئایا دەتەوێت نوسراوی ڕاپۆرتەکە چاپ بکەیت؟')) {
+                printRaportLetter();
+            }
+        } else {
+            alert(d.message || 'هەڵە لە تۆمارکردن');
+        }
+    } catch (err) {
+        console.error('Save Raport error:', err);
+        alert('هەڵە لە پەیوەندی بە سێرڤەر: ' + err.message);
+    } finally {
+        if (btn) { btn.disabled = false; btn.textContent = 'تۆمار کردنی زانیاری'; }
+    }
+}
+
+async function updateT1FromRaport() {
+    const a = (document.getElementById('rapA')?.value || '').trim();
+    if (!a) {
+        alert('تکایە سەرەتا ژمارەی ئۆتۆمبێل پڕبکەرەوە');
+        return;
+    }
+
+    if (!confirm(`ئایا دڵنیایت لە ڕاستکردنەوە و نوێکردنەوەی زانیارییەکانی ئەم ئۆتۆمبێلە (${a}) لە تەیبڵی سەرەکی T1 دا؟`)) {
+        return;
+    }
+
+    const body = {
+        A: a,
+        B: document.getElementById('rapB')?.value || '',
+        C: document.getElementById('rapC')?.value || '',
+        D: document.getElementById('rapD')?.value || '',
+        E: document.getElementById('rapE')?.value || '0',
+        F: document.getElementById('rapF')?.value || '',
+        G: document.getElementById('rapG')?.value || '',
+        H: document.getElementById('rapH')?.value || '*',
+        I: document.getElementById('rapI')?.value || '*',
+        J: document.getElementById('rapJ')?.value || '',
+        K: document.getElementById('rapK')?.value || '*',
+        L: document.getElementById('rapL')?.value || '',
+        M: document.getElementById('rapM')?.value || ''
+    };
+
+    const btn = document.getElementById('btnRapCorrect');
+    if (btn) { btn.disabled = true; btn.textContent = '⏳ نوێ دەکرێتەوە...'; }
+
+    try {
+        const res = await fetch('/api/raport/update-t1', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(body)
+        });
+        const d = await res.json();
+        alert(d.message || 'نوێکردنەوەکە ئەنجامدرا');
+    } catch (err) {
+        console.error('Update T1 error:', err);
+        alert('هەڵە لە نوێکردنەوەی T1: ' + err.message);
+    } finally {
+        if (btn) { btn.disabled = false; btn.textContent = 'ڕاست کردنەوەی زانیاری لە کاتی ڕاکێشان'; }
+    }
+}
+
+function printRaportLetter() {
+    // Populate printable document fields
+    const sVal  = document.getElementById('rapOutS')?.value || '3405';
+    const date  = document.getElementById('rapDate')?.value || new Date().toISOString().split('T')[0];
+    const place = (document.getElementById('rapPlace')?.value || '').trim() || getActivePlace();
+    const plate = document.getElementById('rapA')?.value || '-';
+    const tablo = document.getElementById('rapB')?.value || '';
+    const bash  = document.getElementById('rapC')?.value || '';
+    const model = document.getElementById('rapD')?.value || '-';
+    const year  = document.getElementById('rapE')?.value || '-';
+    const color = document.getElementById('rapF')?.value || '-';
+    const chass = document.getElementById('rapG')?.value || '-';
+    const qam   = document.getElementById('rapH')?.value || '*';
+    const owner = document.getElementById('rapM')?.value || '-';
+    const a1Ch  = document.getElementById('rapI')?.value || '*';
+    const a1Cl  = document.getElementById('rapJ')?.value || '';
+    const a2Ch  = document.getElementById('rapK')?.value || '*';
+    const a2Cl  = document.getElementById('rapL')?.value || '';
+    const reason= document.getElementById('rapN')?.value || 'شاسی حفری خۆڕکە لێیداوە  و چەند ژمارەیەکی ناخوێنرێتەوە. وەژمارەکانی تری پاک بکرێنەوە نامینن. بدرێت بە لیژنەی هاوبەش.';
+
+    if (document.getElementById('pDocS')) document.getElementById('pDocS').textContent = sVal;
+    if (document.getElementById('pDocS_en')) document.getElementById('pDocS_en').textContent = sVal;
+    if (document.getElementById('pDocDate')) document.getElementById('pDocDate').textContent = date;
+    if (document.getElementById('pDocDate_en')) document.getElementById('pDocDate_en').textContent = date;
+    if (document.getElementById('pDocPlace')) document.getElementById('pDocPlace').textContent = (place === '*' || !place) ? getActivePlace() : place;
+
+    if (document.getElementById('pDocPlateNo')) document.getElementById('pDocPlateNo').textContent = plate;
+    if (document.getElementById('pDocBash')) document.getElementById('pDocBash').textContent = bash;
+    if (document.getElementById('pDocTablo')) document.getElementById('pDocTablo').textContent = tablo;
+    if (document.getElementById('pDocModel')) document.getElementById('pDocModel').textContent = model;
+    if (document.getElementById('pDocYear')) document.getElementById('pDocYear').textContent = year;
+    if (document.getElementById('pDocColor')) document.getElementById('pDocColor').textContent = color;
+    if (document.getElementById('pDocChassis')) document.getElementById('pDocChassis').textContent = chass;
+    if (document.getElementById('pDocQamara')) document.getElementById('pDocQamara').textContent = qam || '*';
+    if (document.getElementById('pDocOwner')) document.getElementById('pDocOwner').textContent = owner;
+    if (document.getElementById('pDocA1Chassis')) document.getElementById('pDocA1Chassis').textContent = a1Ch || '*';
+    if (document.getElementById('pDocA1Color')) document.getElementById('pDocA1Color').textContent = (a1Cl && a1Cl !== '*') ? a1Cl : '';
+    if (document.getElementById('pDocA2Chassis')) document.getElementById('pDocA2Chassis').textContent = a2Ch || '*';
+    if (document.getElementById('pDocA2Color')) document.getElementById('pDocA2Color').textContent = (a2Cl && a2Cl !== '*') ? a2Cl : '*';
+    if (document.getElementById('pDocReason')) document.getElementById('pDocReason').textContent = reason;
+
+    openOverlay('modalRaportPrint');
+}
+
+function doPrintRaportDocument() {
+    document.body.classList.add('printing-raport');
+    window.print();
+    setTimeout(() => {
+        document.body.classList.remove('printing-raport');
+    }, 1000);
+}
+
 // ─── SUSPICIOUS (RAP) ──────────────────────────────────────────────────
 async function loadSuspicious() {
     try {
@@ -6021,7 +7556,7 @@ async function loadSuspicious() {
         }
         const head = `<thead><tr>
             <th>پلێت</th><th>جۆر</th><th>مۆدێل</th><th>ڕەنگ</th>
-            <th>ساڵ</th><th>شاسی</th><th>تێبینی</th><th>بەڕاد</th><th>بەروار</th>
+            <th>ساڵ</th><th>شاسی</th><th>تێبینی</th><th>بەڕاد</th><th>بەروار</th><th>کردار</th>
         </tr></thead>`;
         const body = data.map(r => {
             const date = r.date ? new Date(r.date).toLocaleDateString('ar-IQ') : '-';
@@ -6035,6 +7570,12 @@ async function loadSuspicious() {
                 <td style="color:var(--danger);font-weight:700">${r.note||'-'}</td>
                 <td>${r.barad||'-'}</td>
                 <td>${date}</td>
+                <td>
+                    <button type="button" onclick="event.stopPropagation();openRaportModal(${r.id})" style="background:#be123c;color:#fff;border:none;padding:4px 10px;border-radius:4px;font-size:11.5px;font-weight:800;cursor:pointer;display:inline-flex;align-items:center;gap:4px;font-family:inherit;">
+                        <span>📄</span>
+                        <span>فۆڕم</span>
+                    </button>
+                </td>
             </tr>`;
         }).join('');
         wrap.innerHTML = `<table>${head}<tbody>${body}</tbody></table>`;
@@ -6045,20 +7586,23 @@ async function loadSuspicious() {
 }
 
 // ─── STATS & REPORTS ───────────────────────────────────────────────────
-let currentStatScope = 'auto'; // 'auto', 'all', 'user'
+let currentStatScope = 'user'; // Defaults directly to logged-in user
 
 async function loadStats(forcedScope) {
     try {
         if (forcedScope) currentStatScope = forcedScope;
-        const scopeParam = currentStatScope !== 'auto' ? `?scope=${currentStatScope}` : '';
+        const scopeParam = `?scope=${currentStatScope}`;
         const d = await fetch(`/api/stats${scopeParam}`).then(r => r.json());
         
-        document.getElementById('statTotal').textContent   = (d.total   || 0).toLocaleString();
-        document.getElementById('statToday').textContent   = (d.today   || 0).toLocaleString();
-        const prv = d.byType?.find(r => r.type_?.includes('تایبەت'));
-        const crg = d.byType?.find(r => r.type_?.includes('بار'));
-        document.getElementById('statPrivate').textContent = (prv?.cnt  || 0).toLocaleString();
-        document.getElementById('statCargo').textContent   = (crg?.cnt  || 0).toLocaleString();
+        const elReg = document.getElementById('statRegToday');
+        const elGomrg = document.getElementById('statGomrgToday');
+        const elRap = document.getElementById('statRapToday');
+        const elHijz = document.getElementById('statHijzToday');
+
+        if (elReg) elReg.textContent = (d.t1Today || 0).toLocaleString();
+        if (elGomrg) elGomrg.textContent = (d.gomrgToday || 0).toLocaleString();
+        if (elRap) elRap.textContent = (d.raportToday || 0).toLocaleString();
+        if (elHijz) elHijz.textContent = (d.hijzToday || 0).toLocaleString();
 
         updateDashboardScopeUI(d);
     } catch(e) {
@@ -6070,47 +7614,62 @@ function updateDashboardScopeUI(d) {
     const wrap = document.getElementById('dashScopeControlsWrap');
     if (!wrap) return;
 
-    const bTotal = document.getElementById('statBadgeTotal');
-    const bToday = document.getElementById('statBadgeToday');
-    const bPriv = document.getElementById('statBadgePrivate');
-    const bCarg = document.getElementById('statBadgeCargo');
+    const bReg = document.getElementById('statBadgeReg');
+    const bGomrg = document.getElementById('statBadgeGomrg');
+    const bRap = document.getElementById('statBadgeRap');
+    const bHijz = document.getElementById('statBadgeHijz');
+    const cardHijz = document.getElementById('cardStatHijz');
+    if (cardHijz) {
+        cardHijz.style.display = d.isManager ? '' : 'none';
+    }
 
     const isScopeUser = d.scope === 'user';
-    const scopeLabel = isScopeUser ? `تایبەت بە (${d.scopedName || currentUser?.name || 'خۆت'})` : 'گشتی سەرجەم بەشەکان';
+    const totalToday = (d.todayTotal || 0).toLocaleString();
+    const userDisplayName = d.scopedName || currentUser?.name || currentUser?.username || 'خۆت';
 
-    if (bTotal) bTotal.textContent = scopeLabel;
-    if (bToday) bToday.textContent = isScopeUser ? 'ئەمڕۆت' : 'ئەمڕۆ (گشتی)';
-    if (bPriv)  bPriv.textContent  = isScopeUser ? 'تایبەت (خۆت)' : 'تایبەت (گشتی)';
-    if (bCarg)  bCarg.textContent  = isScopeUser ? 'بار (خۆت)' : 'بار و ئەوانی تر';
+    if (bReg) bReg.textContent = isScopeUser ? 'تۆمارکردن (خۆت)' : 'تۆمارکردن (گشتی)';
+    if (bGomrg) bGomrg.textContent = isScopeUser ? 'گومرگ (خۆت)' : 'گومرگ (گشتی)';
+    if (bRap) bRap.textContent = isScopeUser ? 'ڕاپۆرت (خۆت)' : 'ڕاپۆرت (گشتی)';
+    if (bHijz) bHijz.textContent = isScopeUser ? 'حیجزکردن (خۆت)' : 'حیجزکردن (گشتی)';
+
+    const descEl = document.getElementById('dashHeaderDesc');
+    if (descEl) {
+        const userTotalNoHijz = (d.t1Today || 0) + (d.gomrgToday || 0) + (d.raportToday || 0);
+        if (d.isManager) {
+            if (isScopeUser) {
+                descEl.innerHTML = `ئیشی ئەمڕۆت وەک پشکێنەر <b>(${userDisplayName})</b>: <span style="color:#0284c7;font-weight:800;">${d.t1Today || 0} تۆمارکردن</span> + <span style="color:#10b981;font-weight:800;">${d.gomrgToday || 0} گومرگ</span> + <span style="color:#f59e0b;font-weight:800;">${d.raportToday || 0} ڕاپۆرت</span> + <span style="color:#8b5cf6;font-weight:800;">${d.hijzToday || 0} حیجز</span> — <span style="background:#fef08a;color:#854d0e;padding:2px 8px;border-radius:6px;font-weight:900;">کۆی گشتی ئەمڕۆت: ${totalToday} ڕیکۆرد</span>`;
+            } else {
+                descEl.innerHTML = `کۆی گشتی ئیشی ئەمڕۆی سەرجەم کارمەندان: <span style="color:#0284c7;font-weight:800;">${d.t1Today || 0} تۆمارکردن</span> + <span style="color:#10b981;font-weight:800;">${d.gomrgToday || 0} گومرگ</span> + <span style="color:#f59e0b;font-weight:800;">${d.raportToday || 0} ڕاپۆرت</span> + <span style="color:#8b5cf6;font-weight:800;">${d.hijzToday || 0} حیجز</span> — <span style="background:#fef08a;color:#854d0e;padding:2px 8px;border-radius:6px;font-weight:900;">کۆی گشتی: ${totalToday} ڕیکۆرد</span>`;
+            }
+        } else {
+            descEl.innerHTML = `ئیشی ئەمڕۆت وەک پشکێنەر <b>(${userDisplayName})</b>: <span style="color:#0284c7;font-weight:800;">${d.t1Today || 0} تۆمارکردن</span> + <span style="color:#10b981;font-weight:800;">${d.gomrgToday || 0} گومرگ</span> + <span style="color:#f59e0b;font-weight:800;">${d.raportToday || 0} ڕاپۆرت</span> — <span style="background:#fef08a;color:#854d0e;padding:2px 8px;border-radius:6px;font-weight:900;">کۆی گشتی ئەمڕۆت: ${userTotalNoHijz.toLocaleString()} ڕیکۆرد</span>`;
+        }
+    }
 
     if (d.isManager) {
         wrap.innerHTML = `
             <div class="dash-scope-controls">
-                <button class="scope-btn ${!isScopeUser ? 'active' : ''}" onclick="loadStats('all')" title="پیشاندانی ئاماری سەرجەم بەشەکان و کارمەندان">
-                    <span>🌐</span>
-                    <span>ئاماری گشتی سیستەم</span>
-                </button>
-                <button class="scope-btn ${isScopeUser ? 'active' : ''}" onclick="loadStats('user')" title="پیشاندانی تەنها ئەو ئوتومبێلانەی بە دەستی خۆت داخلکراون">
+                <button class="scope-btn ${isScopeUser ? 'active' : ''}" onclick="loadStats('user')" title="پیشاندانی تەنها ئەو ڕیکۆردانەی ئەمڕۆ بە دەستی خۆت تۆمارکراون">
                     <span>👤</span>
-                    <span>ئاماری تایبەتی خۆم</span>
+                    <span>ئیشی ئەمڕۆی خۆم (${totalToday})</span>
+                </button>
+                <button class="scope-btn ${!isScopeUser ? 'active' : ''}" onclick="loadStats('all')" title="پیشاندانی ئاماری ئەمڕۆی سەرجەم کارمەندان">
+                    <span>🌐</span>
+                    <span>ئەمڕۆی گشتی کارمەندان</span>
                 </button>
             </div>
         `;
         const titleEl = document.getElementById('dashHeaderTitle');
-        const descEl = document.getElementById('dashHeaderDesc');
-        if (titleEl) titleEl.innerHTML = `داشبۆردی سەرەکی <span style="font-size:12px; vertical-align:middle; background:#0284c7; color:#fff; padding:2px 8px; border-radius:12px; margin-right:8px; font-weight:700;">👑 دەسەڵاتی مەنهەجەر (Full Admin)</span>`;
-        if (descEl) descEl.textContent = `دەسەڵاتی تەواوت هەیە بۆ بینینی ئاماری گشتی و هەموو بەشەکانی پشکنین و کارمەندان.`;
+        if (titleEl) titleEl.innerHTML = `داشبۆردی سەرەکی <span style="font-size:12px; vertical-align:middle; background:#0284c7; color:#fff; padding:2px 8px; border-radius:12px; margin-right:8px; font-weight:700;">👑 دەسەڵاتی مەنهەجەر</span>`;
     } else {
         wrap.innerHTML = `
-            <div class="user-mode-pill" title="ئامارەکان تەنها ئەو تۆمارانە لەخۆ دەگرێت کە بەم یوزەرە پشکنراون یان تۆمارکراون">
+            <div class="user-mode-pill" title="ئەم ئامارە تەنها ئەو ڕیکۆردانە نیشان دەدات کە ئەمڕۆ لەلایەن خۆتەوە تۆمارکراون">
                 <span>👤</span>
-                <span>تۆماری پشکێنەر: <b>${d.scopedName || currentUser?.name || currentUser?.username || 'بەکارهێنەر'}</b></span>
+                <span>ئیشی ئەمڕۆی پشکێنەر: <b>${userDisplayName}</b> (کۆی گشتی: ${totalToday})</span>
             </div>
         `;
         const titleEl = document.getElementById('dashHeaderTitle');
-        const descEl = document.getElementById('dashHeaderDesc');
-        if (titleEl) titleEl.innerHTML = `داشبۆردی پشکنین و تۆمارکردن`;
-        if (descEl) descEl.textContent = `ئامارەکان سنووردارکراون بەو ئوتومبێلانەی لەلایەن (${d.scopedName || currentUser?.name || 'خۆتەوە'}) پشکنراون یان تۆمارکراون.`;
+        if (titleEl) titleEl.innerHTML = `داشبۆردی کارمەند و پشکنین`;
     }
 }
 

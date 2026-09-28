@@ -138,11 +138,11 @@
             width: 100%;
         }
 
-        /* Large Custom Select Combobox */
-        .combo-select-lg {
+        /* ── Large Editable Combobox Input ── */
+        .combo-input-lg {
             width: 100%;
             height: 56px;
-            padding: 10px 54px 10px 44px;
+            padding: 10px 52px 10px 50px;
             background: var(--input-bg);
             border: 2px solid var(--input-border);
             border-radius: 12px;
@@ -152,35 +152,128 @@
             font-weight: 700;
             direction: rtl;
             text-align: right;
-            cursor: pointer;
             outline: none;
             transition: all 0.22s ease;
-            appearance: none;
-            -webkit-appearance: none;
-            -moz-appearance: none;
         }
-        .combo-select-lg:hover {
+        .combo-input-lg:hover {
             border-color: rgba(240, 200, 66, 0.5);
             background: rgba(255, 255, 255, 0.12);
         }
-        .combo-select-lg:focus {
+        .combo-input-lg:focus {
             background: rgba(13, 27, 53, 0.95);
             border-color: var(--input-focus-border);
             box-shadow: 0 0 0 4px rgba(240, 200, 66, 0.22);
         }
-        .combo-select-lg option {
-            background: #0d1b35;
-            color: #ffffff;
-            font-family: var(--ku-font);
-            font-size: 15.5px;
-            font-weight: 600;
-            padding: 12px 14px;
-            border-bottom: 1px solid rgba(255,255,255,0.06);
+        .combo-input-lg::placeholder {
+            color: rgba(255, 255, 255, 0.45);
+            font-size: 15px;
+            font-weight: 500;
         }
-        .combo-select-lg option:checked {
-            background: #1e3a8a;
+        .select-toggle-btn {
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba(255, 255, 255, 0.08);
+            border: 1px solid rgba(255, 255, 255, 0.16);
+            border-radius: 8px;
+            color: #facc15;
+            cursor: pointer;
+            font-size: 13px;
+            width: 34px;
+            height: 34px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.2s;
+            user-select: none;
+        }
+        .select-toggle-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+            color: #ffffff;
+            border-color: #fde047;
+        }
+
+        /* ── Suggestions Dropdown ── */
+        .combo-dropdown {
+            position: absolute;
+            top: calc(100% + 6px);
+            left: 0;
+            right: 0;
+            max-height: 250px;
+            overflow-y: auto;
+            background: #0d1b35;
+            border: 1.5px solid rgba(240, 200, 66, 0.35);
+            border-radius: 12px;
+            box-shadow: 0 18px 40px rgba(0,0,0,0.7), 0 0 0 1px rgba(255,255,255,0.08);
+            z-index: 1000;
+            display: none;
+            direction: rtl;
+            text-align: right;
+            backdrop-filter: blur(24px);
+            -webkit-backdrop-filter: blur(24px);
+        }
+        .combo-dropdown.show {
+            display: block;
+            animation: comboSlideDown 0.18s ease-out;
+        }
+        @keyframes comboSlideDown {
+            from { opacity: 0; transform: translateY(-6px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .combo-dropdown::-webkit-scrollbar {
+            width: 7px;
+        }
+        .combo-dropdown::-webkit-scrollbar-track {
+            background: rgba(0,0,0,0.25);
+            border-radius: 8px;
+        }
+        .combo-dropdown::-webkit-scrollbar-thumb {
+            background: rgba(240, 200, 66, 0.4);
+            border-radius: 8px;
+        }
+        .combo-dropdown::-webkit-scrollbar-thumb:hover {
+            background: rgba(240, 200, 66, 0.7);
+        }
+        .combo-item {
+            padding: 12px 18px;
+            color: #ffffff;
+            font-size: 15.5px;
+            font-weight: 700;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid rgba(255,255,255,0.06);
+            transition: all 0.15s ease;
+        }
+        .combo-item:last-child {
+            border-bottom: none;
+        }
+        .combo-item:hover, .combo-item.active {
+            background: rgba(240, 200, 66, 0.2);
             color: #fde047;
-            font-weight: 800;
+            padding-right: 22px;
+        }
+        .combo-item .highlight {
+            color: #fde047;
+            font-weight: 900;
+            text-decoration: underline;
+            text-underline-offset: 3px;
+        }
+        .combo-item .item-place {
+            font-size: 12px;
+            color: rgba(255, 255, 255, 0.5);
+            font-weight: 500;
+            background: rgba(255, 255, 255, 0.08);
+            padding: 2px 8px;
+            border-radius: 6px;
+        }
+        .combo-item-empty {
+            padding: 14px 16px;
+            color: rgba(255, 255, 255, 0.55);
+            font-size: 14px;
+            text-align: center;
         }
 
         /* Dropdown Decorators */
@@ -190,17 +283,6 @@
             top: 50%;
             transform: translateY(-50%);
             font-size: 22px;
-            pointer-events: none;
-            user-select: none;
-        }
-        .select-arrow-left {
-            position: absolute;
-            left: 16px;
-            top: 50%;
-            transform: translateY(-50%);
-            color: #facc15;
-            font-size: 15px;
-            font-weight: 900;
             pointer-events: none;
             user-select: none;
         }
@@ -384,33 +466,26 @@
                 <input type="password" name="decoy_password_field" tabindex="-1" autocomplete="off">
             </div>
 
-            <!-- 1. PLACE COMBOBOX (شوێنی کار) -->
+            <!-- 1. USERNAME COMBOBOX (ناوی کارمەند / یوزەر بە نووسین و سێگێست و هەڵبژاردن) -->
             <div class="form-group">
-                <label class="form-label" for="placeSelect">
-                    <span class="lbl-icon">📍</span>
-                    <span>شوێنی کار / وێستگەی پشکنین</span>
-                </label>
-                <div class="select-wrap-lg">
-                    <span class="select-icon-right">🏢</span>
-                    <select class="combo-select-lg" id="placeSelect" onchange="onPlaceChange()" autocomplete="off">
-                        <option value="">-- هەموو شوێنەکان / شوێن هەڵبژێرە --</option>
-                    </select>
-                    <span class="select-arrow-left">▼</span>
-                </div>
-            </div>
-
-            <!-- 2. USERNAME COMBOBOX (ناوی یوزەر) -->
-            <div class="form-group">
-                <label class="form-label" for="userSelect">
+                <label class="form-label" for="userInput">
                     <span class="lbl-icon">👤</span>
                     <span>ناوی کارمەند / یوزەر</span>
                 </label>
-                <div class="select-wrap-lg">
+                <div class="select-wrap-lg" id="userComboWrapper">
                     <span class="select-icon-right">👤</span>
-                    <select class="combo-select-lg" id="userSelect" onchange="onUserChange()" required autocomplete="off">
-                        <option value="">-- سەرەتا ناوی یوزەر هەڵبژێرە --</option>
-                    </select>
-                    <span class="select-arrow-left">▼</span>
+                    <input type="text"
+                           class="combo-input-lg"
+                           id="userInput"
+                           name="sec_user_id"
+                           placeholder="ناو بنووسە یان لە لیست هەڵبژێرە..."
+                           autocomplete="off"
+                           autocorrect="off"
+                           autocapitalize="off"
+                           spellcheck="false"
+                           required>
+                    <button type="button" class="select-toggle-btn" id="toggleUserDropdown" title="پیشاندانی هەموو یوزەرەکان">▼</button>
+                    <div class="combo-dropdown" id="userDropdown"></div>
                 </div>
             </div>
 
@@ -451,9 +526,14 @@
 <script>
 // ─── Global State ───────────────────────────────────────────────────────────
 let allUsers = [];
-let allPlaces = [];
+let activeSuggestionIndex = -1;
 
-// ─── Fetch Users & Populate Comboboxes ──────────────────────────────────────
+const userInput = document.getElementById('userInput');
+const userDropdown = document.getElementById('userDropdown');
+const toggleDropdownBtn = document.getElementById('toggleUserDropdown');
+const userComboWrapper = document.getElementById('userComboWrapper');
+
+// ─── Fetch Users ───────────────────────────────────────────────────────────
 async function loadUsersData() {
     try {
         const res = await fetch('/api/users');
@@ -462,29 +542,13 @@ async function loadUsersData() {
         // Filter and deduplicate
         const seen = new Set();
         allUsers = (data || []).filter(u => {
-            if (!u.User_id || seen.has(u.User_id)) return false;
-            seen.add(u.User_id);
+            if (!u.User_id || seen.has(u.User_id.trim())) return false;
+            seen.add(u.User_id.trim());
             return true;
         });
 
-        // Extract distinct places
-        const placeSet = new Set();
-        allUsers.forEach(u => {
-            const p = (u.Place_ || '').trim();
-            if (p && p !== '*' && p !== '-') {
-                placeSet.add(p);
-            }
-        });
-
-        allPlaces = Array.from(placeSet).sort((a, b) => a.localeCompare(b, 'ar'));
-
-        // Populate Place Combobox
-        const placeSelect = document.getElementById('placeSelect');
-        placeSelect.innerHTML = '<option value="">-- هەموو شوێنەکان / شوێن هەڵبژێرە --</option>' +
-            allPlaces.map(p => `<option value="${p}">📍 ${p}</option>`).join('');
-
-        // Populate User Combobox
-        renderUserOptions('');
+        // Sort alphabetically by User_id
+        allUsers.sort((a, b) => (a.User_id || '').localeCompare(b.User_id || '', 'ckb', { sensitivity: 'base' }));
 
     } catch (err) {
         console.error('Error loading users:', err);
@@ -492,54 +556,167 @@ async function loadUsersData() {
     }
 }
 
-// ─── Render User Options in Combobox ─────────────────────────────────────────
-function renderUserOptions(filterPlace = '') {
-    const userSelect = document.getElementById('userSelect');
-    const prevVal = userSelect.value;
+// ─── Render Suggestions Dropdown (Instant on 1st letter) ────────────────────
+function renderSuggestions(query = '', showAllIfEmpty = false) {
+    const q = (query || '').trim().toLowerCase();
 
-    let filtered = allUsers;
-    if (filterPlace && filterPlace.trim()) {
-        filtered = allUsers.filter(u => (u.Place_ || '').trim() === filterPlace.trim());
+    let filtered = [];
+    if (!q) {
+        if (!showAllIfEmpty) {
+            closeUserDropdown();
+            return;
+        }
+        filtered = allUsers.slice(0, 100);
+    } else {
+        const startsWithMatches = [];
+        const containsMatches = [];
+
+        allUsers.forEach(u => {
+            const name = (u.User_id || '').trim();
+            const nameLower = name.toLowerCase();
+            const idx = nameLower.indexOf(q);
+            if (idx === 0) {
+                startsWithMatches.push(u);
+            } else if (idx > 0) {
+                containsMatches.push(u);
+            }
+        });
+
+        filtered = [...startsWithMatches, ...containsMatches];
     }
 
-    // Sort alphabetically by User_id
-    filtered.sort((a, b) => (a.User_id || '').localeCompare(b.User_id || '', 'ar'));
+    if (filtered.length === 0) {
+        userDropdown.innerHTML = `<div class="combo-item-empty">ناو نەدۆزرایەوە، بەڵام دەتوانیت بە دەستی ناوی "${escapeHtml(query)}" بنووسیت</div>`;
+        userDropdown.classList.add('show');
+        activeSuggestionIndex = -1;
+        return;
+    }
 
-    let html = '<option value="">-- ناوی یوزەر هەڵبژێرە --</option>';
-    filtered.forEach(u => {
-        const placeText = u.Place_ && u.Place_ !== '*' ? ` (${u.Place_})` : '';
-        html += `<option value="${u.User_id}">${u.User_id}${filterPlace ? '' : placeText}</option>`;
+    let html = '';
+    filtered.forEach((u, i) => {
+        const name = (u.User_id || '').trim();
+        let displayHtml = escapeHtml(name);
+
+        if (q) {
+            const idx = name.toLowerCase().indexOf(q);
+            if (idx >= 0) {
+                const before = escapeHtml(name.substring(0, idx));
+                const match = escapeHtml(name.substring(idx, idx + q.length));
+                const after = escapeHtml(name.substring(idx + q.length));
+                displayHtml = `${before}<span class="highlight">${match}</span>${after}`;
+            }
+        }
+
+        const placeTag = (u.Place_ && u.Place_ !== '*') ? `<span class="item-place">${escapeHtml(u.Place_)}</span>` : '';
+        html += `<div class="combo-item ${i === 0 && q ? 'active' : ''}" data-value="${escapeHtml(name)}" data-index="${i}">
+            <span>${displayHtml}</span>
+            ${placeTag}
+        </div>`;
     });
 
-    userSelect.innerHTML = html;
+    userDropdown.innerHTML = html;
+    userDropdown.classList.add('show');
+    activeSuggestionIndex = (q && filtered.length > 0) ? 0 : -1;
 
-    // Restore selection if still in filtered list
-    if (prevVal && filtered.some(u => u.User_id === prevVal)) {
-        userSelect.value = prevVal;
+    // Attach click listener to each suggestion item
+    userDropdown.querySelectorAll('.combo-item').forEach(el => {
+        el.addEventListener('mousedown', function(e) {
+            e.preventDefault();
+            selectUserItem(this.dataset.value);
+        });
+    });
+}
+
+function selectUserItem(val) {
+    if (!val) return;
+    userInput.value = val;
+    closeUserDropdown();
+    passInput.focus();
+}
+
+function closeUserDropdown() {
+    userDropdown.classList.remove('show');
+    activeSuggestionIndex = -1;
+}
+
+function escapeHtml(str) {
+    if (!str) return '';
+    return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;');
+}
+
+// ─── Input Events: Live Suggestions ─────────────────────────────────────────
+userInput.addEventListener('input', function() {
+    renderSuggestions(this.value, false);
+});
+
+userInput.addEventListener('focus', function() {
+    if (this.value.trim()) {
+        renderSuggestions(this.value, false);
     }
-}
+});
 
-// ─── Place Change Listener ───────────────────────────────────────────────────
-function onPlaceChange() {
-    const selectedPlace = document.getElementById('placeSelect').value;
-    renderUserOptions(selectedPlace);
-}
+// Keyboard Navigation (ArrowUp, ArrowDown, Enter, Escape)
+userInput.addEventListener('keydown', function(e) {
+    const items = userDropdown.querySelectorAll('.combo-item');
+    const isOpen = userDropdown.classList.contains('show');
 
-// ─── User Change Listener ───────────────────────────────────────────────────
-function onUserChange() {
-    const selectedUserId = document.getElementById('userSelect').value;
-    if (!selectedUserId) return;
-
-    const matched = allUsers.find(u => u.User_id === selectedUserId);
-    if (matched && matched.Place_ && matched.Place_ !== '*') {
-        const placeSelect = document.getElementById('placeSelect');
-        if (placeSelect.value !== matched.Place_) {
-            placeSelect.value = matched.Place_;
-            renderUserOptions(matched.Place_);
-            document.getElementById('userSelect').value = selectedUserId;
+    if (!isOpen || items.length === 0) {
+        if (e.key === 'ArrowDown') {
+            renderSuggestions(this.value, true);
         }
+        return;
     }
+
+    if (e.key === 'ArrowDown') {
+        e.preventDefault();
+        activeSuggestionIndex = (activeSuggestionIndex + 1) % items.length;
+        updateActiveSuggestion(items);
+    } else if (e.key === 'ArrowUp') {
+        e.preventDefault();
+        activeSuggestionIndex = (activeSuggestionIndex - 1 + items.length) % items.length;
+        updateActiveSuggestion(items);
+    } else if (e.key === 'Enter') {
+        if (activeSuggestionIndex >= 0 && items[activeSuggestionIndex]) {
+            e.preventDefault();
+            selectUserItem(items[activeSuggestionIndex].dataset.value);
+        }
+    } else if (e.key === 'Escape') {
+        closeUserDropdown();
+    }
+});
+
+function updateActiveSuggestion(items) {
+    items.forEach((item, idx) => {
+        if (idx === activeSuggestionIndex) {
+            item.classList.add('active');
+            item.scrollIntoView({ block: 'nearest' });
+        } else {
+            item.classList.remove('active');
+        }
+    });
 }
+
+// Toggle Dropdown Button
+toggleDropdownBtn.addEventListener('click', function(e) {
+    e.preventDefault();
+    if (userDropdown.classList.contains('show')) {
+        closeUserDropdown();
+    } else {
+        renderSuggestions(userInput.value, true);
+        userInput.focus();
+    }
+});
+
+// Click Outside to Close
+document.addEventListener('click', function(e) {
+    if (!userComboWrapper.contains(e.target)) {
+        closeUserDropdown();
+    }
+});
 
 // ─── Toggle Password Visibility ─────────────────────────────────────────────
 const toggleBtn = document.getElementById('togglePass');
@@ -556,17 +733,18 @@ toggleBtn.addEventListener('click', function(e) {
     }
 });
 
-// ─── Do Login (No Password Saving) ──────────────────────────────────────────
+// ─── Do Login (Supports typed name OR selected from suggestions) ─────────────
 async function doLogin(e) {
     e.preventDefault();
     hideError();
+    closeUserDropdown();
 
-    const username = document.getElementById('userSelect').value.trim();
+    const username = userInput.value.trim();
     const password = passInput.value.trim();
 
     if (!username) {
-        showError('تکایە ناوی کارمەند / یوزەر لە لیستەکە هەڵبژێرە');
-        document.getElementById('userSelect').focus();
+        showError('تکایە ناوی کارمەند / یوزەر بنووسە یان لە لیستەکە هەڵبژێرە');
+        userInput.focus();
         return;
     }
 
@@ -593,6 +771,13 @@ async function doLogin(e) {
         passInput.value = '';
 
         if (data.success) {
+            if (data.user) {
+                const userPlace = (data.user.place !== undefined && data.user.place !== null)
+                    ? String(data.user.place).trim()
+                    : '';
+                localStorage.setItem('activePlace', userPlace);
+                localStorage.setItem('activeUser', data.user.name || data.user.username || '');
+            }
             btn.innerHTML = '✅ بەسەرکەوتوویی چووینەژوورەوە';
             btn.style.background = 'linear-gradient(135deg, #10b981, #059669)';
             setTimeout(() => {

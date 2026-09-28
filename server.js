@@ -4,7 +4,7 @@ const path = require('path');
 const { getPool, sql } = require('./db');
 
 const app = express();
-const PORT = 3000;
+const PORT = process.env.PORT || 3000;
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
@@ -64,6 +64,32 @@ app.get('/api/users', async (req, res) => {
             .query(`SELECT User_id, Place_ FROM Tbl_User WHERE AA = 'Yes' ORDER BY User_id`);
         res.json(result.recordset);
     } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// ─── GET ALL PLACES (from Tbl_User, Gomrg, RAP, T1) ─────────────────
+app.get('/api/places', async (req, res) => {
+    try {
+        const pool = await getPool();
+        const result = await pool.request().query(`
+            SELECT DISTINCT LTRIM(RTRIM(Place_)) AS place FROM Tbl_User WHERE Place_ IS NOT NULL AND LEN(LTRIM(RTRIM(Place_))) > 0 AND Place_ != '*'
+            UNION
+            SELECT DISTINCT LTRIM(RTRIM(P)) AS place FROM RAP WHERE P IS NOT NULL AND LEN(LTRIM(RTRIM(P))) > 0 AND P != '*' AND P != '0'
+            UNION
+            SELECT DISTINCT LTRIM(RTRIM(Q)) AS place FROM RAP WHERE Q IS NOT NULL AND LEN(LTRIM(RTRIM(Q))) > 0 AND Q != '*' AND Q != '0'
+            UNION
+            SELECT DISTINCT LTRIM(RTRIM(p)) AS place FROM Hijz WHERE p IS NOT NULL AND LEN(LTRIM(RTRIM(p))) > 0 AND p != '*' AND p != '0'
+            UNION
+            SELECT DISTINCT LTRIM(RTRIM(place)) AS place FROM Gomrg WHERE place IS NOT NULL AND LEN(LTRIM(RTRIM(place))) > 0 AND place != '*'
+            UNION
+            SELECT DISTINCT LTRIM(RTRIM(D)) AS place FROM T1 WHERE D IS NOT NULL AND LEN(LTRIM(RTRIM(D))) > 0 AND D != '*'
+            ORDER BY place
+        `);
+        const places = result.recordset.map(r => r.place).filter(Boolean);
+        res.json(places);
+    } catch (err) {
+        console.error('Get places error:', err);
         res.status(500).json({ error: err.message });
     }
 });
@@ -237,23 +263,217 @@ app.get('/api/bash', requireAuth, async (req, res) => {
     }
 });
 
-// ─── GET BARADS LIST ─────────────────────────────────────────────────
+// ─── GET BARADS LIST (From Barad Table) ─────────────────────────────
 app.get('/api/barads', requireAuth, async (req, res) => {
     try {
         const pool = await getPool();
         const result = await pool.request().query(`
-            SELECT DISTINCT TOP 50 E 
-            FROM T1 
-            WHERE E IS NOT NULL AND LEN(E) > 3 AND E NOT IN ('-','.') 
-            ORDER BY E
+            SELECT DISTINCT LTRIM(RTRIM(Barad)) AS Barad 
+            FROM Barad 
+            WHERE Barad IS NOT NULL AND LTRIM(RTRIM(Barad)) != '*' AND LEN(LTRIM(RTRIM(Barad))) > 0 
+            ORDER BY Barad
         `);
-        res.json(result.recordset.map(r => r.E.trim()));
+        let list = result.recordset.map(r => r.Barad.trim());
+        if (!list || list.length === 0) {
+            const rT1 = await pool.request().query(`
+                SELECT DISTINCT TOP 50 E FROM T1 
+                WHERE E IS NOT NULL AND LEN(E) > 3 AND E NOT IN ('-','.') 
+                ORDER BY E
+            `);
+            list = rT1.recordset.map(r => r.E.trim());
+        }
+        res.json(list);
     } catch (err) {
+        console.error('Barads error:', err);
         res.status(500).json({ error: err.message });
     }
 });
 
-// ─── STATS ───────────────────────────────────────────────────────────
+// ─── FULL STATS (Manager Only) ───────────────────────────────────────
+app.get('/api/stats/full', requireAuth, async (req, res) => {
+    try {
+        const pool = await getPool();
+        const cu = req.session.user || {};
+        const isManager = Boolean(
+            cu.permission === 'MANAGER' || cu.place === '*' || cu.username === '9' ||
+            String(cu.permission || '').toUpperCase() === 'ADMIN'
+        );
+        if (!isManager) {
+            return res.status(403).json({ error: 'دەسەڵات نیە' });
+        }
+
+        const [total, today, week, month, byType, byProvince, byUser, byMonth] = await Promise.all([
+            pool.request().query(`SELECT COUNT(*) as cnt FROM T1`),
+            pool.request().query(`SELECT COUNT(*) as cnt FROM T1 WHERE CAST(DD as date)=CAST(GETDATE() as date)`),
+            pool.request().query(`SELECT COUNT(*) as cnt FROM T1 WHERE DD >= DATEADD(day,-7,GETDATE())`),
+            pool.request().query(`SELECT COUNT(*) as cnt FROM T1 WHERE DD >= DATEADD(day,-30,GETDATE())`),
+            pool.request().query(`SELECT C as type_, COUNT(*) as cnt FROM T1 WHERE C IS NOT NULL GROUP BY C ORDER BY cnt DESC`),
+            pool.request().query(`SELECT B as province, COUNT(*) as cnt FROM T1 WHERE B IS NOT NULL AND B!='' GROUP BY B ORDER BY cnt DESC`),
+            pool.request().query(`SELECT TOP 15 FF as username, COUNT(*) as cnt FROM T1 WHERE FF IS NOT NULL AND FF!='' GROUP BY FF ORDER BY cnt DESC`),
+            pool.request().query(`SELECT TOP 12 FORMAT(DD,'yyyy-MM') as month, COUNT(*) as cnt FROM T1 WHERE DD IS NOT NULL GROUP BY FORMAT(DD,'yyyy-MM') ORDER BY month DESC`)
+        ]);
+
+        res.json({
+            total: total.recordset[0].cnt,
+            today: today.recordset[0].cnt,
+            week: week.recordset[0].cnt,
+            month: month.recordset[0].cnt,
+            byType: byType.recordset,
+            byProvince: byProvince.recordset,
+            byUser: byUser.recordset,
+            byMonth: byMonth.recordset.reverse()
+        });
+    } catch (err) {
+        console.error('Full stats error:', err);
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// ─── DETAILED STATS: T1 by Writer/Barad/Place + Date Range ───────────
+app.get('/api/stats/detailed', requireAuth, async (req, res) => {
+    try {
+        const pool = await getPool();
+        const cu = req.session.user || {};
+        const isManager = Boolean(
+            cu.permission === 'MANAGER' || cu.place === '*' || cu.username === '9' ||
+            String(cu.permission || '').toUpperCase() === 'ADMIN'
+        );
+        if (!isManager) return res.status(403).json({ error: 'دەسەڵات نیە' });
+
+        const { from, to } = req.query;
+        const dateFrom = from || new Date(new Date().getFullYear(), 0, 1).toISOString().slice(0,10);
+        const dateTo   = to   || new Date().toISOString().slice(0,10);
+
+        const req1 = pool.request()
+            .input('df', sql.Date, dateFrom)
+            .input('dt', sql.Date, dateTo);
+
+        const [byWriter, byBarad, byPlace, byDate] = await Promise.all([
+            // By Writer (GG = checker/writer)
+            req1.query(`
+                SELECT GG as writer, COUNT(*) as cnt,
+                    MIN(CAST(DD as date)) as first_date, MAX(CAST(DD as date)) as last_date,
+                    CAST(CAST(DD as date) as nvarchar(20)) as date_
+                FROM T1
+                WHERE GG IS NOT NULL AND GG != '' AND GG != '*'
+                  AND CAST(DD as date) BETWEEN @df AND @dt
+                GROUP BY GG, CAST(DD as date)
+                ORDER BY CAST(DD as date) DESC, cnt DESC
+            `),
+            // By Barad (E column)
+            pool.request()
+            .input('df2', sql.Date, dateFrom).input('dt2', sql.Date, dateTo)
+            .query(`
+                SELECT E as barad, COUNT(*) as cnt,
+                    CAST(CAST(DD as date) as nvarchar(20)) as date_
+                FROM T1
+                WHERE E IS NOT NULL AND LEN(LTRIM(RTRIM(E))) > 2 AND E NOT IN ('-','.')
+                  AND CAST(DD as date) BETWEEN @df2 AND @dt2
+                GROUP BY E, CAST(DD as date)
+                ORDER BY CAST(DD as date) DESC, cnt DESC
+            `),
+            // By Place/FF (FF = place column)
+            pool.request()
+            .input('df3', sql.Date, dateFrom).input('dt3', sql.Date, dateTo)
+            .query(`
+                SELECT FF as place_, COUNT(*) as cnt,
+                    CAST(CAST(DD as date) as nvarchar(20)) as date_
+                FROM T1
+                WHERE FF IS NOT NULL AND FF != '' AND FF != '*'
+                  AND CAST(DD as date) BETWEEN @df3 AND @dt3
+                GROUP BY FF, CAST(DD as date)
+                ORDER BY CAST(DD as date) DESC, cnt DESC
+            `),
+            // Daily summary for the range
+            pool.request()
+            .input('df4', sql.Date, dateFrom).input('dt4', sql.Date, dateTo)
+            .query(`
+                SELECT CAST(DD as date) as date_, COUNT(*) as cnt
+                FROM T1
+                WHERE CAST(DD as date) BETWEEN @df4 AND @dt4
+                GROUP BY CAST(DD as date)
+                ORDER BY CAST(DD as date) DESC
+            `)
+        ]);
+
+        res.json({
+            dateFrom, dateTo,
+            byWriter: byWriter.recordset,
+            byBarad:  byBarad.recordset,
+            byPlace:  byPlace.recordset,
+            byDate:   byDate.recordset
+        });
+    } catch (err) {
+        console.error('Detailed stats error:', err);
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// ─── GOMRG STATS: By Place & User + Date Range ───────────────────────
+app.get('/api/stats/gomrg', requireAuth, async (req, res) => {
+    try {
+        const pool = await getPool();
+        const cu = req.session.user || {};
+        const isManager = Boolean(
+            cu.permission === 'MANAGER' || cu.place === '*' || cu.username === '9' ||
+            String(cu.permission || '').toUpperCase() === 'ADMIN'
+        );
+        if (!isManager) return res.status(403).json({ error: 'دەسەڵات نیە' });
+
+        const { from, to } = req.query;
+        const dateFrom = from || new Date(new Date().getFullYear(), 0, 1).toISOString().slice(0,10);
+        const dateTo   = to   || new Date().toISOString().slice(0,10);
+
+        const [byPlace, byUser, byDate] = await Promise.all([
+            // By Place + date
+            pool.request()
+            .input('df', sql.Date, dateFrom).input('dt', sql.Date, dateTo)
+            .query(`
+                SELECT place, COUNT(*) as cnt,
+                    CAST(CAST(date_insert as date) as nvarchar(20)) as date_
+                FROM Gomrg
+                WHERE place IS NOT NULL AND place != ''
+                  AND CAST(date_insert as date) BETWEEN @df AND @dt
+                GROUP BY place, CAST(date_insert as date)
+                ORDER BY CAST(date_insert as date) DESC, cnt DESC
+            `),
+            // By User + date
+            pool.request()
+            .input('df2', sql.Date, dateFrom).input('dt2', sql.Date, dateTo)
+            .query(`
+                SELECT user_ as username, COUNT(*) as cnt,
+                    CAST(CAST(date_insert as date) as nvarchar(20)) as date_
+                FROM Gomrg
+                WHERE user_ IS NOT NULL AND user_ != ''
+                  AND CAST(date_insert as date) BETWEEN @df2 AND @dt2
+                GROUP BY user_, CAST(date_insert as date)
+                ORDER BY CAST(date_insert as date) DESC, cnt DESC
+            `),
+            // Daily summary
+            pool.request()
+            .input('df3', sql.Date, dateFrom).input('dt3', sql.Date, dateTo)
+            .query(`
+                SELECT CAST(date_insert as date) as date_, COUNT(*) as cnt
+                FROM Gomrg
+                WHERE CAST(date_insert as date) BETWEEN @df3 AND @dt3
+                GROUP BY CAST(date_insert as date)
+                ORDER BY CAST(date_insert as date) DESC
+            `)
+        ]);
+
+        res.json({
+            dateFrom, dateTo,
+            byPlace:  byPlace.recordset,
+            byUser:   byUser.recordset,
+            byDate:   byDate.recordset
+        });
+    } catch (err) {
+        console.error('Gomrg stats error:', err);
+        res.status(500).json({ error: err.message });
+    }
+});
+
+// ─── STATS (TODAY'S OPERATIONS: REGISTRATION + GOMRG + RAPORT + HIJZ) ──────
 app.get('/api/stats', requireAuth, async (req, res) => {
     try {
         const pool = await getPool();
@@ -265,45 +485,61 @@ app.get('/api/stats', requireAuth, async (req, res) => {
             String(currentUser.permission || '').toUpperCase() === 'ADMIN'
         );
 
-        // Optional query param: ?scope=all or ?scope=user (manager can switch views)
+        // Optional query param: ?scope=all or ?scope=user (defaults to user)
         const requestedScope = req.query.scope; // 'all' or 'user'
-        const shouldFilterByUser = (!isManager) || (isManager && requestedScope === 'user');
+        const shouldFilterByUser = (!requestedScope) || requestedScope === 'user' || (!isManager);
 
-        let totalQuery, todayQuery, byTypeQuery;
+        const userName = (currentUser.name || currentUser.username || '').trim();
+        const userPlace = (currentUser.place || '').trim();
+
         const request = pool.request();
+        request.input('userName', sql.NVarChar, userName);
+        request.input('userPlace', sql.NVarChar, userPlace);
+
+        let t1Query, gomrgQuery, rapQuery, hijzQuery, totalQuery;
 
         if (shouldFilterByUser) {
-            const userName = currentUser.name || currentUser.username || '';
-            const userPlace = currentUser.place || '';
-            request.input('userName', sql.NVarChar, userName);
-            request.input('userPlace', sql.NVarChar, userPlace);
-
-            // Filter in T1: GG is the employee/checker, FF is the station/user
-            const userCondition = `(GG = @userName OR FF = @userName OR (FF = @userPlace AND @userPlace != '*' AND @userPlace != ''))`;
-
-            totalQuery = `SELECT COUNT(*) as cnt FROM T1 WHERE ${userCondition}`;
-            todayQuery = `SELECT COUNT(*) as cnt FROM T1 WHERE CAST(DD as date) = CAST(GETDATE() as date) AND ${userCondition}`;
-            byTypeQuery = `SELECT C as type_, COUNT(*) as cnt FROM T1 WHERE C IS NOT NULL AND ${userCondition} GROUP BY C ORDER BY cnt DESC`;
+            // Filter by the logged-in employee's operations today
+            t1Query = `SELECT COUNT(*) as cnt FROM T1 WHERE CAST(DD as date) = CAST(GETDATE() as date) AND (GG = @userName OR FF = @userName)`;
+            gomrgQuery = `SELECT COUNT(*) as cnt FROM Gomrg WHERE CAST(date_insert as date) = CAST(GETDATE() as date) AND (user_ = @userName)`;
+            rapQuery = `SELECT COUNT(*) as cnt FROM RAP WHERE CAST(O as date) = CAST(GETDATE() as date) AND (R = @userName)`;
+            hijzQuery = `SELECT COUNT(*) as cnt FROM Hijz WHERE CAST(Date_Releasing as date) = CAST(GETDATE() as date) AND (UUser = @userName)`;
+            totalQuery = `SELECT COUNT(*) as cnt FROM T1 WHERE (GG = @userName OR FF = @userName)`;
         } else {
-            // Full manager view (all cars across the whole system)
+            // Full manager view (all employees' operations today)
+            t1Query = `SELECT COUNT(*) as cnt FROM T1 WHERE CAST(DD as date) = CAST(GETDATE() as date)`;
+            gomrgQuery = `SELECT COUNT(*) as cnt FROM Gomrg WHERE CAST(date_insert as date) = CAST(GETDATE() as date)`;
+            rapQuery = `SELECT COUNT(*) as cnt FROM RAP WHERE CAST(O as date) = CAST(GETDATE() as date)`;
+            hijzQuery = `SELECT COUNT(*) as cnt FROM Hijz WHERE CAST(Date_Releasing as date) = CAST(GETDATE() as date)`;
             totalQuery = `SELECT COUNT(*) as cnt FROM T1`;
-            todayQuery = `SELECT COUNT(*) as cnt FROM T1 WHERE CAST(DD as date) = CAST(GETDATE() as date)`;
-            byTypeQuery = `SELECT C as type_, COUNT(*) as cnt FROM T1 WHERE C IS NOT NULL GROUP BY C ORDER BY cnt DESC`;
         }
 
-        const [total, today, byType] = await Promise.all([
-            request.query(totalQuery),
-            request.query(todayQuery),
-            request.query(byTypeQuery)
+        const [t1Res, gomrgRes, rapRes, hijzRes, totalRes] = await Promise.all([
+            request.query(t1Query),
+            request.query(gomrgQuery),
+            request.query(rapQuery),
+            request.query(hijzQuery),
+            request.query(totalQuery)
         ]);
 
+        const t1Today = t1Res.recordset[0]?.cnt || 0;
+        const gomrgToday = gomrgRes.recordset[0]?.cnt || 0;
+        const raportToday = rapRes.recordset[0]?.cnt || 0;
+        const hijzToday = hijzRes.recordset[0]?.cnt || 0;
+        const todayTotal = t1Today + gomrgToday + raportToday + hijzToday;
+
         res.json({
-            total: total.recordset[0].cnt,
-            today: today.recordset[0].cnt,
-            byType: byType.recordset,
+            success: true,
+            t1Today,
+            gomrgToday,
+            raportToday,
+            hijzToday,
+            todayTotal,
+            total: totalRes.recordset[0]?.cnt || 0,
+            today: t1Today,
             isManager: Boolean(isManager),
             scope: shouldFilterByUser ? 'user' : 'all',
-            scopedName: shouldFilterByUser ? (currentUser.name || currentUser.username) : 'سەرجەم بەشەکان (گشتی)',
+            scopedName: shouldFilterByUser ? userName : 'سەرجەم بەشەکان (گشتی)',
             currentUser: {
                 username: currentUser.username,
                 name: currentUser.name,
@@ -343,6 +579,403 @@ app.get('/api/suspicious', requireAuth, async (req, res) => {
     } catch (err) {
         console.error('Suspicious error:', err);
         res.status(500).json({ error: err.message });
+    }
+});
+
+// ─── RAPORT (RAP TABLE) ─────────────────────────────────────────────
+app.get('/api/raport/init', requireAuth, async (req, res) => {
+    try {
+        const pool = await getPool();
+        const cu = req.session.user || {};
+
+        const [rSeq, rPlaces, rTablos, rBashes, rBarads, rReasons] = await Promise.all([
+            pool.request().query(`SELECT ISNULL(MAX(S), 0) + 1 AS nextS FROM RAP`),
+            pool.request().query(`
+                SELECT DISTINCT P AS place FROM RAP 
+                WHERE P IS NOT NULL AND LEN(TRIM(P)) > 0 AND P != '*' AND P != '0'
+                UNION
+                SELECT DISTINCT Place_ AS place FROM Tbl_User 
+                WHERE Place_ IS NOT NULL AND LEN(TRIM(Place_)) > 0 AND Place_ != '*'
+                ORDER BY place
+            `),
+            pool.request().query(`SELECT DISTINCT Tablo_Name FROM Tbl_Tablo ORDER BY Tablo_Name`),
+            pool.request().query(`
+                SELECT DISTINCT C AS bash FROM RAP 
+                WHERE C IS NOT NULL AND LEN(TRIM(C)) > 0 AND C != '0'
+                ORDER BY bash
+            `),
+            pool.request().query(`
+                SELECT DISTINCT Barad FROM Barad 
+                WHERE Barad IS NOT NULL AND Barad != '*' AND LEN(TRIM(Barad)) > 0
+                ORDER BY Barad
+            `),
+            pool.request().query(`
+                SELECT TOP 20 N as reason, COUNT(*) as cnt FROM RAP 
+                WHERE N IS NOT NULL AND LEN(TRIM(N)) > 3 
+                GROUP BY N ORDER BY cnt DESC
+            `)
+        ]);
+
+        const nextS = rSeq.recordset[0]?.nextS || 3407;
+        const places = rPlaces.recordset.map(x => x.place).filter(Boolean);
+        const tablos = rTablos.recordset.map(x => x.Tablo_Name).filter(Boolean);
+        const bashes = rBashes.recordset.map(x => x.bash).filter(Boolean);
+        const barads = rBarads.recordset.map(x => x.Barad).filter(Boolean);
+        const reasons = rReasons.recordset.map(x => x.reason.trim()).filter(Boolean);
+
+        res.json({
+            success: true,
+            nextS,
+            places,
+            tablos,
+            bashes,
+            barads,
+            reasons,
+            currentUser: {
+                username: cu.username || '',
+                name: cu.name || cu.username || '',
+                place: cu.place || '*'
+            }
+        });
+    } catch (err) {
+        console.error('Raport init error:', err);
+        res.status(500).json({ success: false, error: err.message });
+    }
+});
+
+app.get('/api/raport/search-car', requireAuth, async (req, res) => {
+    try {
+        const rawPlate = (req.query.plate || req.query.car_n || req.query.carNo || req.query.auto_no || '').trim();
+        if (!rawPlate) {
+            return res.status(400).json({ success: false, message: 'تکایە ژمارەی ئۆتۆمبێل بنووسە' });
+        }
+
+        const pool = await getPool();
+        const cleanPlate = rawPlate
+            .replace(/[٠-٩]/g, d => '٠١٢٣٤٥٦٧٨٩'.indexOf(d))
+            .replace(/[۰-۹]/g, d => '۰۱۲۳۴۵۶۷۸۹'.indexOf(d));
+        const cleanPlateNoSpace = cleanPlate.replace(/\s+/g, '');
+        const cleanTablo = (req.query.tablo || req.query.plet || req.query.parezga || '').trim();
+        const cleanBash  = (req.query.bash  || '').trim();
+
+        // 1. Search in [Taqega].[dbo].[VA] FIRST (as requested by user)
+        try {
+            let reqVA = pool.request()
+                .input('plate', sql.NVarChar, cleanPlate)
+                .input('plateNoSpace', sql.NVarChar, cleanPlateNoSpace)
+                .input('tablo', sql.NVarChar, cleanTablo)
+                .input('tabloLike', sql.NVarChar, `%${cleanTablo}%`)
+                .input('tabloLikeClean', sql.NVarChar, `%${cleanTablo.replace(/ى/g, 'ی')}%`)
+                .input('bash', sql.NVarChar, cleanBash)
+                .input('bashLike', sql.NVarChar, `%${cleanBash}%`);
+
+            let qVA = `
+                SELECT TOP 1 * FROM [Taqega].[dbo].[VA]
+                WHERE (
+                    REPLACE(auto_no, ' ', '') = @plateNoSpace
+                    OR auto_no = @plate
+                    OR REPLACE(auto_no, ' ', '') = @plate
+                    OR shassy = @plate
+                    OR REPLACE(shassy, ' ', '') = @plateNoSpace
+                )
+            `;
+            if (cleanTablo && cleanTablo !== '*' && cleanTablo !== 'هەموو') {
+                qVA += ` AND (
+                    plet = @tablo
+                    OR REPLACE(REPLACE(plet, N'ى', N'ی'), N'ك', N'ک') = REPLACE(REPLACE(@tablo, N'ى', N'ی'), N'ك', N'ک')
+                    OR plet LIKE @tabloLike
+                    OR REPLACE(plet, N'ى', N'ی') LIKE @tabloLikeClean
+                ) `;
+            }
+            if (cleanBash && cleanBash !== '*' && cleanBash !== 'هەموو') {
+                qVA += ` AND (
+                    bash = @bash
+                    OR REPLACE(REPLACE(bash, N'ى', N'ی'), N'ك', N'ک') = REPLACE(REPLACE(@bash, N'ى', N'ی'), N'ك', N'ک')
+                    OR bash LIKE @bashLike
+                ) `;
+            }
+            qVA += ` ORDER BY id DESC `;
+
+            let rVA = await reqVA.query(qVA);
+            if (rVA.recordset && rVA.recordset.length > 0) {
+                const row = rVA.recordset[0];
+                return res.json({
+                    success: true,
+                    source: 'VA',
+                    data: {
+                        car_no: row.auto_no || cleanPlate,
+                        tablo: (row.plet || cleanTablo || '').replace(/ى/g, 'ی'),
+                        bash: row.bash || cleanBash,
+                        model: row.car_type || '',
+                        year: row.Model || row.model || '0',
+                        color: row.color || '',
+                        chassis: (row.shassy && row.shassy.trim() !== '') ? row.shassy.trim() : '*',
+                        qamara: '*',
+                        owner: row.Name_ || '',
+                        arabana1_chassis: '*',
+                        arabana1_color: '',
+                        arabana2_chassis: '*',
+                        arabana2_color: '',
+                        barad1: row.AA || '',
+                        place: (row.CC || '').replace(/^تاقیگەی\s*/, '').replace(/^تاقیگەى\s*/, '').trim() || ''
+                    }
+                });
+            }
+        } catch (e) {
+            console.warn('VA lookup warning:', e.message);
+        }
+
+        // 2. Fallback to T1
+        let reqT1 = pool.request()
+            .input('plate', sql.NVarChar, cleanPlate)
+            .input('tablo', sql.NVarChar, cleanTablo)
+            .input('tabloLike', sql.NVarChar, `%${cleanTablo}%`)
+            .input('bash', sql.NVarChar, cleanBash)
+            .input('bashLike', sql.NVarChar, `%${cleanBash}%`);
+
+        let qT1 = `
+            SELECT TOP 1 * FROM T1
+            WHERE (
+                REPLACE(A, ' ', '') = REPLACE(@plate, ' ', '')
+                OR A = @plate
+                OR R = @plate
+            )
+        `;
+        if (cleanTablo && cleanTablo !== '*') {
+            qT1 += ` AND (B = @tablo OR B LIKE @tabloLike) `;
+        }
+        if (cleanBash && cleanBash !== '*') {
+            qT1 += ` AND (C = @bash OR C LIKE @bashLike) `;
+        }
+        qT1 += ` ORDER BY DD DESC, id DESC `;
+
+        let rT1 = await reqT1.query(qT1);
+
+        if (rT1.recordset && rT1.recordset.length > 0) {
+            const row = rT1.recordset[0];
+            return res.json({
+                success: true,
+                source: 'T1',
+                data: {
+                    car_no: row.A || cleanPlate,
+                    tablo: row.B || cleanTablo,
+                    bash: row.C || cleanBash,
+                    model: row.I || '',
+                    year: row.P || '0',
+                    color: row.L || '',
+                    chassis: row.R || '',
+                    qamara: row.S || '*',
+                    owner: row.E || '',
+                    arabana1_chassis: row.W || '',
+                    arabana1_color: row.X || '',
+                    arabana2_chassis: row.AA || '',
+                    arabana2_color: row.BB || '',
+                    barad1: row.GG || '',
+                    place: row.FF || ''
+                }
+            });
+        }
+
+        // 2. Fallback to TBL_B
+        try {
+            let rB = await pool.request()
+                .input('plate', sql.NVarChar, cleanPlate)
+                .query(`SELECT TOP 1 * FROM TBL_B WHERE Auto_No = @plate OR Shassy = @plate ORDER BY idd DESC`);
+            if (rB.recordset && rB.recordset.length > 0) {
+                const row = rB.recordset[0];
+                return res.json({
+                    success: true,
+                    source: 'TBL_B',
+                    data: {
+                        car_no: row.Auto_No || cleanPlate,
+                        tablo: row.Car_Plet || cleanTablo,
+                        bash: row.Car_Bash || cleanBash,
+                        model: row.Auto_Type || '',
+                        year: row.Model || '0',
+                        color: row.Color || '',
+                        chassis: row.Shassy || '',
+                        qamara: row.qamara || '*',
+                        owner: row.Reg_Name || '',
+                        arabana1_chassis: row.A_Shassy || '',
+                        arabana1_color: row.A_color || '',
+                        arabana2_chassis: row.B_Shassy || '',
+                        arabana2_color: row.B_color || '',
+                        barad1: row.Barad || '',
+                        place: row.Place_ || row.Place || ''
+                    }
+                });
+            }
+        } catch (e) {
+            console.warn('TBL_B lookup skipped:', e.message);
+        }
+
+        return res.json({
+            success: false,
+            message: 'هیچ ئۆتۆمبێلێک بەم زانیارییانەوە نەدۆزرایەوە، دەتوانیت زانیارییەکان بە دەست بنووسیت.'
+        });
+    } catch (err) {
+        console.error('Raport search error:', err);
+        res.status(500).json({ success: false, error: err.message });
+    }
+});
+
+app.post('/api/raport', requireAuth, async (req, res) => {
+    try {
+        const pool = await getPool();
+        const b = req.body || {};
+
+        if (!b.A || !String(b.A).trim()) {
+            return res.status(400).json({ success: false, message: 'تکایە ژمارەی ئۆتۆمبێل پڕبکەرەوە' });
+        }
+
+        // Auto-generate S if not passed or <= 0
+        let sVal = parseInt(b.S, 10);
+        if (isNaN(sVal) || sVal <= 0) {
+            const rSeq = await pool.request().query(`SELECT ISNULL(MAX(S), 0) + 1 AS nextS FROM RAP`);
+            sVal = rSeq.recordset[0]?.nextS || 3407;
+        }
+
+        const dateVal = b.O ? new Date(b.O) : new Date();
+        const dateStr = b.O ? String(b.O).slice(0, 10) : new Date().toISOString().slice(0, 10);
+        const userName = (req.session?.user?.name || req.session?.user?.username || b.UUser || 'سیستەم').trim();
+
+        const placeVal = String(b.place || b.P || req.session?.user?.place || 'بێستون').trim();
+        const tabloVal = String(b.B || '').trim();
+        const bashVal  = String(b.C || '').trim();
+        const barad1   = String(b.Q || '').trim();
+        const barad2   = String(b.R || '').trim();
+
+        // 1. INSERT INTO RAP table
+        const insertRapReq = pool.request()
+            .input('A', sql.NVarChar, String(b.A || '').trim())
+            .input('B', sql.NVarChar, tabloVal)
+            .input('C', sql.NVarChar, bashVal)
+            .input('D', sql.NVarChar, String(b.D || '').trim())
+            .input('E', sql.NVarChar, String(b.E || '0').trim())
+            .input('F', sql.NVarChar, String(b.F || '').trim())
+            .input('G', sql.NVarChar, String(b.G || '').trim())
+            .input('H', sql.NVarChar, String(b.H || '').trim())
+            .input('I', sql.NVarChar, String(b.I || '').trim())
+            .input('J', sql.NVarChar, String(b.J || '').trim())
+            .input('K', sql.NVarChar, String(b.K || '').trim())
+            .input('L', sql.NVarChar, String(b.L || '').trim())
+            .input('M', sql.NVarChar, String(b.M || '').trim())
+            .input('N', sql.NVarChar, String(b.N || '').trim())
+            .input('O', sql.Date, dateVal)
+            .input('P', sql.NVarChar, tabloVal || 'سلێمانی')
+            .input('Q', sql.NVarChar, placeVal || 'بێستون')
+            .input('R', sql.NVarChar, userName)
+            .input('S', sql.Int, sVal);
+
+        const qRap = `
+            INSERT INTO RAP (A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S)
+            VALUES (@A, @B, @C, @D, @E, @F, @G, @H, @I, @J, @K, @L, @M, @N, @O, @P, @Q, @R, @S);
+            SELECT SCOPE_IDENTITY() AS insertedId;
+        `;
+        const result = await insertRapReq.query(qRap);
+        const newId = result.recordset[0]?.insertedId;
+
+        // 2. INSERT INTO Hijz (حیجز) table
+        try {
+            await pool.request()
+                .input('hAutoNo', sql.NVarChar, String(b.A || '').trim().slice(0, 7))
+                .input('hPlace', sql.NVarChar, tabloVal.slice(0, 20))
+                .input('hCarPlet', sql.NVarChar, bashVal.slice(0, 20))
+                .input('hDate', sql.NVarChar, dateStr.slice(0, 10))
+                .input('hRegName', sql.NVarChar, String(b.G || '').trim().slice(0, 50))
+                .input('hCarNote', sql.NVarChar, String(b.N || '').trim().slice(0, 200))
+                .input('hUser', sql.NVarChar, userName.slice(0, 75))
+                .input('hP', sql.NVarChar, placeVal.slice(0, 50))
+                .input('hB', sql.NVarChar, barad1.slice(0, 50))
+                .input('hC', sql.NVarChar, barad2.slice(0, 40))
+                .query(`
+                    INSERT INTO Hijz (Auto_No, Place_, Car_Plet, Date_Releasing, Reg_Name, car_Note, UUser, p, B, C)
+                    VALUES (@hAutoNo, @hPlace, @hCarPlet, @hDate, @hRegName, @hCarNote, @hUser, @hP, @hB, @hC)
+                `);
+            console.log(`[RAPORT + HIJZ] Successfully recorded car ${b.A} in both RAP and Hijz tables.`);
+        } catch (hijzErr) {
+            console.error('[HIJZ INSERT ERROR]', hijzErr);
+        }
+
+        // Query the next available sequence for frontend
+        const rNext = await pool.request().query(`SELECT ISNULL(MAX(S), 0) + 1 AS nextS FROM RAP`);
+        const nextS = rNext.recordset[0]?.nextS || (sVal + 1);
+
+        res.json({
+            success: true,
+            id: newId,
+            S: sVal,
+            nextS,
+            message: `ڕاپۆرت بە سەرکەوتوویی لە هەردوو تەیبڵی (RAP) و (حیجز - Hijz) تۆمارکرا بە ژمارەی ڕۆشتوو (${sVal})`
+        });
+    } catch (err) {
+        console.error('Save Raport error:', err);
+        res.status(500).json({ success: false, error: err.message });
+    }
+});
+
+app.post('/api/raport/update-t1', requireAuth, async (req, res) => {
+    try {
+        const pool = await getPool();
+        const b = req.body || {};
+
+        if (!b.A || !String(b.A).trim()) {
+            return res.status(400).json({ success: false, message: 'ژمارەی ئۆتۆمبێل دیاری نەکراوە' });
+        }
+
+        const updReq = pool.request()
+            .input('A', sql.NVarChar, String(b.A || '').trim())
+            .input('B', sql.NVarChar, String(b.B || '').trim())
+            .input('C', sql.NVarChar, String(b.C || '').trim())
+            .input('D', sql.NVarChar, String(b.D || '').trim())
+            .input('E', sql.NVarChar, String(b.E || '0').trim())
+            .input('F', sql.NVarChar, String(b.F || '').trim())
+            .input('G', sql.NVarChar, String(b.G || '').trim())
+            .input('H', sql.NVarChar, String(b.H || '').trim())
+            .input('I', sql.NVarChar, String(b.I || '').trim())
+            .input('J', sql.NVarChar, String(b.J || '').trim())
+            .input('K', sql.NVarChar, String(b.K || '').trim())
+            .input('L', sql.NVarChar, String(b.L || '').trim())
+            .input('M', sql.NVarChar, String(b.M || '').trim());
+
+        const q = `
+            UPDATE TOP (1) T1 SET
+                I  = @D,
+                P  = @E,
+                L  = @F,
+                R  = @G,
+                S  = @H,
+                W  = @I,
+                X  = @J,
+                AA = @K,
+                BB = @L,
+                E  = @M
+            WHERE REPLACE(A, ' ', '') = REPLACE(@A, ' ', '')
+              AND (@B = '' OR B = @B)
+              AND (@C = '' OR C = @C);
+        `;
+
+        await updReq.query(q);
+        res.json({ success: true, message: 'زانیارییەکان لە تەیبڵی T1 نوێکرانەوە' });
+    } catch (err) {
+        console.error('Update T1 from Raport error:', err);
+        res.status(500).json({ success: false, error: err.message });
+    }
+});
+
+app.get('/api/raport/:id', requireAuth, async (req, res) => {
+    try {
+        const pool = await getPool();
+        const r = await pool.request()
+            .input('id', sql.Int, parseInt(req.params.id, 10))
+            .query(`SELECT TOP 1 * FROM RAP WHERE id = @id`);
+        if (!r.recordset || r.recordset.length === 0) {
+            return res.status(404).json({ success: false, message: 'ڕاپۆرت نەدۆزرایەوە' });
+        }
+        res.json({ success: true, data: r.recordset[0] });
+    } catch (err) {
+        console.error('Get Raport by ID error:', err);
+        res.status(500).json({ success: false, error: err.message });
     }
 });
 
@@ -561,25 +1194,165 @@ app.get('/api/hijz', requireAuth, async (req, res) => {
     }
 });
 
+// ─── SEARCH IN VA FOR HIJZ FORM ──────────────────────────────────────
+app.get('/api/hijz/search-va', requireAuth, async (req, res) => {
+    try {
+        const { car_n, plet, bash } = req.query;
+        if (!car_n || !car_n.trim()) {
+            return res.status(400).json({ success: false, message: 'تکایە ژمارەی ئوتومبێل بنووسە' });
+        }
+
+        const pool = await getPool();
+        const cleanCarN = car_n.trim()
+            .replace(/[٠-٩]/g, d => '٠١٢٣٤٥٦٧٨٩'.indexOf(d))
+            .replace(/[۰-۹]/g, d => '۰۱۲۳۴۵۶۷۸۹'.indexOf(d));
+        const cleanCarNNoSpace = cleanCarN.replace(/\s+/g, '');
+        const cleanPlet = (plet || '').trim();
+        const cleanBash = (bash || '').trim();
+
+        const request = pool.request()
+            .input('car_n', sql.NVarChar, cleanCarN)
+            .input('car_n_ns', sql.NVarChar, cleanCarNNoSpace);
+
+        let q = `
+            SELECT TOP 1 * FROM [Taqega].[dbo].[VA]
+            WHERE (
+                REPLACE(auto_no, ' ', '') = @car_n_ns
+                OR auto_no = @car_n
+                OR REPLACE(shassy, ' ', '') = @car_n_ns
+                OR shassy = @car_n
+            )
+        `;
+
+        if (cleanPlet && cleanPlet !== '*' && cleanPlet !== 'هەموو') {
+            request.input('plet', sql.NVarChar, cleanPlet);
+            request.input('pletLike', sql.NVarChar, `%${cleanPlet}%`);
+            request.input('pletClean', sql.NVarChar, `%${cleanPlet.replace(/ى/g, 'ی')}%`);
+            q += ` AND (
+                plet = @plet
+                OR REPLACE(REPLACE(plet, N'ى', N'ی'), N'ك', N'ک') = REPLACE(REPLACE(@plet, N'ى', N'ی'), N'ك', N'ک')
+                OR plet LIKE @pletLike
+                OR REPLACE(plet, N'ى', N'ی') LIKE @pletClean
+            ) `;
+        }
+
+        if (cleanBash && cleanBash !== '*' && cleanBash !== 'هەموو') {
+            request.input('bash', sql.NVarChar, cleanBash);
+            request.input('bashLike', sql.NVarChar, `%${cleanBash}%`);
+            q += ` AND (
+                bash = @bash
+                OR REPLACE(REPLACE(bash, N'ى', N'ی'), N'ك', N'ک') = REPLACE(REPLACE(@bash, N'ى', N'ی'), N'ك', N'ک')
+                OR bash LIKE @bashLike
+            ) `;
+        }
+
+        q += ` ORDER BY id DESC `;
+
+        const result = await request.query(q);
+        if (result.recordset && result.recordset.length > 0) {
+            const row = result.recordset[0];
+            return res.json({
+                success: true,
+                found: true,
+                source: 'VA',
+                data: {
+                    auto_no: row.auto_no || cleanCarN,
+                    plet: (row.plet || cleanPlet).replace(/ى/g, 'ی'),
+                    bash: row.bash || cleanBash,
+                    shassy: (row.shassy || '').trim().toUpperCase(),
+                    owner: (row.Name_ || '').trim(),
+                    barad: (row.AA || '').trim(),
+                    car_type: (row.car_type || '').trim(),
+                    model: (row.Model || '').trim(),
+                    color: (row.color || '').trim(),
+                    resulat: (row.resulat || '').trim()
+                }
+            });
+        }
+
+        // Fallback search in T1
+        let rT1 = await pool.request()
+            .input('plate', sql.NVarChar, cleanCarN)
+            .query(`SELECT TOP 1 * FROM T1 WHERE A = @plate OR R = @plate ORDER BY id DESC`);
+        if (rT1.recordset && rT1.recordset.length > 0) {
+            const row = rT1.recordset[0];
+            return res.json({
+                success: true,
+                found: true,
+                source: 'T1',
+                data: {
+                    auto_no: row.A || cleanCarN,
+                    plet: (row.B || cleanPlet).replace(/ى/g, 'ی'),
+                    bash: row.C || cleanBash,
+                    shassy: (row.R || '').trim().toUpperCase(),
+                    owner: (row.E || '').trim(),
+                    barad: (row.GG || '').trim()
+                }
+            });
+        }
+
+        return res.json({
+            success: true,
+            found: false,
+            message: 'ئەم ئۆتۆمبێلە لە خشتەی تاقیگە (VA) نەدۆزرایەوە، تکایە خۆت بە دەستی پڕی بکەرەوە.'
+        });
+    } catch (err) {
+        console.error('Hijz search VA error:', err);
+        res.status(500).json({ success: false, error: err.message });
+    }
+});
+
 app.post('/api/hijz', requireAuth, async (req, res) => {
     try {
-        const { Auto_No, Place_, Car_Plet, Date_Releasing, Reg_Name, car_Note } = req.body;
+        const { Auto_No, Place_, Car_Plet, Date_Releasing, Reg_Name, car_Note, owner_name, Barad1, Barad2 } = req.body;
+        if (!Auto_No || !String(Auto_No).trim()) {
+            return res.status(400).json({ success: false, message: 'تکایە ژمارەی ئۆتۆمبێل بنووسە' });
+        }
+        if (!Reg_Name || !String(Reg_Name).trim()) {
+            return res.status(400).json({ success: false, message: 'تکایە ژمارەی شاسی بنووسە' });
+        }
+        if (!car_Note || !String(car_Note).trim()) {
+            return res.status(400).json({ success: false, message: 'تکایە ووردەکاری ڕاگرتنی کار بنووسە' });
+        }
+
         const pool = await getPool();
-        const user = req.session.user.name || req.session.user.username;
+        const user = req.session.user.name || req.session.user.username || 'سیستەم';
+        const userPlace = req.session.user.place || 'بێستون';
+
+        // Format car_Note with owner name if provided, truncated to max 200 chars
+        let finalNote = String(car_Note || '').trim();
+        if (owner_name && String(owner_name).trim()) {
+            const cleanOwner = String(owner_name).trim();
+            if (!finalNote.includes(cleanOwner)) {
+                finalNote = `خاوەن: ${cleanOwner} - ${finalNote}`;
+            }
+        }
+        if (finalNote.length > 200) {
+            finalNote = finalNote.substring(0, 197) + '...';
+        }
+
+        const cleanChassis = String(Reg_Name).trim().toUpperCase();
+
         await pool.request()
-            .input('Auto_No', sql.NVarChar, Auto_No || '')
-            .input('Place_', sql.NVarChar, Place_ || '')
-            .input('Car_Plet', sql.NVarChar, Car_Plet || 'تایبەت')
-            .input('Date_Releasing', sql.NVarChar, Date_Releasing || new Date().toISOString().slice(0, 10))
-            .input('Reg_Name', sql.NVarChar, (Reg_Name || '').trim().toUpperCase())
-            .input('car_Note', sql.NVarChar, car_Note || '')
-            .input('UUser', sql.NVarChar, user)
-            .query(`INSERT INTO Hijz (Auto_No, Place_, Car_Plet, Date_Releasing, Reg_Name, car_Note, UUser)
-                    VALUES (@Auto_No, @Place_, @Car_Plet, @Date_Releasing, @Reg_Name, @car_Note, @UUser)`);
-        res.json({ success: true, message: 'نیشانەی حیجز بە سەرکەوتوویی دانرا' });
+            .input('Auto_No', sql.NVarChar, String(Auto_No).trim().slice(0, 7))
+            .input('Place_', sql.NVarChar, String(Place_ || 'سلێمانی').trim().slice(0, 20))
+            .input('Car_Plet', sql.NVarChar, String(Car_Plet || 'تایبەت').trim().slice(0, 20))
+            .input('Date_Releasing', sql.NVarChar, String(Date_Releasing || new Date().toISOString().slice(0, 10)).trim().slice(0, 10))
+            .input('Reg_Name', sql.NVarChar, cleanChassis.slice(0, 50))
+            .input('car_Note', sql.NVarChar, finalNote)
+            .input('UUser', sql.NVarChar, String(user).slice(0, 75))
+            .input('p', sql.NVarChar, String(userPlace).slice(0, 50))
+            .input('B', sql.NVarChar, String(Barad1 || '').trim().slice(0, 50))
+            .input('C', sql.NVarChar, String(Barad2 || '').trim().slice(0, 40))
+            .query(`
+                INSERT INTO Hijz (Auto_No, Place_, Car_Plet, Date_Releasing, Reg_Name, car_Note, UUser, p, B, C)
+                VALUES (@Auto_No, @Place_, @Car_Plet, @Date_Releasing, @Reg_Name, @car_Note, @UUser, @p, @B, @C)
+            `);
+
+        res.json({ success: true, message: 'نیشانەی حجز بە سەرکەوتوویی لە سەر سوارڕەو تۆمار کرا' });
     } catch (err) {
         console.error('Add Hijz error:', err);
-        res.status(500).json({ error: err.message });
+        res.status(500).json({ success: false, error: err.message });
     }
 });
 
@@ -1425,37 +2198,61 @@ app.get('/api/advanced-search', requireAuth, async (req, res) => {
 // ─── SYSTEM AUTO-UPDATER & VERSION API ──────────────────────────────
 app.get('/api/system/version', (req, res) => {
     try {
-        const updater = require('./auto-updater');
-        res.json(updater.getLocalVersion());
+        let updater;
+        try { updater = require('./auto-updater'); } catch(e){}
+        if (updater && typeof updater.getLocalVersion === 'function') {
+            return res.json(updater.getLocalVersion());
+        }
+        const vPath = path.join(__dirname, 'version.json');
+        if (fs.existsSync(vPath)) {
+            return res.json(JSON.parse(fs.readFileSync(vPath, 'utf8')));
+        }
+        res.json({ version: '1.3.0', build: 130 });
     } catch (e) {
-        res.json({ version: '1.2.0', build: 120 });
+        res.json({ version: '1.3.0', build: 130 });
     }
 });
+
+function restartServerProcess() {
+    try {
+        const { spawn } = require('child_process');
+        console.log('🔄 Relaunching server process cleanly in background...');
+        const child = spawn(process.execPath, [path.join(__dirname, 'server.js')], {
+            detached: true,
+            stdio: 'ignore',
+            cwd: __dirname,
+            windowsHide: true
+        });
+        child.unref();
+        setTimeout(() => {
+            process.exit(0);
+        }, 800);
+    } catch (spawnErr) {
+        console.error('Auto-restart spawn error:', spawnErr);
+        process.exit(0);
+    }
+}
 
 app.post('/api/system/check-update', async (req, res) => {
     try {
         const isForce = req.body && !!req.body.force;
-        const updater = require('./auto-updater');
+        let updater;
+        try {
+            delete require.cache[require.resolve('./auto-updater')];
+            updater = require('./auto-updater');
+        } catch (e) {
+            console.error('Require auto-updater error:', e);
+            return res.status(500).json({ success: false, error: 'فایلی auto-updater بەردەست نییە: ' + e.message });
+        }
+
         const result = await updater.checkForUpdates(isForce);
-        
         res.json(result);
 
         if (result.success && result.hasUpdate) {
             console.log('✅ Update applied successfully. Relaunching server process...');
             setTimeout(() => {
-                try {
-                    const { spawn } = require('child_process');
-                    const child = spawn('cmd.exe', ['/c', 'start', '""', process.execPath, path.join(__dirname, 'server.js')], {
-                        detached: true,
-                        stdio: 'ignore',
-                        cwd: __dirname
-                    });
-                    child.unref();
-                } catch (spawnErr) {
-                    console.error('Auto-restart spawn error:', spawnErr);
-                }
-                process.exit(0);
-            }, 1800);
+                restartServerProcess();
+            }, 2000);
         }
     } catch (err) {
         console.error('Check update error:', err);
@@ -1463,8 +2260,35 @@ app.post('/api/system/check-update', async (req, res) => {
     }
 });
 
-// ─── START SERVER ─────────────────────────────────────────────────────
+// ─── START SERVER & AUTO-CHECK FOR UPDATES ─────────────────────────
 app.listen(PORT, () => {
     console.log(`✅ TrafficCheck Server running on http://localhost:${PORT}`);
+    
+    // Silent check for updates 7 seconds after startup
+    setTimeout(async () => {
+        try {
+            const updater = require('./auto-updater');
+            const chk = await updater.checkForUpdates(false);
+            if (chk && chk.success && chk.hasUpdate) {
+                console.log('🌟 [Auto-Update] New update detected on startup. Restarting server...');
+                restartServerProcess();
+            }
+        } catch(e) {
+            // Silently ignore startup network issues
+        }
+    }, 7000);
+
+    // Periodic check every 30 minutes
+    setInterval(async () => {
+        try {
+            const updater = require('./auto-updater');
+            const chk = await updater.checkForUpdates(false);
+            if (chk && chk.success && chk.hasUpdate) {
+                console.log('🌟 [Auto-Update] Periodic update applied. Restarting server...');
+                restartServerProcess();
+            }
+        } catch(e) {}
+    }, 30 * 60 * 1000);
 });
+
 
