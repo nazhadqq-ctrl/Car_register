@@ -454,15 +454,32 @@ public class SetupWizardForm : Form {
                 string iconFile = Path.Combine(destDir, "app.ico");
 
                 if (chkDesktopShortcut.Checked) {
-                    string desktop = Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory);
-                    string lnk = Path.Combine(desktop, "سیستمی پشکنینی هاتووچۆ.lnk");
-                    CreateShortcut(lnk, targetExe, destDir, iconFile, "سیستمی پشکنینی ئوتومبێل و شاسی هاتووچۆ");
+                    var desktopDirs = new System.Collections.Generic.List<string>();
+
+                    string userProfile = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
+                    string oneDriveDesktop = Path.Combine(userProfile, "OneDrive", "Desktop");
+                    if (Directory.Exists(oneDriveDesktop)) desktopDirs.Add(oneDriveDesktop);
+
+                    string standardDesktop = Environment.GetFolderPath(Environment.SpecialFolder.DesktopDirectory);
+                    if (!string.IsNullOrEmpty(standardDesktop) && Directory.Exists(standardDesktop) && !desktopDirs.Contains(standardDesktop)) desktopDirs.Add(standardDesktop);
+
+                    string publicDesktop = Environment.GetFolderPath(Environment.SpecialFolder.CommonDesktopDirectory);
+                    if (!string.IsNullOrEmpty(publicDesktop) && Directory.Exists(publicDesktop) && !desktopDirs.Contains(publicDesktop)) desktopDirs.Add(publicDesktop);
+
+                    foreach (string d in desktopDirs) {
+                        string lnkKurdish = Path.Combine(d, "سیستمی پشکنینی هاتووچۆ.lnk");
+                        string lnkEnglish = Path.Combine(d, "TrafficCheck.lnk");
+                        CreateShortcut(lnkKurdish, targetExe, destDir, iconFile, "سیستمی پشکنینی ئوتومبێل و شاسی هاتووچۆ");
+                        CreateShortcut(lnkEnglish, targetExe, destDir, iconFile, "Traffic Inspection System");
+                    }
                 }
 
                 if (chkStartMenuShortcut.Checked) {
                     string startMenu = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.StartMenu), "Programs");
-                    string lnk = Path.Combine(startMenu, "سیستمی پشکنینی هاتووچۆ.lnk");
-                    CreateShortcut(lnk, targetExe, destDir, iconFile, "سیستمی پشکنینی ئوتومبێل و شاسی هاتووچۆ");
+                    string lnkKurdish = Path.Combine(startMenu, "سیستمی پشکنینی هاتووچۆ.lnk");
+                    string lnkEnglish = Path.Combine(startMenu, "TrafficCheck.lnk");
+                    CreateShortcut(lnkKurdish, targetExe, destDir, iconFile, "سیستمی پشکنینی ئوتومبێل و شاسی هاتووچۆ");
+                    CreateShortcut(lnkEnglish, targetExe, destDir, iconFile, "Traffic Inspection System");
                 }
 
                 // Create Uninstaller bat
@@ -535,10 +552,17 @@ public class SetupWizardForm : Form {
 
     private static void CreateShortcut(string shortcutPath, string targetPath, string workingDir, string iconPath, string description) {
         try {
+            string dir = Path.GetDirectoryName(shortcutPath);
+            if (!Directory.Exists(dir)) {
+                Directory.CreateDirectory(dir);
+            }
+
             Type shellType = Type.GetTypeFromProgID("WScript.Shell");
             if (shellType != null) {
                 object shell = Activator.CreateInstance(shellType);
-                object shortcut = shellType.InvokeMember("CreateShortcut", System.Reflection.BindingFlags.InvokeMethod, null, shell, new object[] { shortcutPath });
+                // Create with ASCII temp name first to avoid WScript.Shell ANSI bug on non-Arabic codepage Windows
+                string tempLnk = Path.Combine(dir, "tc_sc_temp.lnk");
+                object shortcut = shellType.InvokeMember("CreateShortcut", System.Reflection.BindingFlags.InvokeMethod, null, shell, new object[] { tempLnk });
                 if (shortcut != null) {
                     Type scType = shortcut.GetType();
                     scType.InvokeMember("TargetPath", System.Reflection.BindingFlags.SetProperty, null, shortcut, new object[] { targetPath });
@@ -548,6 +572,11 @@ public class SetupWizardForm : Form {
                         scType.InvokeMember("IconLocation", System.Reflection.BindingFlags.SetProperty, null, shortcut, new object[] { iconPath });
                     }
                     scType.InvokeMember("Save", System.Reflection.BindingFlags.InvokeMethod, null, shortcut, null);
+
+                    if (File.Exists(tempLnk)) {
+                        File.Copy(tempLnk, shortcutPath, true);
+                        try { File.Delete(tempLnk); } catch { }
+                    }
                 }
             }
         } catch { }
