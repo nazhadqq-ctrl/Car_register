@@ -53,14 +53,14 @@ class TrafficCheckApp {
             string browserPath = FindBrowserExecutable();
             if (string.IsNullOrEmpty(browserPath)) {
                 // Fallback to default system browser
-                Process.Start("http://localhost:3000");
+                Process.Start("http://localhost:3000/login.html");
                 return;
             }
 
             // 3. Launch as Standalone Desktop App window with silent kiosk printing
             ProcessStartInfo appPsi = new ProcessStartInfo();
             appPsi.FileName = browserPath;
-            appPsi.Arguments = "--app=http://localhost:3000 --window-size=1460,860 --kiosk-printing";
+            appPsi.Arguments = "--app=http://localhost:3000/login.html --window-size=1460,860 --kiosk-printing";
             appPsi.WorkingDirectory = appDir;
             appPsi.UseShellExecute = true;
 

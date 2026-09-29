@@ -1,6 +1,6 @@
 @echo off
 chcp 65001 >nul
-title نوێکردنەوەی سیستەمی پشکنینی هاتووچۆ - TrafficCheck Update v1.4.0
+title نوێکردنەوەی سیستەمی پشکنینی هاتووچۆ - TrafficCheck Update v1.4.1
 color 1F
 
 echo ======================================================================
@@ -22,7 +22,7 @@ timeout /t 2 /nobreak >nul
 echo [2/4] داگرتنی نوێترین فایلەکان لە گیت هابەوە...
 powershell -NoProfile -ExecutionPolicy Bypass -Command ^
     "$repo = 'https://raw.githubusercontent.com/nazhadqq-ctrl/Car_register/main';" ^
-    "$files = @('auto-updater.js','server.js','db.js','version.json','package.json','public/index.html','public/login.html','public/preview_gomrg.html','Update_TrafficCheck.bat');" ^
+    "$files = @('auto-updater.js','server.js','db.js','version.json','package.json','TrafficCheck.exe','Start_Silent_Print_Chrome.bat','Start_Silent_Print_Edge.bat','public/index.html','public/login.html','public/preview_gomrg.html','Update_TrafficCheck.bat');" ^
     "foreach($f in $files){" ^
     "  $dest = Join-Path '%TARGET_DIR%' $f;" ^
     "  $dir = Split-Path $dest -Parent;" ^
@@ -57,12 +57,12 @@ if exist "%TARGET_DIR%\TrafficCheck.exe" (
     cd /d "%TARGET_DIR%"
     start "" node.exe server.js
     timeout /t 2 /nobreak >nul
-    start "" http://localhost:3000
+    start "" http://localhost:3000/login.html
 )
 
 echo.
 echo ======================================================================
-echo   پیرۆزە! سیستەمەکە نوێکرایەوە بۆ وەشانی نوێ v1.4.0
+echo   پیرۆزە! سیستەمەکە نوێکرایەوە بۆ وەشانی نوێ v1.4.1
 echo ======================================================================
 timeout /t 3
 exit

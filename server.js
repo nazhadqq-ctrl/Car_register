@@ -10,14 +10,28 @@ const PORT = process.env.PORT || 3000;
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.use(express.static(path.join(__dirname, 'public')));
-
 app.use(session({
     secret: 'TrafficCheck_Secret_2024',
     resave: false,
     saveUninitialized: false,
     cookie: { maxAge: 8 * 60 * 60 * 1000 } // 8 hours
 }));
+
+// Route / to login.html by default
+app.get('/', (req, res) => {
+    res.redirect('/login.html');
+});
+
+// Protect /index.html: if not logged in, redirect to login.html
+app.get('/index.html', (req, res, next) => {
+    if (!req.session || !req.session.user) {
+        return res.redirect('/login.html');
+    }
+    next();
+});
+
+// Serve static files without default index.html taking over /
+app.use(express.static(path.join(__dirname, 'public'), { index: false }));
 
 // ─── AUTH MIDDLEWARE ────────────────────────────────────────────────
 function requireAuth(req, res, next) {

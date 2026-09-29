@@ -822,17 +822,7 @@ for (let i = 0; i < 14; i++) {
     document.body.appendChild(p);
 }
 
-// ─── Session Verification ───────────────────────────────────────────────────
-fetch('/api/me')
-    .then(r => r.json())
-    .then(d => {
-        if (d.loggedIn) {
-            window.location.href = '/index.html';
-        }
-    })
-    .catch(() => {});
-
-// Initialize on page load
+// Initialize on page load - always show login screen
 loadUsersData();
 </script>
 

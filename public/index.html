@@ -1489,7 +1489,7 @@
         <button class="btn-update-topbar" id="btnTopbarUpdate" onclick="openSystemUpdateModal()" title="پشکنین و نوێکردنەوەی سیستەم">
             <span style="font-size:14px; animation: spin-slow 8s linear infinite; display:inline-block;">🔄</span>
             <span>ئەپدەیت</span>
-            <span class="badge-ver" id="topbarVerBadge">v1.4.0</span>
+            <span class="badge-ver" id="topbarVerBadge">v1.4.1</span>
         </button>
         <button class="btn-out" id="logoutBtn">⬅ دەرچوون</button>
     </div>
@@ -2722,7 +2722,7 @@
                 <span>نوێکردنەوەی سیستەمی بەرنامە (System Auto-Updater)</span>
             </div>
             <div style="display:flex; align-items:center; gap:10px;">
-                <span style="background: rgba(56, 189, 248, 0.2); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.4); padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 800;" id="updateModalVersionBadge">v1.4.0</span>
+                <span style="background: rgba(56, 189, 248, 0.2); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.4); padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 800;" id="updateModalVersionBadge">v1.4.1</span>
                 <button class="modal-close" style="color: #ffffff;" onclick="closeOverlay('modalSystemUpdate')">✕</button>
             </div>
         </div>
@@ -7841,14 +7841,14 @@ function showSuspDetail(data) {
 }
 
 // ─── 12. SYSTEM AUTO-UPDATER & VERSION LOGIC ─────────────────────────────
-let currentAppVersion = '1.4.0';
+let currentAppVersion = '1.4.1';
 
 async function loadSystemVersion() {
     try {
         const res = await fetch('/api/system/version');
         if (res.ok) {
             const data = await res.json();
-            currentAppVersion = data.version || '1.4.0';
+            currentAppVersion = data.version || '1.4.1';
             const verStr = `v${currentAppVersion}`;
             const topBadge = document.getElementById('topbarVerBadge');
             if (topBadge) topBadge.textContent = verStr;

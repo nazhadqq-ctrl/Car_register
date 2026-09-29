@@ -20,6 +20,8 @@ const FILES_TO_UPDATE = [
   'db.js',
   'package.json',
   'Update_TrafficCheck.bat',
+  'Start_Silent_Print_Chrome.bat',
+  'Start_Silent_Print_Edge.bat',
   'public/index.html',
   'public/login.html',
   'public/preview_gomrg.html',
