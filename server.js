@@ -1426,7 +1426,7 @@ app.get('/api/register/print-record', requireAuth, async (req, res) => {
             WHERE (A = @plate OR REPLACE(A, ' ', '') = @plate)
               AND (B = @tablo OR REPLACE(B, N'ى', N'ی') = @normTablo)
               AND (C = @bash OR REPLACE(C, N'ى', N'ی') = @normBash)
-              AND CAST(DD as date) = CAST(GETDATE() as date)
+              AND (CAST(DD as date) = CAST(GETDATE() as date) OR CAST(EE as date) = CAST(GETDATE() as date))
             ORDER BY id DESC
         `;
         const result = await pool.request()
@@ -1439,13 +1439,19 @@ app.get('/api/register/print-record', requireAuth, async (req, res) => {
 
         if (result.recordset.length === 0) {
             return res.status(404).json({ 
+                found: false,
                 error: 'ئەم ئوتومبێلە بەرواری ئەمڕۆی خەزن نەکراوە لە سیستەمدا! ناتوانرێت فۆڕمی بەتاڵ، تۆمارنەکراو یاخود ڕۆژانی تر چاپ بکرێت.' 
             });
         }
 
-        res.json(result.recordset[0]);
+        const row = result.recordset[0];
+        res.json({
+            found: true,
+            record: row,
+            ...row
+        });
     } catch(err) {
-        res.status(500).json({ error: err.message });
+        res.status(500).json({ found: false, error: err.message });
     }
 });
 
@@ -1733,7 +1739,7 @@ app.get('/api/register/find', requireAuth, async (req, res) => {
                     R: foundChassis,
                     S: 0,
                     T: (r.mobile || '').trim() || 0,
-                    U: (r.NNote_ || '').trim(),
+                    U: '', // تێبینی نابێت لە تەیبڵی ڤی ئەی بهێنرێتەوە
                     V: '',
                     W: '*',
                     X: '',
@@ -1742,7 +1748,7 @@ app.get('/api/register/find', requireAuth, async (req, res) => {
                     AA: '*',
                     BB: '',
                     CC: 0,
-                    II: r.EE || 0,
+                    II: 0, // اجور كشف نابێت لە تەیبڵی ڤی ئەی بهێنرێتەوە
                     JJ: 0,
                     DD: r.Date_ ? new Date(r.Date_).toISOString().slice(0, 10) : new Date().toISOString().slice(0, 10),
                     resulat: r.resulat || '',
@@ -1834,7 +1840,7 @@ app.get('/api/register/find', requireAuth, async (req, res) => {
                     R: (r.shassy || '').trim().toUpperCase(),
                     S: 0,
                     T: (r.mobile || '').trim() || 0,
-                    U: (r.NNote_ || '').trim(),
+                    U: '', // تێبینی نابێت لە تەیبڵی ڤی ئەی بهێنرێتەوە
                     V: '',
                     W: '*',
                     X: '',
@@ -1843,7 +1849,7 @@ app.get('/api/register/find', requireAuth, async (req, res) => {
                     AA: '*',
                     BB: '',
                     CC: 0,
-                    II: r.EE || 0,
+                    II: 0, // اجور كشف نابێت لە تەیبڵی ڤی ئەی بهێنرێتەوە
                     JJ: 0,
                     DD: r.Date_ ? new Date(r.Date_).toISOString().slice(0, 10) : new Date().toISOString().slice(0, 10),
                     resulat: r.resulat || ''

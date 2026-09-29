@@ -2048,14 +2048,14 @@
                     
                     <span class="df-label">تابلۆی</span>
                     <div class="df-combobox" id="dfBWrapper" style="width:130px;">
-                        <input type="text" id="dfB" class="df-input c4-kurd df-combo-input" autocomplete="off" value="سلێمانی" placeholder="تابلۆ..." title="تەنها لە لیستی فەرمی (parz) قبوڵ دەکرێت">
+                        <input type="text" id="dfB" class="df-input c4-kurd df-combo-input" autocomplete="off" value="" placeholder="تابلۆ..." title="تەنها لە لیستی فەرمی (parz) قبوڵ دەکرێت">
                         <button type="button" class="df-combo-btn" id="dfBBtn" tabindex="-1" title="بینینی هەموو تابلۆکان">▼</button>
                         <div class="df-combo-menu" id="dfBMenu"></div>
                     </div>
                     
                     <span class="df-label">بەش</span>
                     <div class="df-combobox" id="dfCWrapper" style="width:125px;">
-                        <input type="text" id="dfC" class="df-input c4-kurd df-combo-input" autocomplete="off" value="تایبەت" placeholder="بەش..." title="هەڵبژاردنی بەش">
+                        <input type="text" id="dfC" class="df-input c4-kurd df-combo-input" autocomplete="off" value="" placeholder="بەش..." title="هەڵبژاردنی بەش">
                         <button type="button" class="df-combo-btn" id="dfCBtn" tabindex="-1" title="بینینی هەموو بەشەکان">▼</button>
                         <div class="df-combo-menu" id="dfCMenu"></div>
                     </div>
@@ -2253,7 +2253,7 @@
                 <div class="df-actions-row">
                     <div class="df-actions-group" style="align-items:center;flex-wrap:wrap;">
                         <button type="button" class="btn-df btn-df-save" onclick="dfSaveVehicle()">تۆمار کردنی زانیاری</button>
-                        <button type="button" id="dfBtnPrint" class="btn-df btn-df-blue" onclick="dfPrintInspection()" disabled style="opacity:0.45;cursor:not-allowed;" title="دوای خەزنکردن و تۆمارکردنی زانیاری، ئەم دوگمەیە چالاک دەبێت">چاپ کردنی فۆرم</button>
+                        <button type="button" id="dfBtnPrint" class="btn-df btn-df-blue" onclick="dfPrintInspection()" title="چاپ کردنی فۆرمی پشکنین">چاپ کردنی فۆرم</button>
                         <button type="button" class="btn-df btn-df-purple" onclick="dfResetNew()">تۆماری نوێ</button>
                         <button type="button" class="btn-df btn-df-orange" onclick="dfUpdateVehicle()">ڕاست کردنەوەی زانیاری لە کاتی ڕاکێشان و کەم و کورتی</button>
                         <label style="display:inline-flex;align-items:center;gap:6px;cursor:pointer;font-size:12.5px;font-weight:bold;color:#0f172a;background:#f8fafc;padding:5px 12px;border-radius:4px;border:1.5px solid #cbd5e1;user-select:none;margin-right:4px;" title="لە کاتی کارپێکردن بە دۆخی بێ دایالۆگ (Silent Print) یەکسەر پەڕەکە لە پرنتەرەوە دێتە دەرەوە">
@@ -3280,10 +3280,11 @@ function generateUniqueBarcode() {
 function setPrintButtonState(enabled) {
     const btn = document.getElementById('dfBtnPrint');
     if (!btn) return;
-    btn.disabled = !enabled;
-    btn.style.opacity = enabled ? '1' : '0.45';
-    btn.style.cursor = enabled ? 'pointer' : 'not-allowed';
-    btn.title = enabled ? 'چاپ کردنی فۆرمی پشکنین' : 'دوای خەزنکردن و تۆمارکردنی زانیاری ئەمڕۆ، ئەم دوگمەیە چالاک دەبێت';
+    // Keep button active as precaution as requested: "بۆ احتیاط بەتنی چاپ کردنی فۆرم ئەکتیڤ بکە"
+    btn.disabled = false;
+    btn.style.opacity = '1';
+    btn.style.cursor = 'pointer';
+    btn.title = 'چاپ کردنی فۆرمی پشکنین (مەرجە ژمارەی ئوتومبێل + بەش + پارێزگا + بەرواری ئەمڕۆ تۆمارکرابێت)';
 }
 
 function renderLiveBarcode(code) {
@@ -3563,7 +3564,7 @@ async function onBarcodeScanned(barcode) {
 
 // ─── COMBOBOX CONTROLLER FOR TABLO (parz) ──────────────────────────
 let PARZ_ITEMS = [];
-let lastValidTablo = 'سلێمانی';
+let lastValidTablo = '';
 let activeComboIndex = -1;
 
 function setTabloValue(val) {
@@ -3577,7 +3578,7 @@ function setTabloValue(val) {
             return;
         }
     }
-    input.value = val || 'سلێمانی';
+    input.value = val || '';
     lastValidTablo = input.value;
 }
 
@@ -3671,7 +3672,8 @@ function initTabloCombobox(items) {
     function validateAndEnforce() {
         const currentVal = input.value.trim();
         if (!currentVal) {
-            input.value = lastValidTablo || 'سلێمانی';
+            input.value = '';
+            lastValidTablo = '';
             return;
         }
 
@@ -3693,13 +3695,9 @@ function initTabloCombobox(items) {
             return;
         }
 
-        // NOT ALLOWED: User typed custom arbitrary text not in parz!
-        input.classList.add('df-invalid-shake');
-        showToast(`⚠️ تابلۆی "${currentVal}" لە لیستی فەرمی (parz) نییە و قبوڵ ناکرێت!`, true);
-        input.value = lastValidTablo || 'سلێمانی';
-        setTimeout(() => {
-            input.classList.remove('df-invalid-shake');
-        }, 600);
+        // Allow user typed custom text ("با بە نووسین یان هەڵبژاردنی بۆ بکەن")
+        lastValidTablo = currentVal;
+        input.classList.remove('df-invalid-shake');
     }
 
     // Input events
@@ -3812,6 +3810,8 @@ let lastValidBash = 'تایبەت';
 let activeBashIndex = -1;
 let openBashMenu = null;
 
+let lastValidBash = '';
+
 function setBashValue(val) {
     const input = document.getElementById('dfC');
     if (!input) return;
@@ -3823,7 +3823,7 @@ function setBashValue(val) {
             return;
         }
     }
-    input.value = val || 'تایبەت';
+    input.value = val || '';
     lastValidBash = input.value;
 }
 
@@ -3908,7 +3908,8 @@ function initBashCombobox(items) {
     function validateAndEnforce() {
         const currentVal = input.value.trim();
         if (!currentVal) {
-            input.value = lastValidBash || 'تایبەت';
+            input.value = '';
+            lastValidBash = '';
             return;
         }
 
@@ -3926,6 +3927,7 @@ function initBashCombobox(items) {
             return;
         }
 
+        // Allow user typed custom text ("با بە نووسین یان هەڵبژاردنی بۆ بکەن")
         lastValidBash = currentVal;
     }
 
@@ -4376,15 +4378,50 @@ function initEnterAsTab() {
     modal._enterTabInit = true;
 
     modal.addEventListener('keydown', function(e) {
+        // Tab key navigation requirement:
+        // "پاش پڕکردنەوە یان بەجێ هێشتنی ژمارەی مۆبایل ( تاب بڕواتە سەر تێبینی پاشان تۆمار کردن )"
+        if (e.key === 'Tab' && !e.shiftKey) {
+            if (e.target && e.target.id === 'dfT') {
+                e.preventDefault();
+                const dfU = document.getElementById('dfU');
+                if (dfU) {
+                    dfU.focus();
+                    if (dfU.select) dfU.select();
+                }
+                return;
+            } else if (e.target && e.target.id === 'dfU') {
+                e.preventDefault();
+                const saveBtn = modal.querySelector('.btn-df-save');
+                if (saveBtn) saveBtn.focus();
+                return;
+            }
+        }
+
         if (e.key === 'Enter') {
             const target = e.target;
             // If focused on an action button, allow Enter to click it
-            if (target.tagName === 'BUTTON') {
+            if (target && target.tagName === 'BUTTON') {
+                return;
+            }
+
+            // Direct Enter navigation from dfT to dfU, and dfU to save button
+            if (target && target.id === 'dfT') {
+                e.preventDefault();
+                const dfU = document.getElementById('dfU');
+                if (dfU) {
+                    dfU.focus();
+                    if (dfU.select) dfU.select();
+                }
+                return;
+            } else if (target && target.id === 'dfU') {
+                e.preventDefault();
+                const saveBtn = modal.querySelector('.btn-df-save');
+                if (saveBtn) saveBtn.focus();
                 return;
             }
 
             // In inputs and selects, pressing Enter moves to the next field (Shift+Enter to previous)
-            if (target.tagName === 'INPUT' || target.tagName === 'SELECT') {
+            if (target && (target.tagName === 'INPUT' || target.tagName === 'SELECT')) {
                 e.preventDefault();
                 
                 const focusables = Array.from(modal.querySelectorAll(
@@ -4457,10 +4494,10 @@ function dfResetNew() {
     };
 
     setVal('dfA', '');
-    setVal('dfB', 'سلێمانی');
-    if (typeof setTabloValue === 'function') setTabloValue('سلێمانی');
-    setVal('dfC', 'تایبەت');
-    if (typeof setBashValue === 'function') setBashValue('تایبەت');
+    setVal('dfB', '');
+    if (typeof setTabloValue === 'function') setTabloValue('');
+    setVal('dfC', '');
+    if (typeof setBashValue === 'function') setBashValue('');
     
     // Set inspection place based on active place and keep editable
     setVal('dfD', getActivePlace());
@@ -4663,10 +4700,10 @@ async function dfSearchCar() {
         };
 
         set('dfA', r.A || plate);
-        set('dfB', r.B || tablo || 'سلێمانی');
-        if (typeof setTabloValue === 'function') setTabloValue(r.B || tablo || 'سلێمانی');
-        set('dfC', r.C || bash || 'تایبەت');
-        if (typeof setBashValue === 'function') setBashValue(r.C || bash || 'تایبەت');
+        set('dfB', r.B || tablo || '');
+        if (typeof setTabloValue === 'function') setTabloValue(r.B || tablo || '');
+        set('dfC', r.C || bash || '');
+        if (typeof setBashValue === 'function') setBashValue(r.C || bash || '');
         set('dfTo', r.Place_ || r.To || 'هاتووچۆی پارێزگای سلێمانی');
         set('dfE', r.E || '');
         set('dfF', r.F || '*');
@@ -4717,7 +4754,16 @@ async function dfSearchCar() {
         set('dfS', r.S || 0);
         set('dfStar', '*');
         set('dfT', (r.T && String(r.T).trim() !== '0') ? r.T : '');
-        set('dfU', r.U || '');
+        
+        // نەهێنانی تێبینی و اجور كشف لە تەیبڵی ڤی ئەی (VA)
+        if (r.source === 'Taqega' || r.source === 'VA') {
+            set('dfU', '');
+            set('dfII', 0);
+        } else {
+            set('dfU', r.U || '');
+            set('dfII', r.II || 0);
+        }
+
         set('dfV', r.V || '');
         set('dfW', r.W || '*');
         set('dfX', r.X || '');
@@ -4726,7 +4772,6 @@ async function dfSearchCar() {
         set('dfAA', r.AA || '*');
         set('dfBB', r.BB || '');
         set('dfCC', r.CC || 0);
-        set('dfII', r.II || 0);
         if (r.source === 'Taqega' || (r.H && r.H !== 'تۆماری یەکەم جار')) {
             set('dfJJ', '0');
         } else {
@@ -5027,21 +5072,25 @@ async function dfPrintInspection() {
     const tablo = (pForm.B || '').trim();
     const bash = (pForm.C || '').trim();
 
-    if (!plate) {
-        showToast('⚠️ تکایە سەرەتا ژمارەی ئوتومبێل بنووسە و تۆماری بکە پێش چاپکردن', true);
+    if (!plate || !tablo || !bash) {
+        showToast('⚠️ تکایە دڵنیابە لە پڕکردنەوەی (ژمارەی ئوتومبێل + تابلۆ/پارێزگا + بەش) پێش چاپکردن', true);
+        const regAlert = document.getElementById('regAlert');
+        if (regAlert) {
+            regAlert.innerHTML = `<div class="alert-box alert-warning">⚠️ تکایە دڵنیابە لە پڕکردنەوەی (ژمارەی ئوتومبێل + تابلۆ/پارێزگا + بەش) پێش چاپکردن</div>`;
+        }
         return;
     }
 
     // Verify strictly against database query: plate + tablo + bash + today's date
-    let rData = pForm;
+    let rData = null;
     try {
         const queryUrl = `/api/register/print-record?plate=${encodeURIComponent(plate)}&tablo=${encodeURIComponent(tablo)}&bash=${encodeURIComponent(bash)}`;
         const res = await fetch(queryUrl);
         const data = await res.json();
+        const rec = (data && data.record) ? data.record : (data && data.id ? data : null);
 
-        if (!res.ok || !data.found || !data.record) {
-            setPrintButtonState(false);
-            const msg = data.message || '⚠️ ئەم ئوتومبێلە ئەمڕۆ خەزن نەکراوە! تەنها ئەو زانیارییانە چاپ دەکرێن کە ئەمڕۆ تۆمار کراون.';
+        if (!res.ok || !rec) {
+            const msg = (data && (data.error || data.message)) || '⚠️ ئەم ئوتومبێلە بەرواری ئەمڕۆی لە سیستەم تۆمار نەکراوە! مەرجی چاپکردن ئەوەیە (ژمارەی ئوتومبێل + بەش + پارێزگا + بەرواری ئەمڕۆ) لە داتابەیس تۆمارکرابێت.';
             showToast(msg, true);
             const regAlert = document.getElementById('regAlert');
             if (regAlert) {
@@ -5049,7 +5098,7 @@ async function dfPrintInspection() {
             }
             return;
         }
-        rData = data.record;
+        rData = rec;
     } catch(err) {
         console.error('Print query error:', err);
         showToast('⚠️ کێشەی پەیوەندی لە کاتی هێنانی داتای چاپی ئەمڕۆ', true);
@@ -5581,17 +5630,21 @@ async function dfPrintInspection() {
 
     // ─── SILENT & DIRECT PRINTING VIA HIDDEN IFRAME ────────────────────────
     let printFrame = document.getElementById('rdlcPrintFrame');
-    if (!printFrame) {
-        printFrame = document.createElement('iframe');
-        printFrame.id = 'rdlcPrintFrame';
-        printFrame.style.position = 'fixed';
-        printFrame.style.top = '-9999px';
-        printFrame.style.left = '-9999px';
-        printFrame.style.width = '0px';
-        printFrame.style.height = '0px';
-        printFrame.style.border = 'none';
-        document.body.appendChild(printFrame);
+    if (printFrame) {
+        printFrame.remove();
     }
+    printFrame = document.createElement('iframe');
+    printFrame.id = 'rdlcPrintFrame';
+    printFrame.style.position = 'fixed';
+    printFrame.style.right = '0';
+    printFrame.style.bottom = '0';
+    printFrame.style.width = '1000px';
+    printFrame.style.height = '800px';
+    printFrame.style.opacity = '0.001';
+    printFrame.style.pointerEvents = 'none';
+    printFrame.style.border = 'none';
+    printFrame.style.zIndex = '-9999';
+    document.body.appendChild(printFrame);
 
     const frameDoc = printFrame.contentWindow.document;
     frameDoc.open();
@@ -5613,7 +5666,7 @@ async function dfPrintInspection() {
                 fallbackWin.print();
             }
         }
-    }, 250);
+    }, 300);
 }
 
 function dfPrintCard() {
