@@ -1489,7 +1489,7 @@
         <button class="btn-update-topbar" id="btnTopbarUpdate" onclick="openSystemUpdateModal()" title="پشکنین و نوێکردنەوەی سیستەم">
             <span style="font-size:14px; animation: spin-slow 8s linear infinite; display:inline-block;">🔄</span>
             <span>ئەپدەیت</span>
-            <span class="badge-ver" id="topbarVerBadge">v1.4.1</span>
+            <span class="badge-ver" id="topbarVerBadge">v1.4.2</span>
         </button>
         <button class="btn-out" id="logoutBtn">⬅ دەرچوون</button>
     </div>
@@ -2722,7 +2722,7 @@
                 <span>نوێکردنەوەی سیستەمی بەرنامە (System Auto-Updater)</span>
             </div>
             <div style="display:flex; align-items:center; gap:10px;">
-                <span style="background: rgba(56, 189, 248, 0.2); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.4); padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 800;" id="updateModalVersionBadge">v1.4.1</span>
+                <span style="background: rgba(56, 189, 248, 0.2); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.4); padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 800;" id="updateModalVersionBadge">v1.4.2</span>
                 <button class="modal-close" style="color: #ffffff;" onclick="closeOverlay('modalSystemUpdate')">✕</button>
             </div>
         </div>
@@ -3806,10 +3806,8 @@ function initTabloCombobox(items) {
 
 // ─── COMBOBOX CONTROLLER FOR BASH (بەش) ─────────────────────────────
 let BASH_ITEMS = ['تایبەت', 'بار', 'کرێ', 'بیناسازی', 'ماتۆڕ', 'میری', 'کشتوکاڵی', 'ناوخۆ', 'هاتووچۆ', 'جۆری تر', 'باص', 'پاص', 'انشائی', 'تراکتۆر'];
-let lastValidBash = 'تایبەت';
 let activeBashIndex = -1;
 let openBashMenu = null;
-
 let lastValidBash = '';
 
 function setBashValue(val) {
@@ -7841,14 +7839,14 @@ function showSuspDetail(data) {
 }
 
 // ─── 12. SYSTEM AUTO-UPDATER & VERSION LOGIC ─────────────────────────────
-let currentAppVersion = '1.4.1';
+let currentAppVersion = '1.4.2';
 
 async function loadSystemVersion() {
     try {
         const res = await fetch('/api/system/version');
         if (res.ok) {
             const data = await res.json();
-            currentAppVersion = data.version || '1.4.1';
+            currentAppVersion = data.version || '1.4.2';
             const verStr = `v${currentAppVersion}`;
             const topBadge = document.getElementById('topbarVerBadge');
             if (topBadge) topBadge.textContent = verStr;
