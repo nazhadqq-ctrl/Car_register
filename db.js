@@ -22,9 +22,20 @@ const config = {
 let pool = null;
 
 async function getPool() {
-    if (!pool) {
-        pool = await sql.connect(config);
+    if (pool && pool.connected) {
+        return pool;
     }
+    // If pool exists but is disconnected, close it cleanly
+    if (pool) {
+        try { await pool.close(); } catch (e) { /* ignore close errors */ }
+        pool = null;
+    }
+    pool = await sql.connect(config);
+    // Auto-clear pool on connection errors so next call reconnects
+    pool.on('error', (err) => {
+        console.error('⚠️ SQL Pool error (will reconnect on next request):', err.message);
+        pool = null;
+    });
     return pool;
 }
 

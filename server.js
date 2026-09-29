@@ -1,6 +1,8 @@
 const express = require('express');
 const session = require('express-session');
 const path = require('path');
+const https = require('https');
+const fs = require('fs');
 const { getPool, sql } = require('./db');
 
 const app = express();
@@ -492,10 +494,6 @@ app.get('/api/stats', requireAuth, async (req, res) => {
         const userName = (currentUser.name || currentUser.username || '').trim();
         const userPlace = (currentUser.place || '').trim();
 
-        const request = pool.request();
-        request.input('userName', sql.NVarChar, userName);
-        request.input('userPlace', sql.NVarChar, userPlace);
-
         let t1Query, gomrgQuery, rapQuery, hijzQuery, totalQuery;
 
         if (shouldFilterByUser) {
@@ -514,12 +512,20 @@ app.get('/api/stats', requireAuth, async (req, res) => {
             totalQuery = `SELECT COUNT(*) as cnt FROM T1`;
         }
 
+        // Each query MUST use its own pool.request() to avoid "Can only execute one request at a time" error
+        const makeReq = () => {
+            const r = pool.request();
+            r.input('userName', sql.NVarChar, userName);
+            r.input('userPlace', sql.NVarChar, userPlace);
+            return r;
+        };
+
         const [t1Res, gomrgRes, rapRes, hijzRes, totalRes] = await Promise.all([
-            request.query(t1Query),
-            request.query(gomrgQuery),
-            request.query(rapQuery),
-            request.query(hijzQuery),
-            request.query(totalQuery)
+            makeReq().query(t1Query),
+            makeReq().query(gomrgQuery),
+            makeReq().query(rapQuery),
+            makeReq().query(hijzQuery),
+            makeReq().query(totalQuery)
         ]);
 
         const t1Today = t1Res.recordset[0]?.cnt || 0;
@@ -2247,8 +2253,6 @@ app.get('/api/system/version', (req, res) => {
 });
 
 let httpServer = null;
-const https = require('https');
-const fs = require('fs');
 
 function downloadFileFromGitHub(relPath, destPath) {
     const rawUrl = `https://raw.githubusercontent.com/nazhadqq-ctrl/Car_register/main/${relPath}?t=${Date.now()}`;
