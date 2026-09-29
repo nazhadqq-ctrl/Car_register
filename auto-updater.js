@@ -18,6 +18,7 @@ const FILES_TO_UPDATE = [
   'auto-updater.js',
   'server.js',
   'db.js',
+  'Update_TrafficCheck.bat',
   'public/index.html',
   'public/login.html',
   'public/preview_gomrg.html',

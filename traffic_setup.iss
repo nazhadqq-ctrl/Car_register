@@ -3,7 +3,7 @@
 
 #define MyAppName "TrafficCheck"
 #define MyAppTitle "سیستەمی پشکنینی هاتووچۆ"
-#define MyAppVersion "1.3.2"
+#define MyAppVersion "1.3.3"
 #define MyAppPublisher "Traffic Police Directorate - Sulaymaniyah"
 #define MyAppExeName "TrafficCheck.exe"
 #define SourceDir "C:\Users\Nazha\Desktop\TrafficCheck_Setup"
@@ -38,6 +38,8 @@ Name: "en"; MessagesFile: "compiler:Default.isl"
 ; Main Executable and Core Scripts
 Source: "{#SourceDir}\TrafficCheck.exe"; DestDir: "{app}"; Flags: ignoreversion
 Source: "{#SourceDir}\server.js"; DestDir: "{app}"; Flags: ignoreversion
+Source: "{#SourceDir}\auto-updater.js"; DestDir: "{app}"; Flags: ignoreversion
+Source: "{#SourceDir}\Update_TrafficCheck.bat"; DestDir: "{app}"; Flags: ignoreversion
 Source: "{#SourceDir}\db.js"; DestDir: "{app}"; Flags: ignoreversion
 Source: "{#SourceDir}\package.json"; DestDir: "{app}"; Flags: ignoreversion
 Source: "{#SourceDir}\version.json"; DestDir: "{app}"; Flags: ignoreversion

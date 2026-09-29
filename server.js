@@ -2246,20 +2246,58 @@ app.get('/api/system/version', (req, res) => {
     }
 });
 
+let httpServer = null;
+const https = require('https');
+const fs = require('fs');
+
+function downloadFileFromGitHub(relPath, destPath) {
+    const rawUrl = `https://raw.githubusercontent.com/nazhadqq-ctrl/Car_register/main/${relPath}?t=${Date.now()}`;
+    return new Promise((resolve, reject) => {
+        const getUrl = (targetUrl, redirects = 0) => {
+            if (redirects > 5) return reject(new Error('Too many redirects'));
+            https.get(targetUrl, {
+                headers: { 'User-Agent': 'TrafficCheck-Server-Fallback', 'Cache-Control': 'no-cache' }
+            }, (res) => {
+                if (res.statusCode === 301 || res.statusCode === 302 || res.statusCode === 307) {
+                    return getUrl(res.headers.location, redirects + 1);
+                }
+                if (res.statusCode !== 200) {
+                    return reject(new Error(`HTTP ${res.statusCode} from ${targetUrl}`));
+                }
+                const file = fs.createWriteStream(destPath);
+                res.pipe(file);
+                file.on('finish', () => {
+                    file.close(resolve);
+                });
+            }).on('error', (err) => {
+                try { fs.unlinkSync(destPath); } catch(e){}
+                reject(err);
+            });
+        };
+        getUrl(rawUrl);
+    });
+}
+
 function restartServerProcess() {
     try {
-        const { spawn } = require('child_process');
-        console.log('🔄 Relaunching server process cleanly in background...');
-        const child = spawn(process.execPath, [path.join(__dirname, 'server.js')], {
-            detached: true,
-            stdio: 'ignore',
-            cwd: __dirname,
-            windowsHide: true
-        });
-        child.unref();
+        console.log('🔄 Closing HTTP listener to release port...');
+        if (httpServer && typeof httpServer.close === 'function') {
+            try { httpServer.close(); } catch(e) {}
+        }
         setTimeout(() => {
-            process.exit(0);
-        }, 800);
+            const { spawn } = require('child_process');
+            console.log('🔄 Launching new server process cleanly in background...');
+            const child = spawn(process.execPath, [path.join(__dirname, 'server.js')], {
+                detached: true,
+                stdio: 'ignore',
+                cwd: __dirname,
+                windowsHide: true
+            });
+            child.unref();
+            setTimeout(() => {
+                process.exit(0);
+            }, 600);
+        }, 400);
     } catch (spawnErr) {
         console.error('Auto-restart spawn error:', spawnErr);
         process.exit(0);
@@ -2270,6 +2308,23 @@ app.post('/api/system/check-update', async (req, res) => {
     try {
         const isForce = req.body && !!req.body.force;
         let updater;
+        const updaterPath = path.join(__dirname, 'auto-updater.js');
+
+        // Self-healing: if auto-updater.js is missing, download directly from GitHub
+        if (!fs.existsSync(updaterPath)) {
+            console.log('⚠️ auto-updater.js not found locally. Downloading from GitHub...');
+            try {
+                await downloadFileFromGitHub('auto-updater.js', updaterPath);
+                console.log('✅ auto-updater.js downloaded successfully.');
+            } catch (dlErr) {
+                console.error('❌ Failed to download auto-updater.js:', dlErr);
+                return res.status(500).json({
+                    success: false,
+                    error: 'فایلی auto-updater بەردەست نییە و نەتوانرا لە گیت هاب دابگیرێت: ' + dlErr.message
+                });
+            }
+        }
+
         try {
             delete require.cache[require.resolve('./auto-updater')];
             updater = require('./auto-updater');
@@ -2294,12 +2349,16 @@ app.post('/api/system/check-update', async (req, res) => {
 });
 
 // ─── START SERVER & AUTO-CHECK FOR UPDATES ─────────────────────────
-app.listen(PORT, () => {
+httpServer = app.listen(PORT, () => {
     console.log(`✅ TrafficCheck Server running on http://localhost:${PORT}`);
     
     // Silent check for updates 7 seconds after startup
     setTimeout(async () => {
         try {
+            const updaterPath = path.join(__dirname, 'auto-updater.js');
+            if (!fs.existsSync(updaterPath)) {
+                await downloadFileFromGitHub('auto-updater.js', updaterPath);
+            }
             const updater = require('./auto-updater');
             const chk = await updater.checkForUpdates(false);
             if (chk && chk.success && chk.hasUpdate) {
@@ -2314,6 +2373,10 @@ app.listen(PORT, () => {
     // Periodic check every 30 minutes
     setInterval(async () => {
         try {
+            const updaterPath = path.join(__dirname, 'auto-updater.js');
+            if (!fs.existsSync(updaterPath)) {
+                await downloadFileFromGitHub('auto-updater.js', updaterPath);
+            }
             const updater = require('./auto-updater');
             const chk = await updater.checkForUpdates(false);
             if (chk && chk.success && chk.hasUpdate) {
