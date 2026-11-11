@@ -2088,7 +2088,7 @@ app.get('/api/register/find-va-barcode', requireAuth, async (req, res) => {
         if (chassis && chassis !== '*') {
             hasHijzCond = true;
             hijzReq.input('hChassis', sql.NVarChar, chassis);
-            hijzQuery += ` OR (Reg_Name = @hChassis OR REPLACE(Reg_Name, ' ', '') = @hChassis)`;
+            hijzQuery += ` OR (UPPER(LTRIM(RTRIM(Reg_Name))) = @hChassis OR UPPER(REPLACE(Reg_Name, ' ', '')) = @hChassis)`;
         }
 
         if (hasHijzCond) {
@@ -2097,13 +2097,14 @@ app.get('/api/register/find-va-barcode', requireAuth, async (req, res) => {
             if (hijzRes.recordset.length > 0) {
                 isHijz = true;
                 const h = hijzRes.recordset[0];
+                const hDate = h.Date_Releasing ? (h.Date_Releasing instanceof Date ? h.Date_Releasing.toISOString().slice(0, 10) : String(h.Date_Releasing).slice(0, 10)) : '';
                 hijzInfo = {
                     idd: h.idd,
                     plate: h.Auto_No,
                     tablo: h.Place_,
                     bash: h.Car_Plet,
                     chassis: h.Reg_Name,
-                    date: h.Date_Releasing,
+                    date: hDate,
                     note: h.car_Note,
                     officer: h.B,
                     user: h.UUser
@@ -2135,15 +2136,21 @@ app.get('/api/register/find-va-barcode', requireAuth, async (req, res) => {
 
                 t1CheckQuery += ` OR (
                     (A = @cpPlate OR REPLACE(A, ' ', '') = @cpPlate)
-                    AND (B = @cpTablo OR REPLACE(B, N'ى', N'ی') = @normCpTablo)
-                    AND (C = @cpBash OR REPLACE(C, N'ى', N'ی') = @normCpBash)
+                    AND (B = @cpTablo OR REPLACE(REPLACE(B, N'ى', N'ی'), N'ك', N'ک') = @normCpTablo)
+                    AND (C = @cpBash OR REPLACE(REPLACE(C, N'ى', N'ی'), N'ك', N'ک') = @normCpBash)
                 )`;
             }
 
             if (chassis && chassis !== '*') {
                 hasT1Cond = true;
                 t1Req.input('cpChassis', sql.NVarChar, chassis);
-                t1CheckQuery += ` OR (R = @cpChassis OR REPLACE(R, ' ', '') = @cpChassis)`;
+                t1CheckQuery += ` OR (UPPER(LTRIM(RTRIM(R))) = @cpChassis OR UPPER(REPLACE(R, ' ', '')) = @cpChassis)`;
+            }
+
+            if (barcodeVal && barcodeVal !== '*') {
+                hasT1Cond = true;
+                t1Req.input('cpBarcode', sql.NVarChar, String(barcodeVal).trim().toUpperCase());
+                t1CheckQuery += ` OR (UPPER(LTRIM(RTRIM(KK))) = @cpBarcode)`;
             }
 
             if (hasT1Cond) {
@@ -2169,8 +2176,10 @@ app.get('/api/register/find-va-barcode', requireAuth, async (req, res) => {
             success: true,
             source: source,
             id: row.id,
+            t1Id: dupId,
             isHijz: isHijz,
             hijz: hijzInfo,
+            message: isHijz ? 'ئەم ئوتومبێلە کاری بۆ ناکرێت لەبەر ئەوەی نیشانەی گلدانەوەی لەسەرە و پەیوەندی بکەن بە سەرپەرشتیاری هۆبەی پشکنین' : undefined,
             alreadyRegistered: isDuplicate,
             date: dupDate,
             user: dupUser,
@@ -2216,7 +2225,7 @@ app.post('/api/register', requireAuth, async (req, res) => {
             }
             if (cleanR) {
                 hReq.input('hR', sql.NVarChar, cleanR);
-                hq += ` OR (Reg_Name = @hR OR REPLACE(Reg_Name, ' ', '') = @hR)`;
+                hq += ` OR (UPPER(LTRIM(RTRIM(Reg_Name))) = @hR OR UPPER(REPLACE(Reg_Name, ' ', '')) = @hR)`;
             }
             const hRes = await hReq.query(hq);
             if (hRes.recordset.length > 0) {
@@ -2228,21 +2237,27 @@ app.post('/api/register', requireAuth, async (req, res) => {
             }
         }
 
-        // ─── STRICT DUPLICATE PREVENTION: (A + B + C) CAN ONLY BE ENTERED ONCE ───
-        if (cleanA && cleanB && cleanC) {
-            const dupCheck = await pool.request()
-                .input('dA', sql.NVarChar, cleanA)
-                .input('dB', sql.NVarChar, cleanB)
-                .input('normB', sql.NVarChar, cleanB.replace(/ى/g, 'ی').replace(/ك/g, 'ک'))
-                .input('dC', sql.NVarChar, cleanC)
-                .input('normC', sql.NVarChar, cleanC.replace(/ى/g, 'ی').replace(/ك/g, 'ک'))
-                .query(`
-                    SELECT TOP 1 id, A, B, C, R, DD, FF FROM T1 
-                    WHERE (A = @dA OR REPLACE(A, ' ', '') = @dA)
-                      AND (B = @dB OR REPLACE(B, N'ى', N'ی') = @normB)
-                      AND (C = @dC OR REPLACE(C, N'ى', N'ی') = @normC)
-                    ORDER BY id DESC
-                `);
+        // ─── STRICT DUPLICATE PREVENTION: (A + B + C) OR CHASSIS (R) CAN ONLY BE ENTERED ONCE ───
+        if ((cleanA && cleanB && cleanC) || (cleanR && cleanR !== '*' && cleanR.length > 5)) {
+            const dupReq = pool.request();
+            let dupWhere = `WHERE 1=0`;
+            if (cleanA && cleanB && cleanC) {
+                dupReq.input('dA', sql.NVarChar, cleanA);
+                dupReq.input('dB', sql.NVarChar, cleanB);
+                dupReq.input('normB', sql.NVarChar, cleanB.replace(/ى/g, 'ی').replace(/ك/g, 'ک'));
+                dupReq.input('dC', sql.NVarChar, cleanC);
+                dupReq.input('normC', sql.NVarChar, cleanC.replace(/ى/g, 'ی').replace(/ك/g, 'ک'));
+                dupWhere += ` OR (
+                    (A = @dA OR REPLACE(A, ' ', '') = @dA)
+                    AND (B = @dB OR REPLACE(REPLACE(B, N'ى', N'ی'), N'ك', N'ک') = @normB)
+                    AND (C = @dC OR REPLACE(REPLACE(C, N'ى', N'ی'), N'ك', N'ک') = @normC)
+                )`;
+            }
+            if (cleanR && cleanR !== '*' && cleanR.length > 5) {
+                dupReq.input('dR', sql.NVarChar, cleanR);
+                dupWhere += ` OR (UPPER(LTRIM(RTRIM(R))) = @dR OR UPPER(REPLACE(R, ' ', '')) = @dR)`;
+            }
+            const dupCheck = await dupReq.query(`SELECT TOP 1 id, A, B, C, R, DD, FF FROM T1 ${dupWhere} ORDER BY id DESC`);
             
             if (dupCheck.recordset.length > 0) {
                 const existing = dupCheck.recordset[0];
@@ -2250,7 +2265,7 @@ app.post('/api/register', requireAuth, async (req, res) => {
                 return res.status(409).json({
                     success: false,
                     isDuplicate: true,
-                    message: `⚠️ ئەم ئوتومبێلە پێشتر تۆمارکراوە بەم زانیارییانە (ژمارە: ${existing.A} - تابلۆ: ${existing.B} - بەش: ${existing.C}) لە بەرواری (${dateStr}) لە لایەن (${existing.FF || '-'}). هەموو ڕیکۆردێک تەنها یەکجار داخل دەکرێت و دووبارە قبوڵ ناکرێتەوە! لە کاتی پێویست دەبێت ئەدمین بیسڕێتەوە.`
+                    message: `⚠️ ئەم ئوتومبێلە پێشتر تۆمارکراوە بەم زانیارییانە (ژمارە: ${existing.A} - تابلۆ: ${existing.B} - بەش: ${existing.C} - شاسی: ${existing.R}) لە بەرواری (${dateStr}) لە لایەن (${existing.FF || '-'}). هەموو ڕیکۆردێک تەنها یەکجار داخل دەکرێت و دووبارە قبوڵ ناکرێتەوە! لە کاتی پێویست دەبێت ئەدمین بیسڕێتەوە.`
                 });
             }
         }
