@@ -1902,41 +1902,167 @@ app.get('/api/register/find-va-barcode', requireAuth, async (req, res) => {
         }
 
         const pool = await getPool();
-        const cleanBc = rawBarcode.replace(/\s+/g, '');
+        const cleanBc = rawBarcode.replace(/\s+/g, '').toUpperCase();
+        const bcLike = '%' + cleanBc + '%';
 
         // 1. Query [Taqega].[dbo].[VA] by Barcod, NN, Psulla, auto_no, or shassy
         const reqVA = pool.request()
             .input('bc', sql.NVarChar, rawBarcode)
-            .input('bcClean', sql.NVarChar, cleanBc);
+            .input('bcClean', sql.NVarChar, cleanBc)
+            .input('bcLike', sql.NVarChar, bcLike);
 
         const qVA = `
             SELECT TOP 1 * FROM [Taqega].[dbo].[VA]
             WHERE (
                 Barcod = @bc
                 OR REPLACE(Barcod, ' ', '') = @bcClean
+                OR UPPER(Barcod) = @bcClean
                 OR NN = @bc
                 OR REPLACE(NN, ' ', '') = @bcClean
+                OR UPPER(NN) = @bcClean
                 OR CAST(Psulla AS nvarchar(50)) = @bc
                 OR auto_no = @bc
                 OR REPLACE(auto_no, ' ', '') = @bcClean
                 OR shassy = @bc
                 OR REPLACE(shassy, ' ', '') = @bcClean
+                OR Barcod LIKE @bcLike
+                OR NN LIKE @bcLike
             )
             ORDER BY id DESC
         `;
 
         const rVA = await reqVA.query(qVA);
-        if (!rVA.recordset || rVA.recordset.length === 0) {
+        let row = null;
+        let source = 'VA';
+
+        if (rVA.recordset && rVA.recordset.length > 0) {
+            row = rVA.recordset[0];
+            source = 'Taqega';
+        } else {
+            // Fallback: Query [T1] by KK, R (chassis), A (plate)
+            const reqT1 = pool.request()
+                .input('bc', sql.NVarChar, rawBarcode)
+                .input('bcClean', sql.NVarChar, cleanBc)
+                .input('bcLike', sql.NVarChar, bcLike);
+
+            const qT1 = `
+                SELECT TOP 1 * FROM T1
+                WHERE (
+                    KK = @bc
+                    OR REPLACE(KK, ' ', '') = @bcClean
+                    OR UPPER(KK) = @bcClean
+                    OR R = @bc
+                    OR REPLACE(R, ' ', '') = @bcClean
+                    OR A = @bc
+                    OR REPLACE(A, ' ', '') = @bcClean
+                    OR KK LIKE @bcLike
+                )
+                ORDER BY id DESC
+            `;
+
+            const rT1 = await reqT1.query(qT1);
+            if (rT1.recordset && rT1.recordset.length > 0) {
+                row = rT1.recordset[0];
+                source = 'T1';
+            }
+        }
+
+        if (!row) {
             return res.json({ success: false, notFound: true, message: 'تۆمار نەکراوە' });
         }
 
-        const row = rVA.recordset[0];
-        const carNo = (row.auto_no || '').trim();
-        const tablo = (row.plet || '').replace(/ى/g, 'ی').trim();
-        const bash = (row.bash || '').trim();
-        const chassis = (row.shassy || '').trim().toUpperCase();
+        let carNo = (source === 'Taqega' ? row.auto_no : row.A) || '';
+        carNo = carNo.trim();
+        let tablo = (source === 'Taqega' ? row.plet : row.B) || '';
+        tablo = tablo.replace(/ى/g, 'ی').trim();
+        let bash = (source === 'Taqega' ? row.bash : row.C) || '';
+        bash = bash.trim();
+        let chassis = (source === 'Taqega' ? row.shassy : row.R) || '';
+        chassis = chassis.trim().toUpperCase();
+
+        const barcodeVal = (source === 'Taqega' ? (row.Barcod || row.NN) : row.KK) || rawBarcode;
+
+        const formattedData = source === 'Taqega' ? {
+            source: 'Taqega',
+            id: row.id,
+            A: row.auto_no || '',
+            B: row.plet ? row.plet.replace(/ى/g, 'ی') : 'سلێمانی',
+            C: row.bash || 'تایبەت',
+            D: row.CC || '',
+            E: '',
+            F: '*',
+            G: (row.Name_ || '').trim(),
+            H: 'تۆماری یەکەم جار',
+            I: (row.car_type || '').trim(),
+            J: (row.Car_group || '').trim() || 'صالون',
+            K: (row.Feull || '').trim() || 'بەنزین',
+            L: (row.color || '').trim(),
+            M: (row.Gear || '').trim() === 'عادی' ? 'عادی' : 'ئۆتۆماتیک',
+            N: 4,
+            O: row.celender || 0,
+            P: row.Model || 0,
+            Q: 5,
+            R: chassis,
+            S: 0,
+            T: (row.mobile || '').trim() || 0,
+            U: '',
+            V: '',
+            W: '*',
+            X: '',
+            Y: 0,
+            Z: '',
+            AA: '*',
+            BB: '',
+            CC: 0,
+            II: 0,
+            JJ: 0,
+            DD: row.Date_ ? new Date(row.Date_).toISOString().slice(0, 10) : new Date().toISOString().slice(0, 10),
+            resulat: row.resulat || '',
+            Psulla: row.Psulla || '',
+            Barcod: barcodeVal,
+            KK: barcodeVal
+        } : {
+            source: 'T1',
+            id: row.id,
+            A: row.A || '',
+            B: row.B || 'سلێمانی',
+            C: row.C || 'تایبەت',
+            D: row.D || '',
+            E: row.E || '',
+            F: row.F || '*',
+            G: (row.G || '').trim(),
+            H: row.H || 'تۆماری یەکەم جار',
+            I: (row.I || '').trim(),
+            J: (row.J || '').trim() || 'صالون',
+            K: (row.K || '').trim() || 'بەنزین',
+            L: (row.L || '').trim(),
+            M: (row.M || '').trim() || 'ئۆتۆماتیک',
+            N: row.N || 0,
+            O: row.O || 0,
+            P: row.P || 0,
+            Q: row.Q || 0,
+            R: chassis,
+            S: row.S || 0,
+            T: row.T || 0,
+            U: row.U || '',
+            V: row.V || '',
+            W: row.W || '*',
+            X: row.X || '',
+            Y: row.Y || 0,
+            Z: row.Z || '',
+            AA: row.AA || '*',
+            BB: row.BB || '',
+            CC: row.CC || 0,
+            II: row.II || 0,
+            JJ: row.JJ || 0,
+            DD: row.DD ? new Date(row.DD).toISOString().slice(0, 10) : new Date().toISOString().slice(0, 10),
+            Barcod: barcodeVal,
+            KK: barcodeVal
+        };
 
         // 2. CHECK HIJZ (گلدانەوە / حجز)
+        let isHijz = false;
+        let hijzInfo = null;
         let hijzQuery = `SELECT TOP 1 idd, Auto_No, Place_, Car_Plet, Date_Releasing, Reg_Name, car_Note, UUser, B FROM Hijz WHERE 1=0 `;
         const hijzReq = pool.request();
         let hasHijzCond = false;
@@ -1969,119 +2095,86 @@ app.get('/api/register/find-va-barcode', requireAuth, async (req, res) => {
             hijzQuery += ` ORDER BY idd DESC`;
             const hijzRes = await hijzReq.query(hijzQuery);
             if (hijzRes.recordset.length > 0) {
+                isHijz = true;
                 const h = hijzRes.recordset[0];
-                return res.json({
-                    success: true,
-                    isHijz: true,
-                    message: 'ئەم ئوتومبێلە کاری بۆ ناکرێت لەبەر ئەوەی نیشانەی گلدانەوەی لەسەرە و پەیوەندی بکەن بە سەرپەرشتیاری هۆبەی پشکنین',
-                    hijz: {
-                        idd: h.idd,
-                        plate: h.Auto_No,
-                        tablo: h.Place_,
-                        bash: h.Car_Plet,
-                        chassis: h.Reg_Name,
-                        date: h.Date_Releasing,
-                        note: h.car_Note,
-                        officer: h.B,
-                        user: h.UUser
-                    }
-                });
+                hijzInfo = {
+                    idd: h.idd,
+                    plate: h.Auto_No,
+                    tablo: h.Place_,
+                    bash: h.Car_Plet,
+                    chassis: h.Reg_Name,
+                    date: h.Date_Releasing,
+                    note: h.car_Note,
+                    officer: h.B,
+                    user: h.UUser
+                };
             }
         }
 
-        // 3. CHECK DUPLICATE (ئایا لە T1 پێشتر تۆمارکراوە)
-        let t1CheckQuery = `SELECT TOP 1 id, A, B, C, R, DD, EE, FF, KK FROM T1 WHERE 1=0 `;
-        const t1Req = pool.request();
-        let hasT1Cond = false;
+        // 3. CHECK DUPLICATE IN T1
+        let isDuplicate = false;
+        let dupDate = null;
+        let dupUser = null;
+        let dupId = null;
 
-        if (carNo && tablo && bash) {
-            hasT1Cond = true;
-            t1Req.input('cpPlate', sql.NVarChar, carNo);
-            t1Req.input('cpTablo', sql.NVarChar, tablo);
-            const normCpTablo = tablo.replace(/ى/g, 'ی').replace(/ك/g, 'ک');
-            t1Req.input('normCpTablo', sql.NVarChar, normCpTablo);
+        if (source === 'Taqega') {
+            let t1CheckQuery = `SELECT TOP 1 id, A, B, C, R, DD, EE, FF, KK FROM T1 WHERE 1=0 `;
+            const t1Req = pool.request();
+            let hasT1Cond = false;
 
-            t1Req.input('cpBash', sql.NVarChar, bash);
-            const normCpBash = bash.replace(/ى/g, 'ی').replace(/ك/g, 'ک');
-            t1Req.input('normCpBash', sql.NVarChar, normCpBash);
+            if (carNo && tablo && bash) {
+                hasT1Cond = true;
+                t1Req.input('cpPlate', sql.NVarChar, carNo);
+                t1Req.input('cpTablo', sql.NVarChar, tablo);
+                const normCpTablo = tablo.replace(/ى/g, 'ی').replace(/ك/g, 'ک');
+                t1Req.input('normCpTablo', sql.NVarChar, normCpTablo);
 
-            t1CheckQuery += ` OR (
-                (A = @cpPlate OR REPLACE(A, ' ', '') = @cpPlate)
-                AND (B = @cpTablo OR REPLACE(B, N'ى', N'ی') = @normCpTablo)
-                AND (C = @cpBash OR REPLACE(C, N'ى', N'ی') = @normCpBash)
-            )`;
-        }
+                t1Req.input('cpBash', sql.NVarChar, bash);
+                const normCpBash = bash.replace(/ى/g, 'ی').replace(/ك/g, 'ک');
+                t1Req.input('normCpBash', sql.NVarChar, normCpBash);
 
-        if (chassis && chassis !== '*') {
-            hasT1Cond = true;
-            t1Req.input('cpChassis', sql.NVarChar, chassis);
-            t1CheckQuery += ` OR (R = @cpChassis OR REPLACE(R, ' ', '') = @cpChassis)`;
-        }
-
-        if (hasT1Cond) {
-            t1CheckQuery += ` ORDER BY id DESC`;
-            const t1Res = await t1Req.query(t1CheckQuery);
-            if (t1Res.recordset.length > 0) {
-                const existing = t1Res.recordset[0];
-                const regDate = existing.DD ? new Date(existing.DD).toISOString().slice(0, 10) : (existing.EE ? new Date(existing.EE).toISOString().slice(0, 10) : 'نەزانراو');
-                return res.json({
-                    success: true,
-                    alreadyRegistered: true,
-                    date: regDate,
-                    id: existing.id,
-                    plate: existing.A,
-                    tablo: existing.B,
-                    bash: existing.C,
-                    chassis: existing.R,
-                    user: existing.FF
-                });
+                t1CheckQuery += ` OR (
+                    (A = @cpPlate OR REPLACE(A, ' ', '') = @cpPlate)
+                    AND (B = @cpTablo OR REPLACE(B, N'ى', N'ی') = @normCpTablo)
+                    AND (C = @cpBash OR REPLACE(C, N'ى', N'ی') = @normCpBash)
+                )`;
             }
+
+            if (chassis && chassis !== '*') {
+                hasT1Cond = true;
+                t1Req.input('cpChassis', sql.NVarChar, chassis);
+                t1CheckQuery += ` OR (R = @cpChassis OR REPLACE(R, ' ', '') = @cpChassis)`;
+            }
+
+            if (hasT1Cond) {
+                t1CheckQuery += ` ORDER BY id DESC`;
+                const t1Res = await t1Req.query(t1CheckQuery);
+                if (t1Res.recordset.length > 0) {
+                    const existing = t1Res.recordset[0];
+                    isDuplicate = true;
+                    dupId = existing.id;
+                    dupDate = existing.DD ? new Date(existing.DD).toISOString().slice(0, 10) : (existing.EE ? new Date(existing.EE).toISOString().slice(0, 10) : 'نەزانراو');
+                    dupUser = existing.FF;
+                }
+            }
+        } else {
+            // Found in T1 itself
+            isDuplicate = true;
+            dupId = row.id;
+            dupDate = row.DD ? new Date(row.DD).toISOString().slice(0, 10) : (row.EE ? new Date(row.EE).toISOString().slice(0, 10) : 'نەزانراو');
+            dupUser = row.FF;
         }
 
-        // 4. RETURN VA DATA FOR FORM POPULATION
         return res.json({
             success: true,
-            source: 'Taqega',
+            source: source,
             id: row.id,
-            data: {
-                source: 'Taqega',
-                id: row.id,
-                A: row.auto_no || '',
-                B: row.plet ? row.plet.replace(/ى/g, 'ی') : 'سلێمانی',
-                C: row.bash || 'تایبەت',
-                D: row.CC || '',
-                E: '',
-                F: '*',
-                G: (row.Name_ || '').trim(),
-                H: 'تۆماری یەکەم جار',
-                I: (row.car_type || '').trim(),
-                J: (row.Car_group || '').trim() || 'صالون',
-                K: (row.Feull || '').trim() || 'بەنزین',
-                L: (row.color || '').trim(),
-                M: (row.Gear || '').trim() === 'عادی' ? 'عادی' : 'ئۆتۆماتیک',
-                N: 4,
-                O: row.celender || 0,
-                P: row.Model || 0,
-                Q: 5,
-                R: chassis,
-                S: 0,
-                T: (row.mobile || '').trim() || 0,
-                U: '', // تێبینی نابێت لە تەیبڵی ڤی ئەی بهێنرێتەوە
-                V: '',
-                W: '*',
-                X: '',
-                Y: 0,
-                Z: '',
-                AA: '*',
-                BB: '',
-                CC: 0,
-                II: 0, // اجور كشف نابێت لە تەیبڵی ڤی ئەی بهێنرێتەوە
-                JJ: 0,
-                DD: row.Date_ ? new Date(row.Date_).toISOString().slice(0, 10) : new Date().toISOString().slice(0, 10),
-                resulat: row.resulat || '',
-                Psulla: row.Psulla || '',
-                Barcod: row.Barcod || ''
-            }
+            isHijz: isHijz,
+            hijz: hijzInfo,
+            alreadyRegistered: isDuplicate,
+            date: dupDate,
+            user: dupUser,
+            data: formattedData
         });
     } catch (err) {
         console.error('VA Barcode search error:', err);
