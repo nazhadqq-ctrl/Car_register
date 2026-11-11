@@ -1489,7 +1489,7 @@
         <button class="btn-update-topbar" id="btnTopbarUpdate" onclick="openSystemUpdateModal()" title="پشکنین و نوێکردنەوەی سیستەم">
             <span style="font-size:14px; animation: spin-slow 8s linear infinite; display:inline-block;">🔄</span>
             <span>ئەپدەیت</span>
-            <span class="badge-ver" id="topbarVerBadge">v1.4.2</span>
+            <span class="badge-ver" id="topbarVerBadge">v1.4.3</span>
         </button>
         <button class="btn-out" id="logoutBtn">⬅ دەرچوون</button>
     </div>
@@ -2039,6 +2039,21 @@
 
                     <!-- LEFT CORNER: USER BADGE -->
                     <div class="df-user-badge" id="dfUserBadge">9</div>
+                </div>
+
+                <!-- BARCODE SCANNER ROW (گەڕان بە بارکۆد ڕیدەر لە تەیبڵی ڤی ئەی VA) -->
+                <div style="background: linear-gradient(90deg, #eff6ff, #dbeafe); border: 2px solid #2563eb; border-radius: 6px; padding: 6px 14px; margin-bottom: 8px; display: flex; align-items: center; justify-content: space-between; gap: 12px; box-shadow: 0 2px 5px rgba(37,99,235,0.12);">
+                    <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
+                        <span style="font-size:20px; line-height:1;">📷</span>
+                        <label for="dfBarcodeVA" style="font-size:13.5px; font-weight:900; color:#1e40af; cursor:pointer; white-space:nowrap;">گەڕان بە پێ ی بارکۆد ڕیدەر:</label>
+                        <input type="text" id="dfBarcodeVA" class="df-input auto-en-upper" placeholder="بارکۆد لێرە لێبدە..." autocomplete="off" style="width:280px; height:34px; font-size:16px; font-weight:900; text-align:center; border:2px solid #2563eb; border-radius:4px; background:#ffffff; color:#0f172a; outline:none;" onchange="onBarcodeVAChange()" onkeydown="if(event.key==='Enter'){event.preventDefault();onBarcodeVAChange();}">
+                        <button type="button" onclick="onBarcodeVAChange()" style="background:#2563eb; color:#ffffff; font-weight:900; font-size:13px; height:34px; padding:0 18px; border:none; border-radius:4px; cursor:pointer; display:flex; align-items:center; gap:6px; box-shadow:0 1px 3px rgba(0,0,0,0.15);">
+                            <span>🔍 گەڕان بە بارکۆد</span>
+                        </button>
+                    </div>
+                    <div id="dfBarcodeVASpinner" style="display:none; font-size:13px; font-weight:900; color:#2563eb;">
+                        ⏳ لە وەرگرتنی داتادایە لە تەیبڵی تاقیگە (VA)...
+                    </div>
                 </div>
 
                 <!-- ROW 1 (Plate, Tablo/Province, Dept, Search, To Combobox, Date) -->
@@ -2722,7 +2737,7 @@
                 <span>نوێکردنەوەی سیستەمی بەرنامە (System Auto-Updater)</span>
             </div>
             <div style="display:flex; align-items:center; gap:10px;">
-                <span style="background: rgba(56, 189, 248, 0.2); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.4); padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 800;" id="updateModalVersionBadge">v1.4.2</span>
+                <span style="background: rgba(56, 189, 248, 0.2); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.4); padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 800;" id="updateModalVersionBadge">v1.4.3</span>
                 <button class="modal-close" style="color: #ffffff;" onclick="closeOverlay('modalSystemUpdate')">✕</button>
             </div>
         </div>
@@ -4475,10 +4490,16 @@ function openRegisterModal() {
     }
     openOverlay('modalRegister');
     setTimeout(() => {
-        const first = document.getElementById('dfA');
-        if (first) {
-            first.focus();
-            if (first.select) first.select();
+        const bc = document.getElementById('dfBarcodeVA');
+        if (bc) {
+            bc.focus();
+            if (bc.select) bc.select();
+        } else {
+            const first = document.getElementById('dfA');
+            if (first) {
+                first.focus();
+                if (first.select) first.select();
+            }
         }
     }, 120);
 }
@@ -4491,6 +4512,7 @@ function dfResetNew() {
         if (el) el.value = val;
     };
 
+    setVal('dfBarcodeVA', '');
     setVal('dfA', '');
     setVal('dfB', '');
     if (typeof setTabloValue === 'function') setTabloValue('');
@@ -4504,7 +4526,9 @@ function dfResetNew() {
 
     setVal('dfTo', 'هاتووچۆی پارێزگای سلێمانی');
     setVal('dfDD', new Date().toISOString().slice(0, 10));
-    setVal('dfE', '');
+    // Keep dfE (بەڕادی هاتووچۆ) intact - never clear on reset
+    const curBarad = document.getElementById('dfE') ? document.getElementById('dfE').value : '';
+    if (curBarad) setVal('dfE', curBarad);
     setVal('dfF', '*');
     setVal('dfH', 'تۆماری یەکەم جار');
     setVal('dfG', '');
@@ -4572,6 +4596,186 @@ function closeAlreadyRegAlert() {
     const elA = document.getElementById('dfA');
     if (elA) elA.value = '';
     setPrintButtonState(false);
+}
+
+// ─── VOID / EVENT: BARCODE SCANNER LOOKUP IN TAQEGA.DBO.VA ─────────
+async function onBarcodeVAChange() {
+    const input = document.getElementById('dfBarcodeVA');
+    if (!input) return;
+    const barcode = input.value.trim();
+    if (!barcode) return;
+
+    // Reset previous alerts & hijz
+    closeRegAlert();
+    clearHijzAlert();
+
+    const spinner = document.getElementById('dfBarcodeVASpinner');
+    if (spinner) spinner.style.display = 'inline-block';
+
+    try {
+        const res = await fetch('/api/register/find-va-barcode?barcode=' + encodeURIComponent(barcode));
+        const r = await res.json();
+        if (spinner) spinner.style.display = 'none';
+
+        // 1. IF NOT FOUND: Show message "تۆمار نەکراوە" and empty fields
+        if (!r || r.notFound || !r.success) {
+            loadedVehicleId = null;
+            dfResetNew();
+            input.value = barcode;
+            setPrintButtonState(false);
+
+            showToast('⚠️ تۆمار نەکراوە', true);
+            const regAlert = document.getElementById('regAlert');
+            if (regAlert) {
+                regAlert.innerHTML = `
+                    <div class="alert-box alert-warning" style="display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 16px;border-radius:6px;font-weight:900;font-size:16px;background:#fef2f2;border:2px solid #ef4444;color:#991b1b;box-shadow:0 2px 4px rgba(0,0,0,0.06);margin-bottom:12px;">
+                        <div style="display:flex;align-items:center;gap:10px;">
+                            <span style="font-size:24px;line-height:1;">❌</span>
+                            <span>تۆمار نەکراوە (ئەم بارکۆدە لە تەیبڵی تاقیگە VA بوونی نییە)</span>
+                        </div>
+                        <button type="button" onclick="closeRegAlert()" style="background:transparent;border:none;color:#991b1b;font-size:20px;font-weight:900;cursor:pointer;padding:2px 8px;border-radius:4px;line-height:1;" title="داخستن">✕</button>
+                    </div>
+                `;
+            }
+            input.select();
+            return;
+        }
+
+        // 2. CHECK HIJZ (گلدانەوە / حجز)
+        if (r.isHijz) {
+            loadedVehicleId = null;
+            dfResetNew();
+            input.value = barcode;
+            setPrintButtonState(false);
+            showHijzRedAlert(r);
+            input.select();
+            return;
+        }
+
+        // 3. CHECK DUPLICATE (دووبارە لە T1)
+        if (r.alreadyRegistered) {
+            loadedVehicleId = null;
+            dfResetNew();
+            input.value = barcode;
+            setPrintButtonState(false);
+
+            const dateStr = r.date || 'نەزانراو';
+            showToast(`⚠️ ئەم فۆرمە پێشتر کراوە لە بەرواری (${dateStr})`, true);
+            const regAlert = document.getElementById('regAlert');
+            if (regAlert) {
+                regAlert.innerHTML = `
+                    <div class="alert-box alert-warning" style="display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 16px;border-radius:6px;font-weight:800;font-size:15px;background:#fef3c7;border:1.5px solid #f59e0b;color:#92400e;box-shadow:0 2px 4px rgba(0,0,0,0.06);margin-bottom:12px;">
+                        <div style="display:flex;align-items:center;gap:10px;">
+                            <span style="font-size:22px;line-height:1;">⚠️</span>
+                            <span>ئەم ئوتومبێلە پێشتر تۆمارکراوە لە بەرواری (${dateStr})</span>
+                        </div>
+                        <button type="button" onclick="closeAlreadyRegAlert()" style="background:transparent;border:none;color:#92400e;font-size:20px;font-weight:900;cursor:pointer;padding:2px 8px;border-radius:4px;line-height:1;" title="داخستن">✕</button>
+                    </div>
+                `;
+            }
+            input.select();
+            return;
+        }
+
+        // 4. POPULATE FORM FIELDS FROM VA
+        const d = r.data;
+        loadedVehicleId = d.id;
+
+        const set = (id, v) => {
+            const el = document.getElementById(id);
+            if (!el) return;
+            let val = (v !== null && v !== undefined) ? String(v).trim() : '';
+            if (el.tagName === 'SELECT') {
+                let opt = Array.from(el.options).find(o => o.value === val);
+                if (!opt && val) {
+                    const normVal = val.replace(/ى/g, 'ی').replace(/ك/g, 'ک');
+                    opt = Array.from(el.options).find(o => o.value.replace(/ى/g, 'ی').replace(/ك/g, 'ک') === normVal);
+                    if (opt) val = opt.value;
+                }
+                if (!opt && val) {
+                    opt = document.createElement('option');
+                    opt.value = val;
+                    opt.textContent = val;
+                    el.appendChild(opt);
+                }
+                el.value = val;
+            } else {
+                el.value = val;
+            }
+        };
+
+        set('dfA', d.A || '');
+        set('dfB', d.B || '');
+        if (typeof setTabloValue === 'function') setTabloValue(d.B || '');
+        set('dfC', d.C || '');
+        if (typeof setBashValue === 'function') setBashValue(d.C || '');
+        set('dfTo', d.Place_ || d.To || 'هاتووچۆی پارێزگای سلێمانی');
+        if (d.E && d.E.trim() !== '') {
+            set('dfE', d.E);
+        } else {
+            const curB = document.getElementById('dfE') ? document.getElementById('dfE').value : '';
+            if (curB) set('dfE', curB);
+        }
+        set('dfF', d.F || '*');
+        set('dfG', d.G || '');
+        set('dfH', d.H || 'تۆماری یەکەم جار');
+        set('dfI', d.I || '');
+        set('dfJ', d.J || 'صالون');
+        set('dfK', d.K || 'بەنزین');
+        set('dfL', d.L || '');
+        set('dfM', d.M || 'ئۆتۆماتیک');
+        set('dfN', d.N || 0);
+        set('dfO', d.O || 0);
+        set('dfP', d.P || 0);
+        set('dfQ', d.Q || 0);
+        set('dfR', d.R || '');
+        updateKeyLength();
+
+        // Fresh Barcode generation for new registration
+        const bEl = document.getElementById('dfBarcode');
+        let code = generateUniqueBarcode();
+        try {
+            const bRes = await fetch('/api/barcode/generate');
+            if (bRes.ok) {
+                const bData = await bRes.json();
+                if (bData && bData.barcode) code = bData.barcode;
+            }
+        } catch(e) {}
+        if (bEl) {
+            bEl.value = code.substring(0, 10);
+            bEl.dataset.autoGen = 'true';
+        }
+        renderLiveBarcode(code);
+        setPrintButtonState(false);
+
+        set('dfS', d.S || 0);
+        set('dfStar', '*');
+        set('dfT', (d.T && String(d.T).trim() !== '0') ? d.T : '');
+        set('dfU', '');
+        set('dfII', 0);
+        set('dfV', d.V || '');
+        set('dfW', d.W || '*');
+        set('dfX', d.X || '');
+        set('dfY', d.Y || 0);
+        set('dfZ', d.Z || '');
+        set('dfAA', d.AA || '*');
+        set('dfBB', d.BB || '');
+        set('dfCC', d.CC || 0);
+        set('dfJJ', '0');
+        if (d.DD) set('dfDD', new Date(d.DD).toISOString().slice(0, 10));
+
+        closeRegAlert();
+        if (d.resulat) {
+            showToast(`✅ داتای ئوتومبێل بە سەرکەوتوویی لە تەیبڵی VA دۆزرایەوە (${d.resulat})`);
+        } else {
+            showToast('✅ داتای ئوتومبێل بە سەرکەوتوویی لە تەیبڵی VA دۆزرایەوە');
+        }
+        input.select();
+    } catch (err) {
+        if (spinner) spinner.style.display = 'none';
+        console.error('Barcode VA search error:', err);
+        showToast('⚠️ کێشەی پەیوەندی بە سێرڤەر', true);
+    }
 }
 
 async function dfSearchCar() {
@@ -4703,7 +4907,12 @@ async function dfSearchCar() {
         set('dfC', r.C || bash || '');
         if (typeof setBashValue === 'function') setBashValue(r.C || bash || '');
         set('dfTo', r.Place_ || r.To || 'هاتووچۆی پارێزگای سلێمانی');
-        set('dfE', r.E || '');
+        if (r.E && r.E.trim() !== '') {
+            set('dfE', r.E);
+        } else {
+            const curB = document.getElementById('dfE') ? document.getElementById('dfE').value : '';
+            if (curB) set('dfE', curB);
+        }
         set('dfF', r.F || '*');
         set('dfG', r.G || '');
         set('dfH', r.H || 'تۆماری یەکەم جار');
@@ -5110,8 +5319,10 @@ async function dfPrintInspection() {
     const timeStr = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
     const dateStr = p.DD ? new Date(p.DD).toISOString().slice(0, 10) : now.toISOString().slice(0, 10);
     const toDirectorate = p.To || p.D || 'هاتووچۆی پارێزگای سلێمانی';
-    const placeName = p.D || (currentUser && (currentUser.place || currentUser.Place_)) || 'عمر عوسمان';
-    const userName = p.GG || currentUser?.name || currentUser?.username || '';
+    const formPlaceInput = (document.getElementById('dfD') ? document.getElementById('dfD').value.trim() : '');
+    const userPlace = (currentUser && (currentUser.place || currentUser.Place_)) || '';
+    const placeName = p.D || formPlaceInput || userPlace || getActivePlace() || 'عمر عوسمان';
+    const userName = p.FF || currentUser?.name || currentUser?.username || '';
 
     const reportHtml = `
         <!DOCTYPE html>
@@ -5450,7 +5661,7 @@ async function dfPrintInspection() {
 
                     <!-- Right: Inspection Place -->
                     <div class="rdlc-place-box">
-                        <span class="rdlc-border-box">${userName || placeName}</span>
+                        <span class="rdlc-border-box">${placeName}</span>
                         <span>شوێنی پشکنین</span>
                     </div>
                 </div>
@@ -5606,7 +5817,7 @@ async function dfPrintInspection() {
                         </div>
 
                         <div class="rdlc-verify-sub">
-                            <span class="rdlc-border-box">${userName || placeName}</span>
+                            <span class="rdlc-border-box">${userName}</span>
                             <span style="font-weight:800;font-size:13px;">ڕێکخەری فۆڕم</span>
                         </div>
                     </div>
@@ -7839,14 +8050,14 @@ function showSuspDetail(data) {
 }
 
 // ─── 12. SYSTEM AUTO-UPDATER & VERSION LOGIC ─────────────────────────────
-let currentAppVersion = '1.4.2';
+let currentAppVersion = '1.4.3';
 
 async function loadSystemVersion() {
     try {
         const res = await fetch('/api/system/version');
         if (res.ok) {
             const data = await res.json();
-            currentAppVersion = data.version || '1.4.2';
+            currentAppVersion = data.version || '1.4.3';
             const verStr = `v${currentAppVersion}`;
             const topBadge = document.getElementById('topbarVerBadge');
             if (topBadge) topBadge.textContent = verStr;

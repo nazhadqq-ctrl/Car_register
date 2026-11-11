@@ -1893,6 +1893,202 @@ app.get('/api/register/find', requireAuth, async (req, res) => {
     }
 });
 
+// ─── FIND VEHICLE IN TAQEGA.DBO.VA BY BARCODE (FOR BARCODE READER) ───────────
+app.get('/api/register/find-va-barcode', requireAuth, async (req, res) => {
+    try {
+        const rawBarcode = (req.query.barcode || '').trim();
+        if (!rawBarcode) {
+            return res.json({ success: false, notFound: true, message: 'تۆمار نەکراوە' });
+        }
+
+        const pool = await getPool();
+        const cleanBc = rawBarcode.replace(/\s+/g, '');
+
+        // 1. Query [Taqega].[dbo].[VA] by Barcod, NN, Psulla, auto_no, or shassy
+        const reqVA = pool.request()
+            .input('bc', sql.NVarChar, rawBarcode)
+            .input('bcClean', sql.NVarChar, cleanBc);
+
+        const qVA = `
+            SELECT TOP 1 * FROM [Taqega].[dbo].[VA]
+            WHERE (
+                Barcod = @bc
+                OR REPLACE(Barcod, ' ', '') = @bcClean
+                OR NN = @bc
+                OR REPLACE(NN, ' ', '') = @bcClean
+                OR CAST(Psulla AS nvarchar(50)) = @bc
+                OR auto_no = @bc
+                OR REPLACE(auto_no, ' ', '') = @bcClean
+                OR shassy = @bc
+                OR REPLACE(shassy, ' ', '') = @bcClean
+            )
+            ORDER BY id DESC
+        `;
+
+        const rVA = await reqVA.query(qVA);
+        if (!rVA.recordset || rVA.recordset.length === 0) {
+            return res.json({ success: false, notFound: true, message: 'تۆمار نەکراوە' });
+        }
+
+        const row = rVA.recordset[0];
+        const carNo = (row.auto_no || '').trim();
+        const tablo = (row.plet || '').replace(/ى/g, 'ی').trim();
+        const bash = (row.bash || '').trim();
+        const chassis = (row.shassy || '').trim().toUpperCase();
+
+        // 2. CHECK HIJZ (گلدانەوە / حجز)
+        let hijzQuery = `SELECT TOP 1 idd, Auto_No, Place_, Car_Plet, Date_Releasing, Reg_Name, car_Note, UUser, B FROM Hijz WHERE 1=0 `;
+        const hijzReq = pool.request();
+        let hasHijzCond = false;
+
+        if (carNo && tablo && bash) {
+            hasHijzCond = true;
+            hijzReq.input('hPlate', sql.NVarChar, carNo);
+            hijzReq.input('hTablo', sql.NVarChar, tablo);
+            const normTablo = tablo.replace(/ى/g, 'ی').replace(/ك/g, 'ک');
+            hijzReq.input('normTablo', sql.NVarChar, normTablo);
+
+            hijzReq.input('hBash', sql.NVarChar, bash);
+            const normBash = bash.replace(/ى/g, 'ی').replace(/ك/g, 'ک');
+            hijzReq.input('normBash', sql.NVarChar, normBash);
+
+            hijzQuery += ` OR (
+                (Auto_No = @hPlate OR REPLACE(Auto_No, ' ', '') = @hPlate)
+                AND (Place_ = @hTablo OR REPLACE(Place_, N'ى', N'ی') = @normTablo)
+                AND (Car_Plet = @hBash OR REPLACE(Car_Plet, N'ى', N'ی') = @normBash)
+            )`;
+        }
+
+        if (chassis && chassis !== '*') {
+            hasHijzCond = true;
+            hijzReq.input('hChassis', sql.NVarChar, chassis);
+            hijzQuery += ` OR (Reg_Name = @hChassis OR REPLACE(Reg_Name, ' ', '') = @hChassis)`;
+        }
+
+        if (hasHijzCond) {
+            hijzQuery += ` ORDER BY idd DESC`;
+            const hijzRes = await hijzReq.query(hijzQuery);
+            if (hijzRes.recordset.length > 0) {
+                const h = hijzRes.recordset[0];
+                return res.json({
+                    success: true,
+                    isHijz: true,
+                    message: 'ئەم ئوتومبێلە کاری بۆ ناکرێت لەبەر ئەوەی نیشانەی گلدانەوەی لەسەرە و پەیوەندی بکەن بە سەرپەرشتیاری هۆبەی پشکنین',
+                    hijz: {
+                        idd: h.idd,
+                        plate: h.Auto_No,
+                        tablo: h.Place_,
+                        bash: h.Car_Plet,
+                        chassis: h.Reg_Name,
+                        date: h.Date_Releasing,
+                        note: h.car_Note,
+                        officer: h.B,
+                        user: h.UUser
+                    }
+                });
+            }
+        }
+
+        // 3. CHECK DUPLICATE (ئایا لە T1 پێشتر تۆمارکراوە)
+        let t1CheckQuery = `SELECT TOP 1 id, A, B, C, R, DD, EE, FF, KK FROM T1 WHERE 1=0 `;
+        const t1Req = pool.request();
+        let hasT1Cond = false;
+
+        if (carNo && tablo && bash) {
+            hasT1Cond = true;
+            t1Req.input('cpPlate', sql.NVarChar, carNo);
+            t1Req.input('cpTablo', sql.NVarChar, tablo);
+            const normCpTablo = tablo.replace(/ى/g, 'ی').replace(/ك/g, 'ک');
+            t1Req.input('normCpTablo', sql.NVarChar, normCpTablo);
+
+            t1Req.input('cpBash', sql.NVarChar, bash);
+            const normCpBash = bash.replace(/ى/g, 'ی').replace(/ك/g, 'ک');
+            t1Req.input('normCpBash', sql.NVarChar, normCpBash);
+
+            t1CheckQuery += ` OR (
+                (A = @cpPlate OR REPLACE(A, ' ', '') = @cpPlate)
+                AND (B = @cpTablo OR REPLACE(B, N'ى', N'ی') = @normCpTablo)
+                AND (C = @cpBash OR REPLACE(C, N'ى', N'ی') = @normCpBash)
+            )`;
+        }
+
+        if (chassis && chassis !== '*') {
+            hasT1Cond = true;
+            t1Req.input('cpChassis', sql.NVarChar, chassis);
+            t1CheckQuery += ` OR (R = @cpChassis OR REPLACE(R, ' ', '') = @cpChassis)`;
+        }
+
+        if (hasT1Cond) {
+            t1CheckQuery += ` ORDER BY id DESC`;
+            const t1Res = await t1Req.query(t1CheckQuery);
+            if (t1Res.recordset.length > 0) {
+                const existing = t1Res.recordset[0];
+                const regDate = existing.DD ? new Date(existing.DD).toISOString().slice(0, 10) : (existing.EE ? new Date(existing.EE).toISOString().slice(0, 10) : 'نەزانراو');
+                return res.json({
+                    success: true,
+                    alreadyRegistered: true,
+                    date: regDate,
+                    id: existing.id,
+                    plate: existing.A,
+                    tablo: existing.B,
+                    bash: existing.C,
+                    chassis: existing.R,
+                    user: existing.FF
+                });
+            }
+        }
+
+        // 4. RETURN VA DATA FOR FORM POPULATION
+        return res.json({
+            success: true,
+            source: 'Taqega',
+            id: row.id,
+            data: {
+                source: 'Taqega',
+                id: row.id,
+                A: row.auto_no || '',
+                B: row.plet ? row.plet.replace(/ى/g, 'ی') : 'سلێمانی',
+                C: row.bash || 'تایبەت',
+                D: row.CC || '',
+                E: '',
+                F: '*',
+                G: (row.Name_ || '').trim(),
+                H: 'تۆماری یەکەم جار',
+                I: (row.car_type || '').trim(),
+                J: (row.Car_group || '').trim() || 'صالون',
+                K: (row.Feull || '').trim() || 'بەنزین',
+                L: (row.color || '').trim(),
+                M: (row.Gear || '').trim() === 'عادی' ? 'عادی' : 'ئۆتۆماتیک',
+                N: 4,
+                O: row.celender || 0,
+                P: row.Model || 0,
+                Q: 5,
+                R: chassis,
+                S: 0,
+                T: (row.mobile || '').trim() || 0,
+                U: '', // تێبینی نابێت لە تەیبڵی ڤی ئەی بهێنرێتەوە
+                V: '',
+                W: '*',
+                X: '',
+                Y: 0,
+                Z: '',
+                AA: '*',
+                BB: '',
+                CC: 0,
+                II: 0, // اجور كشف نابێت لە تەیبڵی ڤی ئەی بهێنرێتەوە
+                JJ: 0,
+                DD: row.Date_ ? new Date(row.Date_).toISOString().slice(0, 10) : new Date().toISOString().slice(0, 10),
+                resulat: row.resulat || '',
+                Psulla: row.Psulla || '',
+                Barcod: row.Barcod || ''
+            }
+        });
+    } catch (err) {
+        console.error('VA Barcode search error:', err);
+        res.status(500).json({ success: false, message: 'هەڵە لە سێرڤەر: ' + err.message });
+    }
+});
+
 // ─── REGISTER NEW VEHICLE (T1) ───────────────────────────────────────
 app.post('/api/register', requireAuth, async (req, res) => {
     try {
