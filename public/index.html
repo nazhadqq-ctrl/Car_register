@@ -1489,7 +1489,7 @@
         <button class="btn-update-topbar" id="btnTopbarUpdate" onclick="openSystemUpdateModal()" title="پشکنین و نوێکردنەوەی سیستەم">
             <span style="font-size:14px; animation: spin-slow 8s linear infinite; display:inline-block;">🔄</span>
             <span>ئەپدەیت</span>
-            <span class="badge-ver" id="topbarVerBadge">v1.4.6</span>
+            <span class="badge-ver" id="topbarVerBadge">v1.4.7</span>
         </button>
         <button class="btn-out" id="logoutBtn">⬅ دەرچوون</button>
     </div>
@@ -2767,7 +2767,7 @@
                 <span>نوێکردنەوەی سیستەمی بەرنامە (System Auto-Updater)</span>
             </div>
             <div style="display:flex; align-items:center; gap:10px;">
-                <span style="background: rgba(56, 189, 248, 0.2); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.4); padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 800;" id="updateModalVersionBadge">v1.4.6</span>
+                <span style="background: rgba(56, 189, 248, 0.2); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.4); padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 800;" id="updateModalVersionBadge">v1.4.7</span>
                 <button class="modal-close" style="color: #ffffff;" onclick="closeOverlay('modalSystemUpdate')">✕</button>
             </div>
         </div>
@@ -4753,7 +4753,7 @@ async function onBarcodeVAChange() {
         if (typeof setTabloValue === 'function') setTabloValue(d.B || '');
         set('dfC', d.C || '');
         if (typeof setBashValue === 'function') setBashValue(d.C || '');
-        set('dfTo', d.Place_ || d.To || 'هاتووچۆی پارێزگای سلێمانی');
+        set('dfTo', (d.To && (d.To.includes('هاتووچۆ') || d.To.includes('پارێزگا'))) ? d.To : 'هاتووچۆی پارێزگای سلێمانی');
         if (d.E && d.E.trim() !== '') {
             set('dfE', d.E);
         } else {
@@ -4982,7 +4982,7 @@ async function dfSearchCar() {
         if (typeof setTabloValue === 'function') setTabloValue(r.B || tablo || '');
         set('dfC', r.C || bash || '');
         if (typeof setBashValue === 'function') setBashValue(r.C || bash || '');
-        set('dfTo', r.Place_ || r.To || 'هاتووچۆی پارێزگای سلێمانی');
+        set('dfTo', (r.To && (r.To.includes('هاتووچۆ') || r.To.includes('پارێزگا'))) ? r.To : 'هاتووچۆی پارێزگای سلێمانی');
         if (r.E && r.E.trim() !== '') {
             set('dfE', r.E);
         } else {
@@ -5413,7 +5413,14 @@ async function dfPrintInspection() {
     const now = new Date();
     const timeStr = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
     const dateStr = p.DD ? new Date(p.DD).toISOString().slice(0, 10) : now.toISOString().slice(0, 10);
-    const toDirectorate = p.To || p.D || 'هاتووچۆی پارێزگای سلێمانی';
+    let toDirectorate = 'هاتووچۆی پارێزگای سلێمانی';
+    const formToInput = (document.getElementById('dfTo') ? document.getElementById('dfTo').value.trim() : '');
+    if (formToInput && (formToInput.includes('هاتووچۆ') || formToInput.includes('پارێزگا'))) {
+        toDirectorate = formToInput;
+    } else if (p.To && (p.To.includes('هاتووچۆ') || p.To.includes('پارێزگا'))) {
+        toDirectorate = p.To.trim();
+    }
+    toDirectorate = toDirectorate.replace(/^بەڕێوەبەرایەتی\s*/, '').trim();
     const formPlaceInput = (document.getElementById('dfD') ? document.getElementById('dfD').value.trim() : '');
     const userPlace = (currentUser && (currentUser.place || currentUser.Place_)) || '';
     const placeName = p.D || formPlaceInput || userPlace || getActivePlace() || 'عمر عوسمان';
@@ -5735,7 +5742,7 @@ async function dfPrintInspection() {
                             فۆڕمی پشکنینی سوار ڕەو
                         </div>
                         <div class="rdlc-to-box">
-                            بۆ/ بەڕێوەبەرایەتی [${toDirectorate}]
+                            بۆ/ بەڕێوەبەرایەتی ${toDirectorate}
                         </div>
                     </div>
 
@@ -8347,14 +8354,14 @@ function showSuspDetail(data) {
 }
 
 // ─── 12. SYSTEM AUTO-UPDATER & VERSION LOGIC ─────────────────────────────
-let currentAppVersion = '1.4.6';
+let currentAppVersion = '1.4.7';
 
 async function loadSystemVersion() {
     try {
         const res = await fetch('/api/system/version');
         if (res.ok) {
             const data = await res.json();
-            currentAppVersion = data.version || '1.4.6';
+            currentAppVersion = data.version || '1.4.7';
             const verStr = `v${currentAppVersion}`;
             const topBadge = document.getElementById('topbarVerBadge');
             if (topBadge) topBadge.textContent = verStr;

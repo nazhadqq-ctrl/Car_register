@@ -3,7 +3,7 @@
 
 #define MyAppName "TrafficCheck"
 #define MyAppTitle "سیستەمی پشکنینی هاتووچۆ"
-#define MyAppVersion "1.4.6"
+#define MyAppVersion "1.4.7"
 #define MyAppPublisher "Traffic Police Directorate - Sulaymaniyah"
 #define MyAppExeName "TrafficCheck.exe"
 #define SourceDir "C:\Users\Nazha\Desktop\TrafficCheck_Setup"
@@ -21,7 +21,7 @@ DisableProgramGroupPage=yes
 OutputDir=C:\Users\Nazha\Desktop\TrafficCheck_Setup_Output
 OutputBaseFilename=Setup_TrafficCheck_Standalone
 SetupIconFile={#SourceDir}\app.ico
-Compression=lzma2/ultra64
+Compression=lzma2/max
 SolidCompression=yes
 WizardStyle=modern
 PrivilegesRequired=admin
