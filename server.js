@@ -2330,12 +2330,15 @@ app.post('/api/register', requireAuth, async (req, res) => {
             .input('GG', sql.NVarChar, GG || '')
             .input('DD', sql.NVarChar, DD || new Date().toISOString().slice(0, 10))
             .input('KK', sql.NVarChar, finalBarcode)
-            .query(`INSERT INTO T1 (A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U, V, W, X, Y, Z, AA, BB, CC, II, JJ, FF, GG, DD, EE, KK)
+            .query(`BEGIN TRANSACTION;
+                    INSERT INTO T1 (A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U, V, W, X, Y, Z, AA, BB, CC, II, JJ, FF, GG, DD, EE, KK)
                     VALUES (@A, @B, @C, @D, @E, @F, @G, @H, @I, @J, @K, @L, @M, @N, @O, @P, @Q, @R, @S, @T, @U, @V, @W, @X, @Y, @Z, @AA, @BB, @CC, @II, @JJ, @FF, @GG, @DD, GETDATE(), @KK);
-                    SELECT SCOPE_IDENTITY() AS newId;
+                    DECLARE @newId INT = SCOPE_IDENTITY();
 
                     INSERT INTO T1_backup (A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U, V, W, X, Y, Z, AA, BB, CC, II, JJ, FF, GG, DD, EE, KK)
-                    VALUES (@A, @B, @C, @D, @E, @F, @G, @H, @I, @J, @K, @L, @M, @N, @O, @P, @Q, @R, @S, @T, @U, @V, @W, @X, @Y, @Z, @AA, @BB, @CC, @II, @JJ, @FF, @GG, @DD, GETDATE(), @KK);`);
+                    VALUES (@A, @B, @C, @D, @E, @F, @G, @H, @I, @J, @K, @L, @M, @N, @O, @P, @Q, @R, @S, @T, @U, @V, @W, @X, @Y, @Z, @AA, @BB, @CC, @II, @JJ, @FF, @GG, @DD, GETDATE(), @KK);
+                    COMMIT TRANSACTION;
+                    SELECT @newId AS newId;`);
 
         const newId = insertRes.recordset[0]?.newId;
         res.json({ success: true, message: 'ئوتومبێل بە سەرکەوتوویی تۆمارکرا', id: newId, barcode: finalBarcode });
@@ -2348,14 +2351,74 @@ app.post('/api/register', requireAuth, async (req, res) => {
 // ─── UPDATE VEHICLE IN T1 (ڕاستکردنەوەی زانیاری) ───────────────────────
 app.put('/api/register/:id', requireAuth, async (req, res) => {
     try {
-        const id = req.params.id;
+        const id = parseInt(req.params.id, 10);
+        if (!id || isNaN(id)) {
+            return res.status(400).json({ success: false, message: 'ناسنامەی ئوتومبێل نادروستە' });
+        }
+
+        const user = req.session.user;
+        const perm = (user.permission || '').toUpperCase();
+
+        // RBAC: Verify user has permission to modify records
+        if (perm !== 'ADMIN' && perm !== 'MANAGER' && perm !== 'REGISTRATION' && user.username !== '9') {
+            return res.status(403).json({ success: false, message: 'دەسەڵاتی دەستکاریکردنی تۆماری پێشووت نییە!' });
+        }
+
         const {
             A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U,
             V, W, X, Y, Z, AA, BB, CC, II, JJ, GG, DD, KK, Barcode
         } = req.body;
 
         const pool = await getPool();
-        const user = req.session.user.name || req.session.user.username;
+        const userName = user.name || user.username;
+
+        // Prevent creating duplicate (Plate or Chassis) by checking other records in T1
+        const cleanA = (A || '').trim();
+        const cleanB = (B || '').trim();
+        const cleanC = (C || '').trim();
+        const cleanR = (R || '').trim().toUpperCase();
+
+        if ((cleanA && cleanB && cleanC) || (cleanR && cleanR !== '*' && cleanR.length > 5)) {
+            const dupReq = pool.request();
+            dupReq.input('id', sql.Int, id);
+            let dupWhere = `WHERE id != @id AND (1=0`;
+            if (cleanA && cleanB && cleanC) {
+                dupReq.input('dA', sql.NVarChar, cleanA);
+                dupReq.input('dB', sql.NVarChar, cleanB);
+                dupReq.input('dC', sql.NVarChar, cleanC);
+                dupWhere += ` OR (
+                    (A = @dA OR REPLACE(A, ' ', '') = @dA)
+                    AND (B = @dB OR REPLACE(B, N'ى', N'ی') = @dB)
+                    AND (C = @dC OR REPLACE(C, N'ى', N'ی') = @dC)
+                )`;
+            }
+            if (cleanR && cleanR !== '*' && cleanR.length > 5) {
+                dupReq.input('dR', sql.NVarChar, cleanR);
+                dupWhere += ` OR (UPPER(LTRIM(RTRIM(R))) = @dR OR UPPER(REPLACE(R, ' ', '')) = @dR)`;
+            }
+            dupWhere += `)`;
+
+            const dupCheck = await dupReq.query(`SELECT TOP 1 id, A, B, C, R FROM T1 ${dupWhere}`);
+            if (dupCheck.recordset.length > 0) {
+                return res.status(409).json({
+                    success: false,
+                    message: `⚠️ ناتوانرێت زانیارییەکان بگۆڕدرێن بۆ ئەم تابلۆ یان شاسییە، چونكە لە ئوتومبێلێکی تردا (ID: ${dupCheck.recordset[0].id}) تۆمارکراوە!`
+                });
+            }
+        }
+
+        // Validate that B belongs to parz table
+        if (B && B.trim()) {
+            const parzCheck = await pool.request()
+                .input('pName', sql.NVarChar, B.trim())
+                .query(`SELECT TOP 1 par FROM parz WHERE LTRIM(RTRIM(par)) = @pName`);
+            if (parzCheck.recordset.length === 0) {
+                return res.status(400).json({ 
+                    success: false, 
+                    message: `تابلۆی دیاریکراو (${B}) لە لیستی فەرمی (parz) نییە و ڕێگەپێدراو نییە.` 
+                });
+            }
+        }
 
         await pool.request()
             .input('id', sql.Int, id)
@@ -2390,14 +2453,17 @@ app.put('/api/register/:id', requireAuth, async (req, res) => {
             .input('CC', sql.NVarChar, CC != null ? String(CC) : '0')
             .input('II', sql.NVarChar, II != null ? String(II) : '25000')
             .input('JJ', sql.NVarChar, JJ != null ? String(JJ) : '0')
-            .input('GG', sql.NVarChar, GG || '')
+            .input('GG', sql.NVarChar, userName)
             .input('KK', sql.NVarChar, KK || Barcode || '')
             .query(`UPDATE T1 SET
                         A=@A, B=@B, C=@C, D=@D, E=@E, F=@F, G=@G, H=@H, I=@I, J=@J,
                         K=@K, L=@L, M=@M, N=@N, O=@O, P=@P, Q=@Q, R=@R, S=@S, T=@T,
                         U=@U, V=@V, W=@W, X=@X, Y=@Y, Z=@Z, AA=@AA, BB=@BB, CC=@CC,
                         II=@II, JJ=@JJ, GG=@GG, KK=@KK
-                    WHERE id = @id`);
+                    WHERE id = @id;
+
+                    INSERT INTO T1_backup (A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U, V, W, X, Y, Z, AA, BB, CC, II, JJ, FF, GG, DD, EE, KK)
+                    VALUES (@A, @B, @C, @D, @E, @F, @G, @H, @I, @J, @K, @L, @M, @N, @O, @P, @Q, @R, @S, @T, @U, @V, @W, @X, @Y, @Z, @AA, @BB, @CC, @II, @JJ, @GG, N'UPDATE_AUDIT', GETDATE(), GETDATE(), @KK);`);
 
         res.json({ success: true, message: 'زانیاری ئوتومبێل بە سەرکەوتوویی نوێکرایەوە' });
     } catch (err) {
@@ -2626,7 +2692,7 @@ function restartServerProcess() {
     }
 }
 
-app.post('/api/system/check-update', async (req, res) => {
+app.post('/api/system/check-update', requireAuth, async (req, res) => {
     try {
         const isForce = req.body && !!req.body.force;
         let updater;

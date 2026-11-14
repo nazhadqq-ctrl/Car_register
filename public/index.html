@@ -884,44 +884,47 @@
             .detail-grid { grid-template-columns: 1fr; }
         }
 
-        /* ══ C# APP REGISTRATION FORM STYLES (EXACT 1416x645 LANDSCAPE DESKTOP WINDOW) ══ */
+        /* ══ C# APP REGISTRATION FORM STYLES (EXACT 1416x645 LANDSCAPE DESKTOP WINDOW - ERGONOMIC EYE-COMFORT THEME) ══ */
         .modal-desktop {
             width: 1416px !important;
             max-width: 99vw !important;
-            height: 645px !important;
+            height: 655px !important;
             max-height: 98vh !important;
-            background: #f0f0f0 !important;
-            border: 2px solid #334155;
-            border-radius: 6px !important;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.65) !important;
+            background: #f8fafc !important;
+            border: 1px solid #cbd5e1;
+            border-radius: 12px !important;
+            box-shadow: 0 25px 65px -15px rgba(15, 23, 42, 0.4), 0 0 0 1px rgba(15, 23, 42, 0.08) !important;
             overflow: hidden;
             margin: auto !important;
             display: flex !important;
             flex-direction: column !important;
         }
         .desktop-window-titlebar {
-            background: #e2e8f0;
-            border-bottom: 1.5px solid #94a3b8;
+            background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%);
+            border-bottom: 1px solid #334155;
             display: flex;
             align-items: center;
             justify-content: space-between;
-            padding: 3px 10px;
-            height: 28px;
+            padding: 0 14px;
+            height: 32px;
             font-family: var(--ku);
             user-select: none;
             flex-shrink: 0;
         }
         .desktop-window-title {
-            font-size: 13px;
+            font-size: 13.5px;
             font-weight: 800;
-            color: #1e293b;
-            letter-spacing: 0.5px;
+            color: #f1f5f9;
+            letter-spacing: 0.3px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
         }
         .desktop-btn-close {
             background: #dc2626;
             color: #ffffff;
             border: none;
-            width: 34px;
+            width: 32px;
             height: 22px;
             font-size: 13px;
             font-weight: 800;
@@ -929,14 +932,17 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            border-radius: 2px;
-            transition: background 0.15s;
+            border-radius: 4px;
+            transition: all 0.15s ease;
         }
-        .desktop-btn-close:hover { background: #b91c1c; }
+        .desktop-btn-close:hover {
+            background: #b91c1c;
+            transform: scale(1.05);
+        }
         
         .desktop-body-wrapper {
-            padding: 6px 12px 8px;
-            background: #f0f0f0;
+            padding: 8px 14px 10px;
+            background: #f1f5f9;
             flex: 1;
             display: flex;
             flex-direction: column;
@@ -945,11 +951,11 @@
         }
         .desktop-form-container {
             background: #ffffff;
-            border: 1.5px solid #cbd5e1;
-            border-radius: 4px;
-            padding: 8px 18px 8px;
+            border: 1px solid #e2e8f0;
+            border-radius: 10px;
+            padding: 10px 18px 10px;
             font-family: var(--ku);
-            box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+            box-shadow: 0 4px 20px -3px rgba(15, 23, 42, 0.06);
             flex: 1;
             display: flex;
             flex-direction: column;
@@ -957,48 +963,57 @@
             min-height: 0;
         }
         .df-user-badge {
-            background: #ffff4d;
-            border: 1.5px solid #d4d400;
-            color: #000000;
-            font-size: 20px;
+            background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
+            border: 1.5px solid #f59e0b;
+            color: #78350f;
+            font-size: 18px;
             font-weight: 900;
             padding: 1px 14px;
-            min-width: 40px;
+            min-width: 44px;
             text-align: center;
-            border-radius: 3px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.15);
+            border-radius: 6px;
+            box-shadow: 0 2px 4px rgba(245, 158, 11, 0.15);
+            font-family: 'JetBrains Mono', Consolas, monospace;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
         }
         .df-row {
             display: flex;
             align-items: center;
-            gap: 6px;
-            margin-bottom: 4px;
+            gap: 7px;
+            margin-bottom: 5px;
             flex-wrap: nowrap;
         }
         .df-label {
-            font-size: 13px;
+            font-size: 12.5px;
             font-weight: 800;
-            color: #0f172a;
+            color: #334155;
             white-space: nowrap;
             user-select: none;
             font-family: var(--ku);
-            margin-left: 2px;
+            margin-left: 1px;
+            letter-spacing: -0.1px;
         }
         .df-input {
-            height: 27px;
-            padding: 2px 7px;
-            border: 1.5px solid #94a3b8;
-            border-radius: 3px;
+            height: 29px;
+            padding: 2px 9px;
+            border: 1.5px solid #cbd5e1;
+            border-radius: 6px;
             font-size: 13px;
             font-family: var(--ku) !important;
             background: #ffffff;
             outline: none;
-            color: #000000;
-            transition: border-color 0.15s, box-shadow 0.15s;
+            color: #0f172a;
+            transition: all 0.18s ease;
+            box-sizing: border-box;
+        }
+        .df-input:hover {
+            border-color: #94a3b8;
         }
         .df-input:focus {
             border-color: #2563eb;
-            box-shadow: 0 0 0 2px rgba(37,99,235,0.25);
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.16);
             background: #ffffff;
         }
         /* ══ TABLO COMBOBOX (parz) ══════════════════════════════════ */
@@ -1010,11 +1025,12 @@
         }
         .df-combo-input {
             width: 100% !important;
-            height: 27px;
-            padding: 2px 22px 2px 6px !important;
+            height: 29px !important;
+            padding: 2px 10px 2px 24px !important;
             text-align: center;
             font-weight: 700 !important;
             cursor: text;
+            border-radius: 6px !important;
         }
         .df-combo-btn {
             position: absolute;
@@ -1023,38 +1039,40 @@
             transform: translateY(-50%);
             background: none;
             border: none;
-            width: 18px;
-            height: 22px;
+            width: 20px;
+            height: 24px;
             display: flex;
             align-items: center;
             justify-content: center;
-            color: #475569;
+            color: #64748b;
             font-size: 10px;
             cursor: pointer;
             padding: 0;
             z-index: 2;
+            transition: color 0.15s ease;
         }
         .df-combo-btn:hover {
-            color: #1e3a8a;
+            color: #1e40af;
         }
         .df-combo-menu {
             position: absolute;
             top: calc(100% + 2px);
             right: 0;
-            min-width: 190px;
-            max-width: 280px;
+            min-width: 100%;
+            width: max-content;
+            max-width: 320px;
             max-height: 240px;
             overflow-y: auto;
             background: #ffffff;
             border: 1.5px solid #2563eb;
-            border-radius: 4px;
-            box-shadow: 0 8px 24px rgba(0,0,0,0.18);
+            border-radius: 6px;
+            box-shadow: 0 10px 25px -5px rgba(15, 23, 42, 0.15), 0 0 0 1px rgba(37, 99, 235, 0.1);
             z-index: 1000;
             display: none;
             direction: rtl;
         }
         .df-combo-item {
-            padding: 6px 10px;
+            padding: 7px 12px;
             font-size: 13px;
             font-weight: 600;
             color: #1e293b;
@@ -1063,6 +1081,7 @@
             text-align: right;
             transition: background 0.12s, color 0.12s;
             font-family: var(--ku) !important;
+            white-space: nowrap;
         }
         .df-combo-item:hover, .df-combo-item.active {
             background: #2563eb;
@@ -1072,8 +1091,8 @@
             background: #fef08a;
             color: #854d0e;
             font-weight: 800;
-            border-radius: 2px;
-            padding: 0 2px;
+            border-radius: 3px;
+            padding: 0 3px;
         }
         .df-combo-item:hover mark, .df-combo-item.active mark {
             background: transparent;
@@ -1244,35 +1263,48 @@
             vertical-align: middle !important;
         }
         .df-select {
-            height: 27px;
-            padding: 2px 20px 2px 6px;
-            border: 1.5px solid #94a3b8;
-            border-radius: 3px;
+            height: 29px;
+            padding: 2px 22px 2px 8px;
+            border: 1.5px solid #cbd5e1;
+            border-radius: 6px;
             font-size: 13px;
             font-family: var(--ku) !important;
-            background: #ffffff url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2210%22%20height%3D%226%22%20viewBox%3D%220%200%2010%206%22%3E%3Cpath%20d%3D%22M0%200l5%205%205-5z%22%20fill%3D%22%231e293b%22%2F%3E%3C%2Fsvg%3E") no-repeat left 6px center;
+            background: #ffffff url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2210%22%20height%3D%226%22%20viewBox%3D%220%200%2010%206%22%3E%3Cpath%20d%3D%22M0%200l5%205%205-5z%22%20fill%3D%22%23475569%22%2F%3E%3C%2Fsvg%3E") no-repeat left 8px center;
             background-size: 9px 5px;
             outline: none;
-            color: #000000;
+            color: #0f172a;
             -webkit-appearance: none;
             -moz-appearance: none;
             appearance: none;
             cursor: pointer;
-            transition: border-color 0.15s, box-shadow 0.15s;
+            transition: all 0.18s ease;
+            box-sizing: border-box;
+        }
+        .df-select:hover {
+            border-color: #94a3b8;
         }
         .df-select:focus {
             border-color: #2563eb;
-            box-shadow: 0 0 0 2px rgba(37,99,235,0.25);
-            background: #ffffff;
+            box-shadow: 0 0 0 3px rgba(37,99,235,0.16);
+            background-color: #ffffff;
         }
         .df-plate {
-            border-bottom: 3px solid #0055d4 !important;
+            background: #f8fafc !important;
+            border: 1.5px solid #93c5fd !important;
+            border-bottom: 3px solid #2563eb !important;
             text-align: center !important;
             font-weight: 900 !important;
-            font-size: 15.5px !important;
+            font-size: 16px !important;
             direction: ltr !important;
-            font-family: 'Courier New', Courier, monospace !important;
-            letter-spacing: 1px !important;
+            font-family: 'JetBrains Mono', Consolas, monospace !important;
+            letter-spacing: 1.5px !important;
+            border-radius: 6px !important;
+            color: #1e3a8a !important;
+        }
+        .df-plate:focus {
+            background: #ffffff !important;
+            border-color: #2563eb !important;
+            box-shadow: 0 0 0 3px rgba(37,99,235,0.16) !important;
         }
         .c4-kurd {
             direction: rtl !important;
@@ -1280,40 +1312,65 @@
             font-family: var(--ku) !important;
         }
         .df-cyan {
-            background: #cbf5fb !important;
-            border-color: #0284c7 !important;
+            background: #f0fdfa !important;
+            border: 1.5px solid #67e8f9 !important;
+            color: #0e7490 !important;
             font-weight: 800;
+            border-radius: 6px !important;
+        }
+        .df-cyan:focus {
+            background: #ffffff !important;
+            border-color: #0891b2 !important;
+            box-shadow: 0 0 0 3px rgba(8, 145, 178, 0.16) !important;
         }
         .df-pink {
-            background: #ffb6c1 !important;
-            border-color: #f472b6 !important;
+            background: #fdf2f8 !important;
+            border: 1.5px solid #f472b6 !important;
             font-weight: 800;
-            color: #000000 !important;
+            color: #831843 !important;
             text-align: center;
+            border-radius: 6px !important;
+        }
+        .df-pink:focus {
+            background: #ffffff !important;
+            border-color: #db2777 !important;
+            box-shadow: 0 0 0 3px rgba(219, 39, 119, 0.16) !important;
         }
         .df-red-text {
-            color: #dc2626 !important;
-            font-weight: 900 !important;
+            background: #fff5f5 !important;
+            border: 1.5px solid #fca5a5 !important;
+            color: #991b1b !important;
+            font-weight: 800 !important;
             font-size: 14.5px !important;
+            border-radius: 6px !important;
+        }
+        .df-red-text:focus {
+            background: #ffffff !important;
+            border-color: #dc2626 !important;
+            box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.16) !important;
         }
         .df-btn-search {
-            background: linear-gradient(180deg, #fef08a 0%, #facc15 50%, #eab308 100%);
-            border: 1.5px solid #ca8a04;
-            color: #1e293b;
-            font-weight: 900;
+            background: linear-gradient(180deg, #3b82f6 0%, #2563eb 100%);
+            border: 1.5px solid #1d4ed8;
+            color: #ffffff;
+            font-weight: 800;
             font-size: 13px;
             font-family: var(--ku);
-            padding: 2px 16px;
-            height: 27px;
-            border-radius: 3px;
+            padding: 2px 18px;
+            height: 29px;
+            border-radius: 6px;
             cursor: pointer;
             white-space: nowrap;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.12);
-            transition: all 0.15s;
+            box-shadow: 0 2px 4px rgba(37,99,235,0.2);
+            transition: all 0.18s ease;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 4px;
         }
         .df-btn-search:hover {
-            background: linear-gradient(180deg, #fef9c3 0%, #fde047 50%, #facc15 100%);
-            box-shadow: 0 2px 6px rgba(234, 179, 8, 0.4);
+            background: linear-gradient(180deg, #2563eb 0%, #1d4ed8 100%);
+            box-shadow: 0 4px 8px rgba(37, 99, 235, 0.3);
             transform: translateY(-1px);
         }
         .df-btn-search:active { transform: translateY(0); }
@@ -1323,7 +1380,7 @@
             align-items: center;
             justify-content: space-between;
             margin-top: 6px;
-            padding-top: 6px;
+            padding-top: 8px;
             border-top: 1.5px solid #e2e8f0;
             gap: 8px;
             flex-wrap: nowrap;
@@ -1335,82 +1392,87 @@
             flex-wrap: nowrap;
         }
         
-        /* ══ COLORFUL BUTTONS (ڕەنگاو ڕەنگ) ══ */
+        /* ══ COLORFUL BUTTONS (ڕەنگاو ڕەنگ - ئارام و پڕ شکۆ) ══ */
         .btn-df {
-            height: 33px;
-            padding: 3px 16px;
-            border-radius: 4px;
+            height: 35px;
+            padding: 0 18px;
+            border-radius: 6px;
             font-size: 13.5px;
-            font-weight: 900;
+            font-weight: 800;
             font-family: var(--ku);
             cursor: pointer;
-            border: 1.5px solid #64748b;
-            transition: all 0.15s;
+            border: 1px solid transparent;
+            transition: all 0.18s cubic-bezier(0.4, 0, 0.2, 1);
             white-space: nowrap;
             color: #ffffff;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.15);
-            text-shadow: 0 1px 2px rgba(0,0,0,0.4);
+            box-shadow: 0 2px 4px rgba(15, 23, 42, 0.12);
             display: inline-flex;
             align-items: center;
             justify-content: center;
+            gap: 6px;
+            user-select: none;
         }
         .btn-df:hover {
             transform: translateY(-1px);
-            filter: brightness(1.08);
+            box-shadow: 0 4px 10px rgba(15, 23, 42, 0.18);
         }
-        .btn-df:active { transform: translateY(1px); }
+        .btn-df:active { transform: translateY(0); box-shadow: 0 1px 3px rgba(15, 23, 42, 0.12); }
         
-        /* Crimson Red - Save */
+        /* Emerald Green - Save (تۆمار کردنی زانیاری) */
         .btn-df-save, .btn-df-red {
-            background: linear-gradient(180deg, #f43f5e 0%, #e11d48 50%, #be123c 100%);
-            border-color: #9f1239;
-            box-shadow: 0 2px 6px rgba(225, 29, 72, 0.35);
+            background: linear-gradient(180deg, #10b981 0%, #059669 100%);
+            border-color: #047857;
+            box-shadow: 0 2px 5px rgba(5, 150, 105, 0.25);
         }
         .btn-df-save:hover, .btn-df-red:hover {
-            box-shadow: 0 4px 12px rgba(225, 29, 72, 0.5);
+            background: linear-gradient(180deg, #059669 0%, #047857 100%);
+            box-shadow: 0 4px 12px rgba(5, 150, 105, 0.4);
         }
         
-        /* Sky Blue - Print Form 1 */
+        /* Royal Sapphire Blue - Print Form 1 (چاپ کردنی فۆرم) */
         .btn-df-blue, .btn-df-yellow {
-            background: linear-gradient(180deg, #38bdf8 0%, #0284c7 50%, #0369a1 100%);
-            border-color: #075985;
-            box-shadow: 0 2px 6px rgba(2, 132, 199, 0.35);
+            background: linear-gradient(180deg, #3b82f6 0%, #2563eb 100%);
+            border-color: #1d4ed8;
+            box-shadow: 0 2px 5px rgba(37, 99, 235, 0.25);
         }
         .btn-df-blue:hover, .btn-df-yellow:hover {
-            box-shadow: 0 4px 12px rgba(2, 132, 199, 0.5);
+            background: linear-gradient(180deg, #2563eb 0%, #1d4ed8 100%);
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.4);
         }
         
         /* Emerald Green - Print Form 2 */
         .btn-df-green {
-            background: linear-gradient(180deg, #34d399 0%, #059669 50%, #047857 100%);
-            border-color: #065f46;
-            box-shadow: 0 2px 6px rgba(5, 150, 105, 0.35);
+            background: linear-gradient(180deg, #10b981 0%, #059669 100%);
+            border-color: #047857;
+            box-shadow: 0 2px 5px rgba(5, 150, 105, 0.25);
         }
         .btn-df-green:hover {
-            box-shadow: 0 4px 12px rgba(5, 150, 105, 0.5);
+            box-shadow: 0 4px 12px rgba(5, 150, 105, 0.4);
         }
         
-        /* Vivid Purple / Violet - New Record */
+        /* Vivid Soft Violet - New Record (تۆماری نوێ) */
         .btn-df-purple, .btn-df-pink {
-            background: linear-gradient(180deg, #c084fc 0%, #9333ea 50%, #7e22ce 100%);
-            border-color: #6b21a8;
-            box-shadow: 0 2px 6px rgba(147, 51, 234, 0.35);
+            background: linear-gradient(180deg, #8b5cf6 0%, #7c3aed 100%);
+            border-color: #6d28d9;
+            box-shadow: 0 2px 5px rgba(124, 58, 237, 0.25);
         }
         .btn-df-purple:hover, .btn-df-pink:hover {
-            box-shadow: 0 4px 12px rgba(147, 51, 234, 0.5);
+            background: linear-gradient(180deg, #7c3aed 0%, #6d28d9 100%);
+            box-shadow: 0 4px 12px rgba(124, 58, 237, 0.4);
         }
         
-        /* Golden Warm Amber - Update / Correction */
+        /* Golden Warm Amber - Update / Correction (ڕاست کردنەوەی زانیاری) */
         .btn-df-orange, .btn-df-yellow-long {
-            background: linear-gradient(180deg, #fbbf24 0%, #f59e0b 50%, #d97706 100%);
+            background: linear-gradient(180deg, #f59e0b 0%, #d97706 100%);
             border-color: #b45309;
-            color: #0f172a !important;
+            color: #ffffff !important;
             text-shadow: none !important;
-            box-shadow: 0 2px 6px rgba(245, 158, 11, 0.35);
-            padding: 3px 20px;
+            box-shadow: 0 2px 5px rgba(217, 119, 6, 0.25);
+            padding: 0 20px;
         }
         .btn-df-orange:hover, .btn-df-yellow-long:hover {
-            box-shadow: 0 4px 12px rgba(245, 158, 11, 0.5);
+            background: linear-gradient(180deg, #d97706 0%, #b45309 100%);
+            box-shadow: 0 4px 12px rgba(217, 119, 6, 0.4);
         }
 
         /* ─── PRINT STYLES FOR RAPORT DOCUMENT ─── */
@@ -1489,7 +1551,7 @@
         <button class="btn-update-topbar" id="btnTopbarUpdate" onclick="openSystemUpdateModal()" title="پشکنین و نوێکردنەوەی سیستەم">
             <span style="font-size:14px; animation: spin-slow 8s linear infinite; display:inline-block;">🔄</span>
             <span>ئەپدەیت</span>
-            <span class="badge-ver" id="topbarVerBadge">v1.4.7</span>
+            <span class="badge-ver" id="topbarVerBadge">v1.4.8</span>
         </button>
         <button class="btn-out" id="logoutBtn">⬅ دەرچوون</button>
     </div>
@@ -1833,7 +1895,7 @@
                     <!-- 2. Tablo -->
                     <div style="display: flex; align-items: center; gap: 6px;">
                         <span style="font-size: 13.5px; font-weight: 800; color: #0f172a;">تابلۆی</span>
-                        <input list="rapSearchTabloList" id="rapSearchTablo" style="width: 140px; height: 32px; font-size: 13px; font-weight: 800; text-align: center; border: 1.5px solid #7f9db9; background: #fff; border-radius: 3px;" value="سلێمانی" placeholder="تابلۆ..." onkeydown="if(event.key==='Enter'){event.preventDefault();doRaportSearch();}">
+                        <input list="rapSearchTabloList" id="rapSearchTablo" style="width: 180px; height: 32px; font-size: 13px; font-weight: 800; text-align: center; border: 1.5px solid #7f9db9; background: #fff; border-radius: 3px;" value="سلێمانی" placeholder="تابلۆ..." onkeydown="if(event.key==='Enter'){event.preventDefault();doRaportSearch();}">
                         <datalist id="rapSearchTabloList"></datalist>
                     </div>
 
@@ -2022,13 +2084,14 @@
      MODALS FOR THE 11 MODULES
 ════════════════════════════════════════════════════════════════════ -->
 
-<!-- 1. MODAL: REGISTER NEW VEHICLE (EXACT C# WINDOWS FORM REPLICA) -->
+<!-- 1. MODAL: REGISTER NEW VEHICLE (EXACT C# WINDOWS FORM REPLICA - ERGONOMIC EYE-COMFORT DESIGN) -->
 <div class="overlay" id="modalRegister">
     <div class="modal modal-desktop">
         <!-- Windows Form Window Header -->
         <div class="desktop-window-titlebar">
             <div style="display:flex;align-items:center;gap:8px;">
-                <span class="desktop-window-title">ALL</span>
+                <span style="font-size:14px;">🚗</span>
+                <span class="desktop-window-title">ALL - فۆڕمی پشکنین و تۆمارکردنی سوارڕەو</span>
             </div>
             <button class="desktop-btn-close" onclick="closeOverlay('modalRegister')" title="داخستن">✕</button>
         </div>
@@ -2038,35 +2101,35 @@
             
             <div class="desktop-form-container">
                 <!-- TOP BANNER: INSPECTION PLACE IN RIGHT CORNER, CENTER BILINGUAL TITLE, USER BADGE 9 (ROW 0) -->
-                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;padding:2px 4px;">
+                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;padding:3px 8px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;">
                     <!-- RIGHT CORNER: شوێنی پشکنین (Inspection Place) -->
-                    <div style="display:flex;align-items:center;gap:6px;background:#f8fafc;border:1.5px solid #64748b;padding:2px 8px;border-radius:4px;box-shadow:0 1px 3px rgba(0,0,0,0.08);">
-                        <span style="font-size:12.5px;font-weight:800;color:#1e293b;white-space:nowrap;">شوێنی پشکنین:</span>
-                        <input type="text" id="dfD" list="globalPlaceList" style="width:150px;background:#ffffff;font-weight:900;font-size:13px;color:#0f172a;border:1.5px solid #0055d4;border-radius:3px;padding:2px 6px;text-align:center;outline:none;" placeholder="شوێنی پشکنین..." onchange="onGlobalPlaceChange(this.value)">
+                    <div style="display:flex;align-items:center;gap:6px;">
+                        <span style="font-size:12.5px;font-weight:800;color:#334155;white-space:nowrap;">📍 شوێنی پشکنین:</span>
+                        <input type="text" id="dfD" list="globalPlaceList" style="width:150px;background:#ffffff;font-weight:800;font-size:13px;color:#1e3a8a;border:1.5px solid #93c5fd;border-radius:6px;padding:2px 8px;text-align:center;outline:none;" placeholder="شوێنی پشکنین..." onchange="onGlobalPlaceChange(this.value)">
                     </div>
 
                     <!-- CENTER TITLE -->
-                    <div style="text-align:center;font-size:20px;font-weight:900;letter-spacing:0.5px;">
-                        <span style="color:#0033cc;">بەڕێوەبەرایەتی هاتووچۆی پارێزگای سلێمانی</span>
-                        &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
-                        <span style="color:#e60000;">هۆبەی پشکنین</span>
+                    <div style="text-align:center;font-size:17px;font-weight:900;letter-spacing:0.3px;display:flex;align-items:center;gap:10px;">
+                        <span style="color:#1e3a8a;">بەڕێوەبەرایەتی هاتووچۆی پارێزگای سلێمانی</span>
+                        <span style="display:inline-block;width:5px;height:5px;background:#94a3b8;border-radius:50%;"></span>
+                        <span style="color:#991b1b;background:#fff1f2;padding:2px 10px;border-radius:6px;border:1px solid #fecdd3;font-size:15px;">هۆبەی پشکنین</span>
                     </div>
 
                     <!-- LEFT CORNER: USER BADGE -->
-                    <div class="df-user-badge" id="dfUserBadge">9</div>
+                    <div class="df-user-badge" id="dfUserBadge" title="کۆدی بەکارهێنەر">9</div>
                 </div>
 
                 <!-- BARCODE SCANNER ROW (گەڕان بە بارکۆد ڕیدەر لە تەیبڵی ڤی ئەی VA) -->
-                <div style="background: linear-gradient(90deg, #eff6ff, #dbeafe); border: 2px solid #2563eb; border-radius: 6px; padding: 6px 14px; margin-bottom: 8px; display: flex; align-items: center; justify-content: space-between; gap: 12px; box-shadow: 0 2px 5px rgba(37,99,235,0.12);">
+                <div style="background: linear-gradient(135deg, #f0f7ff 0%, #e0f2fe 100%); border: 1.5px solid #93c5fd; border-radius: 8px; padding: 5px 12px; margin-bottom: 6px; display: flex; align-items: center; justify-content: space-between; gap: 12px; box-shadow: 0 2px 6px rgba(37,99,235,0.06);">
                     <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
-                        <span style="font-size:20px; line-height:1;">📷</span>
-                        <label for="dfBarcodeVA" style="font-size:13.5px; font-weight:900; color:#1e40af; cursor:pointer; white-space:nowrap;">گەڕان بە پێ ی بارکۆد ڕیدەر:</label>
-                        <input type="text" id="dfBarcodeVA" class="df-input auto-en-upper" placeholder="بارکۆد لێرە لێبدە..." autocomplete="off" lang="en" dir="ltr" autocapitalize="characters" spellcheck="false" style="width:280px; height:34px; font-size:16px; font-weight:900; text-align:center; border:2px solid #2563eb; border-radius:4px; background:#ffffff; color:#0f172a; outline:none; direction:ltr !important; font-family:'JetBrains Mono', Consolas, monospace !important; text-transform:uppercase;" oninput="this.value = sanitizeEnglishBarcode(this.value);" onchange="onBarcodeVAChange()" onkeydown="if(event.key==='Enter'){event.preventDefault();event.stopPropagation();onBarcodeVAChange();}">
-                        <button type="button" onclick="onBarcodeVAChange()" style="background:#2563eb; color:#ffffff; font-weight:900; font-size:13px; height:34px; padding:0 18px; border:none; border-radius:4px; cursor:pointer; display:flex; align-items:center; gap:6px; box-shadow:0 1px 3px rgba(0,0,0,0.15);">
+                        <span style="font-size:18px; line-height:1;">📷</span>
+                        <label for="dfBarcodeVA" style="font-size:13px; font-weight:800; color:#1e40af; cursor:pointer; white-space:nowrap;">گەڕان بە پێی بارکۆد ڕیدەر:</label>
+                        <input type="text" id="dfBarcodeVA" class="df-input auto-en-upper" placeholder="بارکۆد لێرە لێبدە..." autocomplete="off" lang="en" dir="ltr" autocapitalize="characters" spellcheck="false" style="width:280px; height:32px; font-size:15.5px; font-weight:800; text-align:center; border:1.5px solid #60a5fa; border-radius:6px; background:#ffffff; color:#0f172a; outline:none; direction:ltr !important; font-family:'JetBrains Mono', Consolas, monospace !important; text-transform:uppercase;" oninput="this.value = sanitizeEnglishBarcode(this.value);" onchange="onBarcodeVAChange()" onkeydown="if(event.key==='Enter'){event.preventDefault();event.stopPropagation();onBarcodeVAChange();}">
+                        <button type="button" onclick="onBarcodeVAChange()" style="background:linear-gradient(180deg, #3b82f6 0%, #2563eb 100%); color:#ffffff; font-weight:800; font-size:13px; height:32px; padding:0 18px; border:1px solid #1d4ed8; border-radius:6px; cursor:pointer; display:flex; align-items:center; gap:6px; box-shadow:0 2px 4px rgba(37,99,235,0.2);">
                             <span>🔍 گەڕان بە بارکۆد</span>
                         </button>
                     </div>
-                    <div id="dfBarcodeVASpinner" style="display:none; font-size:13px; font-weight:900; color:#2563eb;">
+                    <div id="dfBarcodeVASpinner" style="display:none; font-size:12.5px; font-weight:800; color:#2563eb;">
                         ⏳ لە وەرگرتنی داتادایە لە تەیبڵی تاقیگە (VA)...
                     </div>
                 </div>
@@ -2077,7 +2140,7 @@
                     <input type="text" id="dfA" class="df-input df-plate auto-en-upper df-vin-font" style="width:175px;font-size:16px;" placeholder="" title="تەنها ژمارە و پیتی ئینگلیزی کەپیتال">
                     
                     <span class="df-label">تابلۆی</span>
-                    <div class="df-combobox" id="dfBWrapper" style="width:130px;">
+                    <div class="df-combobox" id="dfBWrapper" style="width:220px;">
                         <input type="text" id="dfB" class="df-input c4-kurd df-combo-input" autocomplete="off" value="" placeholder="تابلۆ..." title="تەنها لە لیستی فەرمی (parz) قبوڵ دەکرێت">
                         <button type="button" class="df-combo-btn" id="dfBBtn" tabindex="-1" title="بینینی هەموو تابلۆکان">▼</button>
                         <div class="df-combo-menu" id="dfBMenu"></div>
@@ -2090,7 +2153,9 @@
                         <div class="df-combo-menu" id="dfCMenu"></div>
                     </div>
                     
-                    <button type="button" class="df-btn-search" id="dfBtnSearch" onclick="dfSearchCar()">گەڕان</button>
+                    <button type="button" class="df-btn-search" id="dfBtnSearch" onclick="dfSearchCar()">
+                        <span>🔍 گەڕان</span>
+                    </button>
                     
                     <span class="df-label">بۆ</span>
                     <select id="dfTo" class="df-select df-pink" style="width:250px;font-weight:800;">
@@ -2101,7 +2166,7 @@
                         <option value="گشتی هاتووچۆ">گشتی هاتووچۆ</option>
                     </select>
                     
-                    <input type="date" id="dfDD" class="df-input" style="width:145px;margin-right:auto;background:#e2e8f0;color:#334155;cursor:not-allowed;font-weight:700;" disabled readonly title="بەروار بە شێوەی خۆکار وەردەگیرێت (ناکرێت دەستکاری بکرێت)">
+                    <input type="date" id="dfDD" class="df-input" style="width:145px;margin-right:auto;background:#f1f5f9;border-color:#cbd5e1;color:#475569;cursor:not-allowed;font-weight:700;" disabled readonly title="بەروار بە شێوەی خۆکار وەردەگیرێت (ناکرێت دەستکاری بکرێت)">
                 </div>
 
                 <!-- ROW 2 (Barad 1, Barad 2, Transaction Type) -->
@@ -2221,18 +2286,18 @@
                 <!-- ROW 7 (Chassis/VIN: 17, Key Length, Cabin: 17, Barcode, Mobile: 11) -->
                 <div class="df-row" style="width:100%;gap:8px;">
                     <span class="df-label">ژمارەی شاسی</span>
-                    <input type="text" id="dfR" class="df-input df-cyan auto-en-upper df-vin-font" style="flex:2.8;min-width:380px;height:28px;" maxlength="17" placeholder="VIN (17 پیت/ژمارە)" required>
+                    <input type="text" id="dfR" class="df-input df-cyan auto-en-upper df-vin-font" style="flex:2.8;min-width:380px;height:29px;" maxlength="17" placeholder="VIN (17 پیت/ژمارە)" required>
                     
-                    <input type="text" id="dfKeyLength" class="df-input df-vin-font" style="width:48px;height:28px;text-align:center;background:#fef08a;border:1.5px solid #ca8a04;color:#854d0e;cursor:default;" readonly value="0" title="Key Length (ژمارەی پیتەکان - دەبێت 17 بێت)">
+                    <input type="text" id="dfKeyLength" class="df-input df-vin-font" style="width:48px;height:29px;text-align:center;background:#fef9c3;border:1.5px solid #fde047;color:#854d0e;cursor:default;border-radius:6px;font-weight:800;" readonly value="0" title="Key Length (ژمارەی پیتەکان - دەبێت 17 بێت)">
                     
                     <span class="df-label">ژمارەی قەمەرە</span>
-                    <input type="text" id="dfS" class="df-input df-cyan auto-en-upper df-vin-font" style="flex:1.2;min-width:130px;height:28px;color:#0284c7;" maxlength="17" placeholder="قەمەرە (17 پیت)" value="*">
+                    <input type="text" id="dfS" class="df-input df-cyan auto-en-upper df-vin-font" style="flex:1.2;min-width:130px;height:29px;color:#0e7490;" maxlength="17" placeholder="قەمەرە (17 پیت)" value="*">
                     
                     <input type="hidden" id="dfBarcode" value="">
                     <input type="hidden" id="dfStar" value="*">
                     
                     <span class="df-label">ژ.مۆبایل</span>
-                    <input type="text" id="dfT" class="df-input df-red-text df-vin-font" style="flex:1.4;min-width:170px;height:28px;color:#dc2626;" maxlength="11" placeholder="07XXXXXXXXX (11 ژمارە)" value="">
+                    <input type="text" id="dfT" class="df-input df-red-text df-vin-font" style="flex:1.4;min-width:170px;height:29px;color:#991b1b;" maxlength="11" placeholder="07XXXXXXXXX (11 ژمارە)" value="">
                 </div>
 
                 <!-- ROW 8 (Notes) -->
@@ -2242,52 +2307,64 @@
                 </div>
 
                 <!-- ROW 9 (Trailer 1) -->
-                <div class="df-row">
-                    <span class="df-label">جۆری پاشگری یەکەم</span>
-                    <input type="text" id="dfV" class="df-input c4-kurd" style="flex:1;">
-                </div>
-                <div class="df-row">
-                    <span class="df-label">ژمارەی شاسی عەرەبانە</span>
-                    <input type="text" id="dfW" class="df-input auto-en-upper df-vin-font" style="width:280px;height:28px;" value="*">
-                    
-                    <span class="df-label">ڕەنگی</span>
-                    <input type="text" id="dfX" class="df-input c4-kurd" style="width:100px;">
-                    
-                    <div style="flex:1;"></div>
-                    
-                    <span class="df-label">تەن</span>
-                    <input type="number" id="dfY" class="df-input" style="width:70px;text-align:center;" value="0">
-                    <select class="df-select" style="width:36px;padding:0;"></select>
+                <div style="border-top: 1px dashed #e2e8f0; padding-top: 4px; margin-top: 2px;">
+                    <div class="df-row">
+                        <span class="df-label">جۆری پاشگری یەکەم</span>
+                        <input type="text" id="dfV" class="df-input c4-kurd" style="flex:1;">
+                    </div>
+                    <div class="df-row">
+                        <span class="df-label">ژمارەی شاسی عەرەبانە</span>
+                        <input type="text" id="dfW" class="df-input auto-en-upper df-vin-font" style="width:280px;height:28px;" value="*">
+                        
+                        <span class="df-label">ڕەنگی</span>
+                        <input type="text" id="dfX" class="df-input c4-kurd" style="width:100px;">
+                        
+                        <div style="flex:1;"></div>
+                        
+                        <span class="df-label">تەن</span>
+                        <input type="number" id="dfY" class="df-input" style="width:70px;text-align:center;" value="0">
+                        <select class="df-select" style="width:36px;padding:0;"></select>
+                    </div>
                 </div>
 
                 <!-- ROW 10 (Trailer 2) -->
-                <div class="df-row">
-                    <span class="df-label">جۆری پاشگری دووەم</span>
-                    <input type="text" id="dfZ" class="df-input c4-kurd" style="flex:1;">
-                </div>
-                <div class="df-row">
-                    <span class="df-label">ژمارەی شاسی عەرەبانە</span>
-                    <input type="text" id="dfAA" class="df-input auto-en-upper df-vin-font" style="width:280px;height:28px;" value="*">
-                    
-                    <span class="df-label">ڕەنگی</span>
-                    <input type="text" id="dfBB" class="df-input c4-kurd" style="width:100px;">
-                    
-                    <div style="flex:1;"></div>
-                    
-                    <span class="df-label">تەن</span>
-                    <input type="number" id="dfCC" class="df-input" style="width:70px;text-align:center;" value="0">
-                    <select class="df-select" style="width:36px;padding:0;"></select>
+                <div style="border-top: 1px dashed #e2e8f0; padding-top: 4px; margin-top: 2px;">
+                    <div class="df-row">
+                        <span class="df-label">جۆری پاشگری دووەم</span>
+                        <input type="text" id="dfZ" class="df-input c4-kurd" style="flex:1;">
+                    </div>
+                    <div class="df-row">
+                        <span class="df-label">ژمارەی شاسی عەرەبانە</span>
+                        <input type="text" id="dfAA" class="df-input auto-en-upper df-vin-font" style="width:280px;height:28px;" value="*">
+                        
+                        <span class="df-label">ڕەنگی</span>
+                        <input type="text" id="dfBB" class="df-input c4-kurd" style="width:100px;">
+                        
+                        <div style="flex:1;"></div>
+                        
+                        <span class="df-label">تەن</span>
+                        <input type="number" id="dfCC" class="df-input" style="width:70px;text-align:center;" value="0">
+                        <select class="df-select" style="width:36px;padding:0;"></select>
+                    </div>
                 </div>
 
                 <!-- BOTTOM ACTIONS & BARCODE (Right to Left: Barcode -> Yellow long -> Pink -> Green -> Yellow -> Red) -->
                 <div class="df-actions-row">
                     <div class="df-actions-group" style="align-items:center;flex-wrap:wrap;">
-                        <button type="button" id="dfBtnSave" class="btn-df btn-df-save" onclick="dfSaveVehicle()">تۆمار کردنی زانیاری</button>
-                        <button type="button" id="dfBtnPrint" class="btn-df btn-df-blue" onclick="dfPrintInspection()" title="چاپ کردنی فۆرمی پشکنین">چاپ کردنی فۆرم</button>
-                        <button type="button" class="btn-df btn-df-purple" onclick="dfResetNew()">تۆماری نوێ</button>
-                        <button type="button" class="btn-df btn-df-orange" onclick="dfUpdateVehicle()">ڕاست کردنەوەی زانیاری لە کاتی ڕاکێشان و کەم و کورتی</button>
-                        <label style="display:inline-flex;align-items:center;gap:6px;cursor:pointer;font-size:12.5px;font-weight:bold;color:#0f172a;background:#f8fafc;padding:5px 12px;border-radius:4px;border:1.5px solid #cbd5e1;user-select:none;margin-right:4px;" title="لە کاتی کارپێکردن بە دۆخی بێ دایالۆگ (Silent Print) یەکسەر پەڕەکە لە پرنتەرەوە دێتە دەرەوە">
-                            <input type="checkbox" id="dfAutoPrintCheck" checked style="width:17px;height:17px;cursor:pointer;accent-color:#0284c7;">
+                        <button type="button" id="dfBtnSave" class="btn-df btn-df-save" onclick="dfSaveVehicle()">
+                            <span>💾 تۆمار کردنی زانیاری</span>
+                        </button>
+                        <button type="button" id="dfBtnPrint" class="btn-df btn-df-blue" onclick="dfPrintInspection()" title="چاپ کردنی فۆرمی پشکنین">
+                            <span>🖨️ چاپ کردنی فۆرم</span>
+                        </button>
+                        <button type="button" class="btn-df btn-df-purple" onclick="dfResetNew()">
+                            <span>✨ تۆماری نوێ</span>
+                        </button>
+                        <button type="button" class="btn-df btn-df-orange" onclick="dfUpdateVehicle()">
+                            <span>✏️ ڕاست کردنەوەی زانیاری لە کاتی ڕاکێشان و کەم و کورتی</span>
+                        </button>
+                        <label style="display:inline-flex;align-items:center;gap:6px;cursor:pointer;font-size:12.5px;font-weight:700;color:#334155;background:#f8fafc;padding:5px 12px;border-radius:6px;border:1.5px solid #cbd5e1;user-select:none;margin-right:4px;" title="لە کاتی کارپێکردن بە دۆخی بێ دایالۆگ (Silent Print) یەکسەر پەڕەکە لە پرنتەرەوە دێتە دەرەوە">
+                            <input type="checkbox" id="dfAutoPrintCheck" checked style="width:16px;height:16px;cursor:pointer;accent-color:#2563eb;">
                             <span>🖨️ چاپی ڕاستەوخۆ لەکاتی تۆمارکردن</span>
                         </label>
                     </div>
@@ -2300,6 +2377,10 @@
                         <div class="df-barcode-code-text" id="dfBarcodeCodeText">*TC00000000*</div>
                     </div>
                 </div>
+            </div>
+        </div>
+    </div>
+</div>
             </div>
         </div>
     </div>
@@ -2369,7 +2450,7 @@
                         <input type="text" id="gomrgSearchCarN" class="df-input auto-en-upper df-vin-font" style="width: 170px; font-size: 16px; text-align: center; border-color: #f472b6;" placeholder="" autocomplete="off">
 
                         <span class="df-label" style="font-size: 14px; font-weight: 800; margin-right: 8px;">تابلۆی</span>
-                        <input list="gomrgTabloList" id="gomrgSearchPlet" class="df-input c4-kurd" style="width: 150px; text-align: center; font-weight: 800; border-color: #f472b6;" value="سلێمانی" placeholder="تابلۆ..." autocomplete="off">
+                        <input list="gomrgTabloList" id="gomrgSearchPlet" class="df-input c4-kurd" style="width: 180px; text-align: center; font-weight: 800; border-color: #f472b6;" value="سلێمانی" placeholder="تابلۆ..." autocomplete="off">
 
                         <span class="df-label" style="font-size: 14px; font-weight: 800; margin-right: 8px;">بەش</span>
                         <input list="gomrgBashList" id="gomrgSearchBash" class="df-input c4-kurd" style="width: 130px; text-align: center; font-weight: 800; border-color: #f472b6;" value="بار" placeholder="بەش..." autocomplete="off">
@@ -4928,22 +5009,27 @@ async function dfSearchCar() {
         }
 
         if (!r) {
-            // 100% exact match not found: clear all textboxes completely as requested
+            // Keep entered plate/tablo/bash so officer does not lose typed data
+            const enteredPlate = (document.getElementById('dfA') ? document.getElementById('dfA').value : '').trim();
+            const enteredTablo = (document.getElementById('dfB') ? document.getElementById('dfB').value : '').trim();
+            const enteredBash = (document.getElementById('dfC') ? document.getElementById('dfC').value : '').trim();
             loadedVehicleId = null;
             dfResetNew();
             const elA = document.getElementById('dfA');
-            if (elA) elA.value = '';
+            if (elA && enteredPlate) elA.value = enteredPlate;
+            if (enteredTablo && typeof setTabloValue === 'function') setTabloValue(enteredTablo);
+            if (enteredBash && typeof setBashValue === 'function') setBashValue(enteredBash);
             setPrintButtonState(false);
             setSaveButtonState(true);
 
-            showToast('⚠️ ئەم داتایە بەردەست نیە تکایە خۆت پڕی بکەرەوە', true);
+            showToast('⚠️ ئەم داتایە لە تاقیگە بەردەست نییە، تکایە خۆت خانەکان پڕبکەرەوە', true);
             const regAlert = document.getElementById('regAlert');
             if (regAlert) {
                 regAlert.innerHTML = `
                     <div class="alert-box alert-warning" style="display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 14px;border-radius:6px;font-weight:700;font-size:14.5px;background:#fef3c7;border:1.5px solid #f59e0b;color:#92400e;box-shadow:0 2px 4px rgba(0,0,0,0.06);margin-bottom:12px;">
                         <div style="display:flex;align-items:center;gap:10px;">
                             <span style="font-size:20px;line-height:1;">⚠️</span>
-                            <span>ئەم داتایە بەردەست نیە تکایە خۆت پڕی بکەرەوە</span>
+                            <span>ئەم داتایە لە تاقیگە بەردەست نییە، تکایە خۆت خانەکان پڕبکەرەوە</span>
                         </div>
                         <button type="button" onclick="closeRegAlert()" style="background:transparent;border:none;color:#92400e;font-size:18px;font-weight:900;cursor:pointer;padding:2px 8px;border-radius:4px;line-height:1;transition:background 0.2s;" onmouseover="this.style.background='rgba(0,0,0,0.08)'" onmouseout="this.style.background='transparent'" title="داخستن">✕</button>
                     </div>
@@ -4952,8 +5038,13 @@ async function dfSearchCar() {
             return;
         }
 
-        // Populate fields safely
-        loadedVehicleId = r.id;
+        // Populate fields safely - ONLY link loadedVehicleId if it already exists in T1 table!
+        if (r.source === 'T1') {
+            loadedVehicleId = r.id;
+        } else {
+            // Data is from Taqega (VA), NOT yet in T1 - must not point to an unrelated T1 id!
+            loadedVehicleId = null;
+        }
         const set = (id, v) => {
             const el = document.getElementById(id);
             if (!el) return;
@@ -5129,29 +5220,94 @@ function validateRegistrationForm() {
             return false;
         }
 
-        if (f.id === 'dfR' && val.length !== 17) {
-            const msg = `ژمارەی شاسی دەبێت بە تەواوی ١٧ پیت و ژمارە بێت (ئێستا ${val.length} پیتە)`;
-            showToast(`⛔ ${msg}`, true);
-            const regAlert = document.getElementById('regAlert');
-            if (regAlert) {
-                regAlert.innerHTML = `
-                    <div class="alert-box alert-danger" style="display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 16px;border-radius:6px;font-weight:800;font-size:15px;background:#fef2f2;border:1.5px solid #ef4444;color:#991b1b;box-shadow:0 2px 4px rgba(0,0,0,0.06);margin-bottom:12px;">
-                        <div style="display:flex;align-items:center;gap:10px;">
-                            <span style="font-size:22px;line-height:1;">⛔</span>
-                            <span>${msg}</span>
+        if (f.id === 'dfR') {
+            const vinClean = val.toUpperCase().replace(/\s+/g, '');
+            if (vinClean.length !== 17) {
+                const msg = `ژمارەی شاسی دەبێت بە تەواوی ١٧ پیت و ژمارە بێت (ئێستا ${vinClean.length} پیتە)`;
+                showToast(`⛔ ${msg}`, true);
+                const regAlert = document.getElementById('regAlert');
+                if (regAlert) {
+                    regAlert.innerHTML = `
+                        <div class="alert-box alert-danger" style="display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 16px;border-radius:6px;font-weight:800;font-size:15px;background:#fef2f2;border:1.5px solid #ef4444;color:#991b1b;box-shadow:0 2px 4px rgba(0,0,0,0.06);margin-bottom:12px;">
+                            <div style="display:flex;align-items:center;gap:10px;">
+                                <span style="font-size:22px;line-height:1;">⛔</span>
+                                <span>${msg}</span>
+                            </div>
+                            <button type="button" onclick="closeRegAlert()" style="background:transparent;border:none;color:#991b1b;font-size:20px;font-weight:900;cursor:pointer;padding:2px 8px;border-radius:4px;line-height:1;" title="داخستن">✕</button>
                         </div>
-                        <button type="button" onclick="closeRegAlert()" style="background:transparent;border:none;color:#991b1b;font-size:20px;font-weight:900;cursor:pointer;padding:2px 8px;border-radius:4px;line-height:1;" title="داخستن">✕</button>
-                    </div>
-                `;
-                regAlert.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                    `;
+                    regAlert.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                }
+                if (el) {
+                    el.classList.add('df-invalid-shake');
+                    el.focus();
+                    if (el.select) el.select();
+                    setTimeout(() => el.classList.remove('df-invalid-shake'), 700);
+                }
+                return false;
             }
-            if (el) {
-                el.classList.add('df-invalid-shake');
-                el.focus();
-                if (el.select) el.select();
-                setTimeout(() => el.classList.remove('df-invalid-shake'), 700);
+            if (/[IOQ]/i.test(vinClean)) {
+                const msg = `ژمارەی شاسی نابێت پیتی (I, O, Q)ی تێدابێت بەپێی ستانداردی نێودەوڵەتی VIN`;
+                showToast(`⛔ ${msg}`, true);
+                const regAlert = document.getElementById('regAlert');
+                if (regAlert) {
+                    regAlert.innerHTML = `
+                        <div class="alert-box alert-danger" style="display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 16px;border-radius:6px;font-weight:800;font-size:15px;background:#fef2f2;border:1.5px solid #ef4444;color:#991b1b;box-shadow:0 2px 4px rgba(0,0,0,0.06);margin-bottom:12px;">
+                            <div style="display:flex;align-items:center;gap:10px;">
+                                <span style="font-size:22px;line-height:1;">⛔</span>
+                                <span>${msg}</span>
+                            </div>
+                            <button type="button" onclick="closeRegAlert()" style="background:transparent;border:none;color:#991b1b;font-size:20px;font-weight:900;cursor:pointer;padding:2px 8px;border-radius:4px;line-height:1;" title="داخستن">✕</button>
+                        </div>
+                    `;
+                    regAlert.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                }
+                if (el) {
+                    el.classList.add('df-invalid-shake');
+                    el.focus();
+                    if (el.select) el.select();
+                    setTimeout(() => el.classList.remove('df-invalid-shake'), 700);
+                }
+                return false;
             }
-            return false;
+            if (!/^[A-HJ-NPR-Z0-9]{17}$/i.test(vinClean)) {
+                const msg = `ژمارەی شاسی دەبێت تەنها پیتی ئینگلیزی و ژمارە بێت بەبێ هێما یان فۆنتی نادروست`;
+                showToast(`⛔ ${msg}`, true);
+                if (el) {
+                    el.classList.add('df-invalid-shake');
+                    el.focus();
+                    setTimeout(() => el.classList.remove('df-invalid-shake'), 700);
+                }
+                return false;
+            }
+        }
+
+        if (f.id === 'dfT') {
+            const cleanPhone = val.replace(/[^0-9]/g, '');
+            if (cleanPhone.length !== 11 || !cleanPhone.startsWith('07')) {
+                const msg = `ژمارەی مۆبایل دەبێت بە تەواوی ١١ ژمارە بێت و بە 07 دەستپێبکات (وەک 07701234567)`;
+                showToast(`⛔ ${msg}`, true);
+                const regAlert = document.getElementById('regAlert');
+                if (regAlert) {
+                    regAlert.innerHTML = `
+                        <div class="alert-box alert-danger" style="display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 16px;border-radius:6px;font-weight:800;font-size:15px;background:#fef2f2;border:1.5px solid #ef4444;color:#991b1b;box-shadow:0 2px 4px rgba(0,0,0,0.06);margin-bottom:12px;">
+                            <div style="display:flex;align-items:center;gap:10px;">
+                                <span style="font-size:22px;line-height:1;">⛔</span>
+                                <span>${msg}</span>
+                            </div>
+                            <button type="button" onclick="closeRegAlert()" style="background:transparent;border:none;color:#991b1b;font-size:20px;font-weight:900;cursor:pointer;padding:2px 8px;border-radius:4px;line-height:1;" title="داخستن">✕</button>
+                        </div>
+                    `;
+                    regAlert.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+                }
+                if (el) {
+                    el.classList.add('df-invalid-shake');
+                    el.focus();
+                    if (el.select) el.select();
+                    setTimeout(() => el.classList.remove('df-invalid-shake'), 700);
+                }
+                return false;
+            }
         }
     }
 
@@ -5180,6 +5336,14 @@ async function dfSaveVehicle() {
     if (!validateRegistrationForm()) {
         return;
     }
+
+    // Immediately disable save button to prevent accidental double-clicks / concurrent requests
+    if (saveBtn) {
+        saveBtn.disabled = true;
+        saveBtn.dataset.origText = saveBtn.innerText;
+        saveBtn.innerText = '⏳ لە تۆمارکردندایە...';
+    }
+
     const payload = getFormPayload();
 
     try {
@@ -5230,6 +5394,12 @@ async function dfSaveVehicle() {
                 if (data.isHijz) {
                     showHijzRedAlert({ message: data.message, hijz: {} });
                 }
+            } else {
+                // Re-enable save button on transient error so officer can correct and retry
+                if (saveBtn) {
+                    saveBtn.disabled = false;
+                    saveBtn.innerText = saveBtn.dataset.origText || 'تۆمار کردنی زانیاری';
+                }
             }
             const errMsg = data.message || data.error || 'هەڵە لە کاتی تۆمارکردن';
             showToast('⚠️ ' + errMsg, true);
@@ -5239,6 +5409,10 @@ async function dfSaveVehicle() {
         }
     } catch(err) {
         setPrintButtonState(false);
+        if (saveBtn) {
+            saveBtn.disabled = false;
+            saveBtn.innerText = saveBtn.dataset.origText || 'تۆمار کردنی زانیاری';
+        }
         console.error('Save error:', err);
         showToast('⚠️ کێشەی پەیوەندی بە سێرڤەر', true);
     }
@@ -5246,7 +5420,7 @@ async function dfSaveVehicle() {
 
 async function dfUpdateVehicle() {
     if (!loadedVehicleId) {
-        alert('تکایە سەرەتا بە دوگمەی گەڕان ئوتومبێلەکە بدۆزەرەوە، یان ژمارەکەی بنووسە و گەڕان بکە پێش ڕاستکردنەوە.');
+        alert('⚠️ تکایە سەرەتا بە دوگمەی گەڕان ئوتومبێلێکی پێشتر تۆمارکراو لە سیستەم (T1) بدۆزەرەوە پێش ڕاستکردنەوە.');
         return;
     }
     if (!validateRegistrationForm()) {
@@ -5307,7 +5481,7 @@ function getFormPayload() {
         P: num('dfP'),
         Q: num('dfQ'),
         R: val('dfR').toUpperCase(),
-        S: num('dfS'),
+        S: val('dfS') || '*',
         T: val('dfT'),
         U: val('dfU'),
         V: val('dfV'),
@@ -5366,6 +5540,16 @@ function generateCode128SVG(text, height = 26) {
     }
     const totalW = x + 24;
     return '<svg width="' + totalW + '" height="' + height + '" viewBox="-12 0 ' + totalW + ' ' + height + '" xmlns="http://www.w3.org/2000/svg" style="display:block;margin:auto;"><rect x="-12" y="0" width="' + totalW + '" height="' + height + '" fill="#ffffff"/>' + bars + '</svg>';
+}
+
+function escapeHtml(str) {
+    if (str === null || str === undefined) return '';
+    return String(str)
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
 }
 
 async function dfPrintInspection() {
@@ -5727,11 +5911,11 @@ async function dfPrintInspection() {
                     <!-- Left: Date / Time -->
                     <div class="rdlc-datetime-box">
                         <div class="rdlc-datetime-sub">
-                            <span>${dateStr}</span>
+                            <span>${escapeHtml(dateStr)}</span>
                             <span>/ بەروار</span>
                         </div>
                         <div class="rdlc-datetime-sub">
-                            <span style="direction:ltr;">${timeStr}</span>
+                            <span style="direction:ltr;">${escapeHtml(timeStr)}</span>
                             <span>/ کات</span>
                         </div>
                     </div>
@@ -5742,7 +5926,7 @@ async function dfPrintInspection() {
                             فۆڕمی پشکنینی سوار ڕەو
                         </div>
                         <div class="rdlc-to-box">
-                            بۆ/ بەڕێوەبەرایەتی ${toDirectorate}
+                            بۆ/ بەڕێوەبەرایەتی ${escapeHtml(toDirectorate)}
                         </div>
                     </div>
 
@@ -5763,7 +5947,7 @@ async function dfPrintInspection() {
 
                     <!-- Right: Inspection Place -->
                     <div class="rdlc-place-box">
-                        <span class="rdlc-border-box">${placeName}</span>
+                        <span class="rdlc-border-box">${escapeHtml(placeName)}</span>
                         <span>شوێنی پشکنین</span>
                     </div>
                 </div>
@@ -5771,11 +5955,11 @@ async function dfPrintInspection() {
                 <!-- 3. FEES ROW -->
                 <div class="rdlc-fees-row">
                     <div class="rdlc-fee-item">
-                        <div class="rdlc-fee-val">${p.JJ || 0}</div>
+                        <div class="rdlc-fee-val">${escapeHtml(p.JJ || 0)}</div>
                         <div class="rdlc-fee-label">بڕی پارەی رسومات</div>
                     </div>
                     <div class="rdlc-fee-item">
-                        <div class="rdlc-fee-val">${p.II || 0}</div>
+                        <div class="rdlc-fee-val">${escapeHtml(p.II || 0)}</div>
                         <div class="rdlc-fee-label">بڕی پارەی پشکنین</div>
                     </div>
                 </div>
@@ -5794,84 +5978,84 @@ async function dfPrintInspection() {
 
                     <!-- Row 1: جۆری مامەڵە (6 cols value + 1 col header = 7) -->
                     <tr>
-                        <td colspan="6" class="rdlc-val" style="font-size:14.5px;">${p.H || 'تۆماری یەکەم جار'}</td>
+                        <td colspan="6" class="rdlc-val" style="font-size:14.5px;">${escapeHtml(p.H || 'تۆماری یەکەم جار')}</td>
                         <td class="rdlc-th">جۆری مامەڵە</td>
                     </tr>
 
                     <!-- Row 2: ژمارەی ئوتومبێل (T, C, B, A + Header = 2 + 1 + 1 + 2 + 1 = 7) -->
                     <tr>
-                        <td colspan="2" class="rdlc-val rdlc-mono">${p.T || ''}</td>
-                        <td class="rdlc-val">${p.C || 'تایبەت'}</td>
-                        <td class="rdlc-val">${p.B || 'سلێمانی'}</td>
-                        <td colspan="2" class="rdlc-val" style="font-size: 16.5px;">${p.A || ''}</td>
+                        <td colspan="2" class="rdlc-val rdlc-mono">${escapeHtml(p.T || '')}</td>
+                        <td class="rdlc-val">${escapeHtml(p.C || 'تایبەت')}</td>
+                        <td class="rdlc-val">${escapeHtml(p.B || 'سلێمانی')}</td>
+                        <td colspan="2" class="rdlc-val" style="font-size: 16.5px;">${escapeHtml(p.A || '')}</td>
                         <td class="rdlc-th">ژمارەی ئوتومبێل</td>
                     </tr>
 
                     <!-- Row 3: ناوی خاوەن ساڵانە (6 cols value + 1 col header = 7) -->
                     <tr>
-                        <td colspan="6" class="rdlc-val" style="font-size:15px;">${p.G || ''}</td>
+                        <td colspan="6" class="rdlc-val" style="font-size:15px;">${escapeHtml(p.G || '')}</td>
                         <td class="rdlc-th">ناوی خاوەن ساڵانە</td>
                     </tr>
 
                     <!-- Row 4: جۆری ئوتومبێل (6 cols value + 1 col header = 7) -->
                     <tr>
-                        <td colspan="6" class="rdlc-val">${p.I || ''}</td>
+                        <td colspan="6" class="rdlc-val">${escapeHtml(p.I || '')}</td>
                         <td class="rdlc-th">جۆری ئوتومبێل</td>
                     </tr>
 
                     <!-- Row 5: ژمارەی شاسی (6 cols value + 1 col header = 7) -->
                     <tr>
-                        <td colspan="6" class="rdlc-val rdlc-mono" style="font-size: 16.5px; letter-spacing: 2px;">${p.R || ''}</td>
+                        <td colspan="6" class="rdlc-val rdlc-mono" style="font-size: 16.5px; letter-spacing: 2px;">${escapeHtml(p.R || '')}</td>
                         <td class="rdlc-th">ژمارەی شاسی</td>
                     </tr>
 
                     <!-- Row 6: ژمارەی قەمەرە (6 cols value + 1 col header = 7) -->
                     <tr>
-                        <td colspan="6" class="rdlc-val rdlc-mono">${p.S || '0'}</td>
+                        <td colspan="6" class="rdlc-val rdlc-mono">${escapeHtml(p.S || '0')}</td>
                         <td class="rdlc-th">ژمارەی قەمەرە</td>
                     </tr>
 
                     <!-- Row 7: Specifications Top Sub-row ([N] | دەرگا | گێڕ | [L] | ڕەنگ | [O] | سلندەر = 7 cols) -->
                     <tr>
-                        <td class="rdlc-val">${p.N || '0'}</td>
+                        <td class="rdlc-val">${escapeHtml(p.N || '0')}</td>
                         <td class="rdlc-th">ژمارەی دەرگا</td>
                         <td class="rdlc-th">جۆری گێڕ</td>
-                        <td class="rdlc-val">${p.L || ''}</td>
+                        <td class="rdlc-val">${escapeHtml(p.L || '')}</td>
                         <td class="rdlc-th">ڕەنگی ئوتومبێل</td>
-                        <td class="rdlc-val">${p.O || '0'}</td>
+                        <td class="rdlc-val">${escapeHtml(p.O || '0')}</td>
                         <td class="rdlc-th">ژمارەی سلندەر</td>
                     </tr>
 
                     <!-- Row 8: Specifications Bottom Sub-row ([Q] | سەرنشین | [M] | [K] | سووتەمەنی | [P] | مۆدێل = 7 cols) -->
                     <tr>
-                        <td class="rdlc-val">${p.Q || '0'}</td>
+                        <td class="rdlc-val">${escapeHtml(p.Q || '0')}</td>
                         <td class="rdlc-th">ژمارەی سەرنشین</td>
-                        <td class="rdlc-val">${p.M || 'ئۆتۆماتیک'}</td>
-                        <td class="rdlc-val">${p.K || 'بەنزین'}</td>
+                        <td class="rdlc-val">${escapeHtml(p.M || 'ئۆتۆماتیک')}</td>
+                        <td class="rdlc-val">${escapeHtml(p.K || 'بەنزین')}</td>
                         <td class="rdlc-th">سووتەمەنی</td>
-                        <td class="rdlc-val">${p.P || '0'}</td>
+                        <td class="rdlc-val">${escapeHtml(p.P || '0')}</td>
                         <td class="rdlc-th">مۆدێل</td>
                     </tr>
 
                     <!-- Row 9: Trailer 1 (7 cols) -->
                     <tr>
-                        <td class="rdlc-val">${p.Y || '0'}</td>
+                        <td class="rdlc-val">${escapeHtml(p.Y || '0')}</td>
                         <td class="rdlc-th">طن</td>
-                        <td class="rdlc-val">${p.X || '*'}</td>
+                        <td class="rdlc-val">${escapeHtml(p.X || '*')}</td>
                         <td class="rdlc-th">ڕەنگ</td>
-                        <td class="rdlc-val rdlc-mono">${p.W || '*'}</td>
-                        <td class="rdlc-val">${p.V || '*'}</td>
+                        <td class="rdlc-val rdlc-mono">${escapeHtml(p.W || '*')}</td>
+                        <td class="rdlc-val">${escapeHtml(p.V || '*')}</td>
                         <td class="rdlc-th">پاشگر(عەرەبانە)1</td>
                     </tr>
 
                     <!-- Row 10: Trailer 2 (7 cols) -->
                     <tr>
-                        <td class="rdlc-val">${p.CC || '0'}</td>
+                        <td class="rdlc-val">${escapeHtml(p.CC || '0')}</td>
                         <td class="rdlc-th">طن</td>
-                        <td class="rdlc-val">${p.BB || '*'}</td>
+                        <td class="rdlc-val">${escapeHtml(p.BB || '*')}</td>
                         <td class="rdlc-th">ڕەنگ</td>
-                        <td class="rdlc-val rdlc-mono">${p.AA || '*'}</td>
-                        <td class="rdlc-val">${p.Z || '*'}</td>
+                        <td class="rdlc-val rdlc-mono">${escapeHtml(p.AA || '*')}</td>
+                        <td class="rdlc-val">${escapeHtml(p.Z || '*')}</td>
                         <td class="rdlc-th">پاشگر(عەرەبانە)2</td>
                     </tr>
 
@@ -5889,7 +6073,7 @@ async function dfPrintInspection() {
                     <!-- Row 12: Notes (6 cols value + 1 col header = 7) -->
                     <tr>
                         <td colspan="6" class="rdlc-val" style="text-align: right; padding: 6px 12px; min-height: 45px; font-size: 13px; direction: rtl;">
-                            ${p.U || ''}
+                            ${escapeHtml(p.U || '')}
                         </td>
                         <td class="rdlc-th" style="vertical-align: middle; font-size: 14px;">تێبینی یەکان</td>
                     </tr>
@@ -5910,16 +6094,16 @@ async function dfPrintInspection() {
                     <!-- 6. VERIFICATION LINE -->
                     <div class="rdlc-verify-line">
                         <div class="rdlc-verify-sub">
-                            <span class="rdlc-border-box">${p.F || '*'}</span>
+                            <span class="rdlc-border-box">${escapeHtml(p.F || '*')}</span>
                         </div>
 
                         <div class="rdlc-verify-sub">
-                            <span class="rdlc-border-box">${p.E || ''}</span>
+                            <span class="rdlc-border-box">${escapeHtml(p.E || '')}</span>
                             <span style="font-weight:800;font-size:13px;">پشکنینی بۆ کراوە لە لایەن بەڕادی هاتووچۆ</span>
                         </div>
 
                         <div class="rdlc-verify-sub">
-                            <span class="rdlc-border-box">${userName}</span>
+                            <span class="rdlc-border-box">${escapeHtml(userName)}</span>
                             <span style="font-weight:800;font-size:13px;">ڕێکخەری فۆڕم</span>
                         </div>
                     </div>
@@ -8354,14 +8538,14 @@ function showSuspDetail(data) {
 }
 
 // ─── 12. SYSTEM AUTO-UPDATER & VERSION LOGIC ─────────────────────────────
-let currentAppVersion = '1.4.7';
+let currentAppVersion = '1.4.8';
 
 async function loadSystemVersion() {
     try {
         const res = await fetch('/api/system/version');
         if (res.ok) {
             const data = await res.json();
-            currentAppVersion = data.version || '1.4.7';
+            currentAppVersion = data.version || '1.4.8';
             const verStr = `v${currentAppVersion}`;
             const topBadge = document.getElementById('topbarVerBadge');
             if (topBadge) topBadge.textContent = verStr;
