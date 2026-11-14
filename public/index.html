@@ -1555,7 +1555,7 @@
         <button class="btn-update-topbar" id="btnTopbarUpdate" onclick="openSystemUpdateModal()" title="پشکنین و نوێکردنەوەی سیستەم">
             <span style="font-size:14px; animation: spin-slow 8s linear infinite; display:inline-block;">🔄</span>
             <span>ئەپدەیت</span>
-            <span class="badge-ver" id="topbarVerBadge">v1.5.0</span>
+            <span class="badge-ver" id="topbarVerBadge">v1.5.1</span>
         </button>
         <button class="btn-out" id="logoutBtn">⬅ دەرچوون</button>
     </div>
@@ -2852,7 +2852,7 @@
                 <span>نوێکردنەوەی سیستەمی بەرنامە (System Auto-Updater)</span>
             </div>
             <div style="display:flex; align-items:center; gap:10px;">
-                <span style="background: rgba(56, 189, 248, 0.2); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.4); padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 800;" id="updateModalVersionBadge">v1.5.0</span>
+                <span style="background: rgba(56, 189, 248, 0.2); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.4); padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 800;" id="updateModalVersionBadge">v1.5.1</span>
                 <button class="modal-close" style="color: #ffffff;" onclick="closeOverlay('modalSystemUpdate')">✕</button>
             </div>
         </div>
@@ -4044,12 +4044,11 @@ function initBashCombobox(items) {
         hideMenu();
         input.classList.remove('df-invalid-shake');
 
-        // Immediately focus Search button and trigger Search event!
+        // Focus Search button or next element without triggering automatic search
         const btnSearch = document.getElementById('dfBtnSearch') || document.querySelector('.df-btn-search');
         if (btnSearch) {
             btnSearch.focus();
         }
-        dfSearchCar();
     }
 
     function validateAndEnforce() {
@@ -4131,7 +4130,6 @@ function initBashCombobox(items) {
                     hideMenu();
                     const btnSearch = document.getElementById('dfBtnSearch') || document.querySelector('.df-btn-search');
                     if (btnSearch) btnSearch.focus();
-                    dfSearchCar();
                 }
             } else if (e.key === 'Tab') {
                 if (activeBashIndex >= 0 && items[activeBashIndex]) {
@@ -4142,7 +4140,6 @@ function initBashCombobox(items) {
                     hideMenu();
                     const btnSearch = document.getElementById('dfBtnSearch') || document.querySelector('.df-btn-search');
                     if (btnSearch) btnSearch.focus();
-                    dfSearchCar();
                 }
             } else if (e.key === 'Escape') {
                 hideMenu();
@@ -4155,7 +4152,6 @@ function initBashCombobox(items) {
                 validateAndEnforce();
                 const btnSearch = document.getElementById('dfBtnSearch') || document.querySelector('.df-btn-search');
                 if (btnSearch) btnSearch.focus();
-                dfSearchCar();
             }
         }
     });
@@ -4936,6 +4932,113 @@ async function onBarcodeVAChange() {
     }
 }
 
+function populateRegistrationFields(r, fallbackPlate = '', fallbackTablo = '', fallbackBash = '') {
+    if (!r) return;
+    if (r.source === 'T1' || r.id) {
+        loadedVehicleId = r.id;
+    } else {
+        loadedVehicleId = null;
+    }
+    const set = (id, v) => {
+        const el = document.getElementById(id);
+        if (!el) return;
+        let val = (v !== null && v !== undefined) ? String(v).trim() : '';
+        if (el.tagName === 'SELECT') {
+            let opt = Array.from(el.options).find(o => o.value === val);
+            if (!opt && val) {
+                const normVal = val.replace(/ى/g, 'ی').replace(/ك/g, 'ک');
+                opt = Array.from(el.options).find(o => o.value.replace(/ى/g, 'ی').replace(/ك/g, 'ک') === normVal);
+                if (opt) val = opt.value;
+            }
+            if (!opt && val) {
+                opt = document.createElement('option');
+                opt.value = val;
+                opt.textContent = val;
+                el.appendChild(opt);
+            }
+            el.value = val;
+        } else {
+            el.value = val;
+        }
+    };
+
+    set('dfA', r.A || fallbackPlate);
+    set('dfB', r.B || fallbackTablo || '');
+    if (typeof setTabloValue === 'function') setTabloValue(r.B || fallbackTablo || '');
+    set('dfC', r.C || fallbackBash || '');
+    if (typeof setBashValue === 'function') setBashValue(r.C || fallbackBash || '');
+    set('dfTo', (r.To && (r.To.includes('هاتووچۆ') || r.To.includes('پارێزگا'))) ? r.To : 'هاتووچۆی پارێزگای سلێمانی');
+    if (r.E && r.E.trim() !== '') {
+        set('dfE', r.E);
+    } else {
+        const curB = document.getElementById('dfE') ? document.getElementById('dfE').value : '';
+        if (curB) set('dfE', curB);
+    }
+    set('dfF', r.F || '*');
+    set('dfG', r.G || '');
+    set('dfH', r.H || 'تۆماری یەکەم جار');
+    set('dfI', r.I || '');
+    set('dfJ', r.J || 'صالون');
+    set('dfK', r.K || 'بەنزین');
+    set('dfL', r.L || '');
+    set('dfM', r.M || 'ئۆتۆماتیک');
+    set('dfN', r.N || 0);
+    set('dfO', r.O || 0);
+    set('dfP', r.P || 0);
+    set('dfQ', r.Q || 0);
+    set('dfR', r.R || '');
+    updateKeyLength();
+
+    const bEl = document.getElementById('dfBarcode');
+    if (r.source === 'Taqega') {
+        let code = generateUniqueBarcode();
+        if (bEl) {
+            bEl.value = code.substring(0, 10);
+            bEl.dataset.autoGen = 'true';
+        }
+        renderLiveBarcode(code);
+        setPrintButtonState(false);
+    } else {
+        const code = (r.KK || r.Barcod || (r.R ? generateUniqueBarcode() : 'TC00000000')).substring(0, 10);
+        if (bEl) {
+            bEl.value = code;
+            bEl.dataset.autoGen = 'false';
+        }
+        renderLiveBarcode(code);
+        const isToday = r.DD && (new Date(r.DD).toDateString() === new Date().toDateString());
+        setPrintButtonState(isToday);
+    }
+
+    set('dfS', r.S || 0);
+    set('dfStar', '*');
+    set('dfT', (r.T && String(r.T).trim() !== '0') ? r.T : '');
+
+    if (r.source === 'Taqega' || r.source === 'VA') {
+        set('dfU', '');
+        set('dfII', 0);
+    } else {
+        set('dfU', r.U || '');
+        set('dfII', r.II || 0);
+    }
+
+    set('dfV', r.V || '');
+    set('dfW', r.W || '*');
+    set('dfX', r.X || '');
+    set('dfY', r.Y || 0);
+    set('dfZ', r.Z || '');
+    set('dfAA', r.AA || '*');
+    set('dfBB', r.BB || '');
+    set('dfCC', r.CC || 0);
+    if (r.source === 'Taqega' || (r.H && r.H !== 'تۆماری یەکەم جار')) {
+        set('dfJJ', '0');
+    } else {
+        set('dfJJ', r.JJ || '0');
+    }
+    if (r.DD) {
+        set('dfDD', new Date(r.DD).toISOString().slice(0, 10));
+    }
+}
+
 async function dfSearchCar() {
     const plate = document.getElementById('dfA').value.trim();
     const tablo = document.getElementById('dfB').value.trim();
@@ -4988,28 +5091,52 @@ async function dfSearchCar() {
 
         // ─── CHECK ALREADY REGISTERED IN T1 ───
         if (r && r.alreadyRegistered) {
-            loadedVehicleId = r.id || null;
-            dfResetNew();
-            const elA = document.getElementById('dfA');
-            if (elA) elA.value = '';
-            setPrintButtonState(false);
-            setSaveButtonState(false, 'ئەم ئۆتۆمبێلە پێشتر تۆمارکراوە (دووبارەیە) - تۆمارکردن ناچالاک کراوە');
-
             const dateStr = r.date || 'نەزانراو';
-            showToast(`⚠️ ئەم فۆرمە پێشتر کراوە لە بەرواری (${dateStr}) - تۆمارکردن ناچالاک کرا`, true);
-            const regAlert = document.getElementById('regAlert');
-            if (regAlert) {
-                regAlert.innerHTML = `
-                    <div class="alert-box alert-warning" style="display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 16px;border-radius:6px;font-weight:800;font-size:15px;background:#fef3c7;border:1.5px solid #f59e0b;color:#92400e;box-shadow:0 2px 4px rgba(0,0,0,0.06);margin-bottom:12px;">
-                        <div style="display:flex;align-items:center;gap:10px;">
-                            <span style="font-size:22px;line-height:1;">⛔</span>
-                            <span>ئەم فۆرمە پێشتر کراوە لە بەرواری (${dateStr}) — دوگمەی تۆمارکردن ناچالاک کرا</span>
+            const isToday = r.isToday || (r.DD && new Date(r.DD).toDateString() === new Date().toDateString());
+
+            if (isToday) {
+                // Vehicle was already registered TODAY: load complete record, enable print, disable save
+                populateRegistrationFields(r, plate, tablo, bash);
+                loadedVehicleId = r.id || null;
+                setPrintButtonState(true);
+                setSaveButtonState(false, 'ئەم ئۆتۆمبێلە پێشتر ئەمڕۆ تۆمارکراوە - تۆمارکردن ناچالاک کراوە');
+
+                showToast(`ℹ️ ئەم ئۆتۆمبێلە ئەمڕۆ (${dateStr}) تۆمارکراوە - زانیارییەکان هێنران و دەتوانیت چاپی بکەیت`);
+                const regAlert = document.getElementById('regAlert');
+                if (regAlert) {
+                    regAlert.innerHTML = `
+                        <div class="alert-box alert-success" style="display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 16px;border-radius:6px;font-weight:800;font-size:15px;background:#ecfdf5;border:1.5px solid #10b981;color:#065f46;box-shadow:0 2px 4px rgba(0,0,0,0.06);margin-bottom:12px;">
+                            <div style="display:flex;align-items:center;gap:10px;">
+                                <span style="font-size:22px;line-height:1;">✅</span>
+                                <span>ئەم ئۆتۆمبێلە ئەمڕۆ (${dateStr}) تۆمارکراوە — زانیارییەکان هێنران و دەتوانیت بە دوگمەی (چاپ کردنی فۆرم) چاپی بکەیت</span>
+                            </div>
+                            <button type="button" onclick="closeRegAlert()" style="background:transparent;border:none;color:#065f46;font-size:20px;font-weight:900;cursor:pointer;padding:2px 8px;border-radius:4px;line-height:1;" title="داخستن">✕</button>
                         </div>
-                        <button type="button" onclick="closeRegAlert()" style="background:transparent;border:none;color:#92400e;font-size:20px;font-weight:900;cursor:pointer;padding:2px 8px;border-radius:4px;line-height:1;transition:background 0.2s;" onmouseover="this.style.background='rgba(0,0,0,0.08)'" onmouseout="this.style.background='transparent'" title="داخستن">✕</button>
-                    </div>
-                `;
+                    `;
+                }
+                return;
+            } else {
+                // Vehicle was registered on an earlier date:
+                // Keep typed inputs (dfA, dfB, dfC) intact - do NOT wipe!
+                loadedVehicleId = r.id || null;
+                setPrintButtonState(false);
+                setSaveButtonState(false, `ئەم ئۆتۆمبێلە پێشتر تۆمارکراوە لە بەرواری (${dateStr}) - تۆمارکردن ناچالاک کراوە`);
+
+                showToast(`⚠️ ئەم فۆرمە پێشتر کراوە لە بەرواری (${dateStr}) - تۆمارکردن ناچالاک کرا`, true);
+                const regAlert = document.getElementById('regAlert');
+                if (regAlert) {
+                    regAlert.innerHTML = `
+                        <div class="alert-box alert-warning" style="display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 16px;border-radius:6px;font-weight:800;font-size:15px;background:#fef3c7;border:1.5px solid #f59e0b;color:#92400e;box-shadow:0 2px 4px rgba(0,0,0,0.06);margin-bottom:12px;">
+                            <div style="display:flex;align-items:center;gap:10px;">
+                                <span style="font-size:22px;line-height:1;">⛔</span>
+                                <span>ئەم فۆرمە پێشتر کراوە لە بەرواری (${dateStr}) — تەنها فۆڕمی ئەمڕۆ چاپ دەکرێت و دوگمەی تۆمارکردن ناچالاک کرا</span>
+                            </div>
+                            <button type="button" onclick="closeRegAlert()" style="background:transparent;border:none;color:#92400e;font-size:20px;font-weight:900;cursor:pointer;padding:2px 8px;border-radius:4px;line-height:1;" title="داخستن">✕</button>
+                        </div>
+                    `;
+                }
+                return;
             }
-            return;
         }
 
         if (!r) {
@@ -5042,122 +5169,8 @@ async function dfSearchCar() {
             return;
         }
 
-        // Populate fields safely - ONLY link loadedVehicleId if it already exists in T1 table!
-        if (r.source === 'T1') {
-            loadedVehicleId = r.id;
-        } else {
-            // Data is from Taqega (VA), NOT yet in T1 - must not point to an unrelated T1 id!
-            loadedVehicleId = null;
-        }
-        const set = (id, v) => {
-            const el = document.getElementById(id);
-            if (!el) return;
-            let val = (v !== null && v !== undefined) ? String(v).trim() : '';
-            if (el.tagName === 'SELECT') {
-                let opt = Array.from(el.options).find(o => o.value === val);
-                if (!opt && val) {
-                    const normVal = val.replace(/ى/g, 'ی').replace(/ك/g, 'ک');
-                    opt = Array.from(el.options).find(o => o.value.replace(/ى/g, 'ی').replace(/ك/g, 'ک') === normVal);
-                    if (opt) val = opt.value;
-                }
-                if (!opt && val) {
-                    opt = document.createElement('option');
-                    opt.value = val;
-                    opt.textContent = val;
-                    el.appendChild(opt);
-                }
-                el.value = val;
-            } else {
-                el.value = val;
-            }
-        };
-
-        set('dfA', r.A || plate);
-        set('dfB', r.B || tablo || '');
-        if (typeof setTabloValue === 'function') setTabloValue(r.B || tablo || '');
-        set('dfC', r.C || bash || '');
-        if (typeof setBashValue === 'function') setBashValue(r.C || bash || '');
-        set('dfTo', (r.To && (r.To.includes('هاتووچۆ') || r.To.includes('پارێزگا'))) ? r.To : 'هاتووچۆی پارێزگای سلێمانی');
-        if (r.E && r.E.trim() !== '') {
-            set('dfE', r.E);
-        } else {
-            const curB = document.getElementById('dfE') ? document.getElementById('dfE').value : '';
-            if (curB) set('dfE', curB);
-        }
-        set('dfF', r.F || '*');
-        set('dfG', r.G || '');
-        set('dfH', r.H || 'تۆماری یەکەم جار');
-        set('dfI', r.I || '');
-        set('dfJ', r.J || 'صالون');
-        set('dfK', r.K || 'بەنزین');
-        set('dfL', r.L || '');
-        set('dfM', r.M || 'ئۆتۆماتیک');
-        set('dfN', r.N || 0);
-        set('dfO', r.O || 0);
-        set('dfP', r.P || 0);
-        set('dfQ', r.Q || 0);
-        set('dfR', r.R || '');
-        updateKeyLength();
-        
-        // Handle Barcode (NEVER take from VA, strictly <= 10 chars, unique)
-        const bEl = document.getElementById('dfBarcode');
-        if (r.source === 'Taqega') {
-            let code = generateUniqueBarcode();
-            try {
-                const bRes = await fetch('/api/barcode/generate');
-                if (bRes.ok) {
-                    const bData = await bRes.json();
-                    if (bData && bData.barcode) code = bData.barcode;
-                }
-            } catch(e) {}
-            if (bEl) {
-                bEl.value = code.substring(0, 10);
-                bEl.dataset.autoGen = 'true';
-            }
-            renderLiveBarcode(code);
-            // Loaded from lab (VA), not yet registered in T1 -> disabled print
-            setPrintButtonState(false);
-        } else {
-            const code = (r.KK || (r.R ? generateUniqueBarcode() : 'TC00000000')).substring(0, 10);
-            if (bEl) {
-                bEl.value = code;
-                bEl.dataset.autoGen = 'false';
-            }
-            renderLiveBarcode(code);
-            // Enable print ONLY if registered today
-            const isToday = r.DD && (new Date(r.DD).toDateString() === new Date().toDateString());
-            setPrintButtonState(isToday);
-        }
-        
-        set('dfS', r.S || 0);
-        set('dfStar', '*');
-        set('dfT', (r.T && String(r.T).trim() !== '0') ? r.T : '');
-        
-        // نەهێنانی تێبینی و اجور كشف لە تەیبڵی ڤی ئەی (VA)
-        if (r.source === 'Taqega' || r.source === 'VA') {
-            set('dfU', '');
-            set('dfII', 0);
-        } else {
-            set('dfU', r.U || '');
-            set('dfII', r.II || 0);
-        }
-
-        set('dfV', r.V || '');
-        set('dfW', r.W || '*');
-        set('dfX', r.X || '');
-        set('dfY', r.Y || 0);
-        set('dfZ', r.Z || '');
-        set('dfAA', r.AA || '*');
-        set('dfBB', r.BB || '');
-        set('dfCC', r.CC || 0);
-        if (r.source === 'Taqega' || (r.H && r.H !== 'تۆماری یەکەم جار')) {
-            set('dfJJ', '0');
-        } else {
-            set('dfJJ', r.JJ || '0');
-        }
-        if (r.DD) {
-            set('dfDD', new Date(r.DD).toISOString().slice(0, 10));
-        }
+        // Populate fields using unified helper
+        populateRegistrationFields(r, plate, tablo, bash);
 
         // Data exists: clear alert box so nothing is shown
         closeRegAlert();
@@ -5605,6 +5618,11 @@ async function dfPrintInspection() {
             return;
         }
         rData = rec;
+        // Populate registration fields so that printing before manual search loads the full vehicle info
+        populateRegistrationFields(rec, plate, tablo, bash);
+        loadedVehicleId = rec.id || null;
+        setSaveButtonState(false, 'ئەم ئۆتۆمبێلە ئەمڕۆ تۆمارکراوە');
+        setPrintButtonState(true);
     } catch(err) {
         console.error('Print query error:', err);
         showToast('⚠️ کێشەی پەیوەندی لە کاتی هێنانی داتای چاپی ئەمڕۆ', true);
@@ -8589,14 +8607,14 @@ function showSuspDetail(data) {
 }
 
 // ─── 12. SYSTEM AUTO-UPDATER & VERSION LOGIC ─────────────────────────────
-let currentAppVersion = '1.5.0';
+let currentAppVersion = '1.5.1';
 
 async function loadSystemVersion() {
     try {
         const res = await fetch('/api/system/version');
         if (res.ok) {
             const data = await res.json();
-            currentAppVersion = data.version || '1.5.0';
+            currentAppVersion = data.version || '1.5.1';
             const verStr = `v${currentAppVersion}`;
             const topBadge = document.getElementById('topbarVerBadge');
             if (topBadge) topBadge.textContent = verStr;

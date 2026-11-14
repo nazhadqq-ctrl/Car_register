@@ -1563,7 +1563,7 @@ app.get('/api/register/find', requireAuth, async (req, res) => {
         // ─── 0.5 CHECK IF ALREADY REGISTERED IN T1 (FOR PLATE/CHASSIS SEARCH) ───
         if (!cleanBarcode && (cleanPlate || cleanChassis)) {
             const reqT1Check = pool.request();
-            let t1CheckQuery = `SELECT TOP 1 id, A, B, C, R, DD, EE, FF, KK FROM T1 WHERE 1=0 `;
+            let t1CheckQuery = `SELECT TOP 1 * FROM T1 WHERE 1=0 `;
             
             if (cleanPlate && cleanTablo && cleanBash) {
                 reqT1Check.input('cpPlate', sql.NVarChar, cleanPlate);
@@ -1596,16 +1596,91 @@ app.get('/api/register/find', requireAuth, async (req, res) => {
             if (t1CheckRes.recordset.length > 0) {
                 const existing = t1CheckRes.recordset[0];
                 const regDate = existing.DD ? new Date(existing.DD).toISOString().slice(0, 10) : (existing.EE ? new Date(existing.EE).toISOString().slice(0, 10) : 'نەزانراو');
-                return res.json({
-                    alreadyRegistered: true,
-                    date: regDate,
-                    id: existing.id,
-                    plate: existing.A,
-                    tablo: existing.B,
-                    bash: existing.C,
-                    chassis: existing.R,
-                    user: existing.FF
-                });
+                const todayStr = new Date().toISOString().slice(0, 10);
+                const isToday = (regDate === todayStr);
+
+                // Double check if this vehicle/chassis is in Hijz
+                const ch = (existing.R || '').trim().toUpperCase();
+                if (ch) {
+                    const hCheck = await pool.request().input('rch', sql.NVarChar, ch).query(`SELECT TOP 1 * FROM Hijz WHERE Reg_Name = @rch`);
+                    if (hCheck.recordset.length > 0) {
+                        const h = hCheck.recordset[0];
+                        return res.json({
+                            isHijz: true,
+                            message: 'ئەم ئوتومبێلە کاری بۆ ناکرێت لەبەر ئەوەی نیشانەی گلدانەوەی لەسەرە و پەیوەندی بکەن بە سەرپەرشتیاری هۆبەی پشکنین',
+                            hijz: {
+                                idd: h.idd,
+                                plate: h.Auto_No,
+                                tablo: h.Place_,
+                                bash: h.Car_Plet,
+                                chassis: h.Reg_Name,
+                                date: h.Date_Releasing,
+                                note: h.car_Note,
+                                officer: h.B,
+                                user: h.UUser
+                            }
+                        });
+                    }
+                }
+
+                if (isToday) {
+                    // Registered TODAY: return complete T1 record so it can be viewed and printed!
+                    return res.json({
+                        source: 'T1',
+                        alreadyRegistered: true,
+                        isToday: true,
+                        date: regDate,
+                        id: existing.id,
+                        A: existing.A || '',
+                        B: existing.B || 'سلێمانی',
+                        C: existing.C || 'تایبەت',
+                        D: existing.D || '',
+                        E: existing.E || '',
+                        F: existing.F || '*',
+                        G: (existing.G || '').trim(),
+                        H: (existing.H || '').trim() || 'تۆماری یەکەم جار',
+                        I: (existing.I || '').trim(),
+                        J: (existing.J || '').trim() || 'صالون',
+                        K: (existing.K || '').trim() || 'بەنزین',
+                        L: (existing.L || '').trim(),
+                        M: (existing.M || '').trim() || 'ئۆتۆماتیک',
+                        N: existing.N || 0,
+                        O: existing.O || 0,
+                        P: existing.P || 0,
+                        Q: existing.Q || 0,
+                        R: (existing.R || '').trim().toUpperCase(),
+                        S: existing.S || 0,
+                        T: existing.T || 0,
+                        U: existing.U || '',
+                        V: existing.V || '',
+                        W: existing.W || '*',
+                        X: existing.X || '',
+                        Y: existing.Y || 0,
+                        Z: existing.Z || '',
+                        AA: existing.AA || '*',
+                        BB: existing.BB || '',
+                        CC: existing.CC || 0,
+                        II: existing.II || 0,
+                        JJ: existing.JJ || 0,
+                        DD: regDate,
+                        Barcod: existing.KK || '',
+                        KK: existing.KK || '',
+                        user: existing.FF
+                    });
+                } else {
+                    // Registered on a past date: duplicate
+                    return res.json({
+                        alreadyRegistered: true,
+                        isToday: false,
+                        date: regDate,
+                        id: existing.id,
+                        plate: existing.A,
+                        tablo: existing.B,
+                        bash: existing.C,
+                        chassis: existing.R,
+                        user: existing.FF
+                    });
+                }
             }
         }
 
