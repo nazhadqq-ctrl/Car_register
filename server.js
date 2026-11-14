@@ -2294,6 +2294,19 @@ app.post('/api/register', requireAuth, async (req, res) => {
             }
         }
 
+        // Auto-detect and prevent Model Year (P) and Inspection Fee (II) inversion
+        let safeModel = P != null ? String(P).trim() : '0';
+        let safeFee = II != null ? String(II).trim() : '0';
+        const numP = parseInt(safeModel, 10);
+        const numII = parseInt(safeFee, 10);
+        if (!isNaN(numII) && numII >= 1950 && numII <= 2045 && (isNaN(numP) || numP < 1950 || numP > 2045)) {
+            safeModel = String(numII);
+            safeFee = (!isNaN(numP) && numP >= 1000 && numP <= 500000) ? String(numP) : '0';
+        } else if (!isNaN(numP) && numP >= 5000 && (isNaN(numII) || numII < 1000)) {
+            safeFee = String(numP);
+            safeModel = (!isNaN(numII) && numII >= 1950 && numII <= 2045) ? String(numII) : '0';
+        }
+
         const insertRes = await pool.request()
             .input('A', sql.NVarChar, A || '')
             .input('B', sql.NVarChar, B || '')
@@ -2310,7 +2323,7 @@ app.post('/api/register', requireAuth, async (req, res) => {
             .input('M', sql.NVarChar, M || 'ئۆتۆماتیک')
             .input('N', sql.NVarChar, N != null ? String(N) : '0')
             .input('O', sql.NVarChar, O != null ? String(O) : '0')
-            .input('P', sql.NVarChar, P != null ? String(P) : '0')
+            .input('P', sql.NVarChar, safeModel)
             .input('Q', sql.NVarChar, Q != null ? String(Q) : '0')
             .input('R', sql.NVarChar, (R || '').trim().toUpperCase().slice(0, 17))
             .input('S', sql.NVarChar, (S || '*').trim().toUpperCase().slice(0, 17))
@@ -2324,7 +2337,7 @@ app.post('/api/register', requireAuth, async (req, res) => {
             .input('AA', sql.NVarChar, AA || '*')
             .input('BB', sql.NVarChar, BB || '')
             .input('CC', sql.NVarChar, CC != null ? String(CC) : '0')
-            .input('II', sql.NVarChar, II != null ? String(II) : '25000')
+            .input('II', sql.NVarChar, safeFee)
             .input('JJ', sql.NVarChar, JJ != null ? String(JJ) : '0')
             .input('FF', sql.NVarChar, user)
             .input('GG', sql.NVarChar, GG || '')
@@ -2420,6 +2433,19 @@ app.put('/api/register/:id', requireAuth, async (req, res) => {
             }
         }
 
+        // Auto-detect and prevent Model Year (P) and Inspection Fee (II) inversion
+        let safeModel = P != null ? String(P).trim() : '0';
+        let safeFee = II != null ? String(II).trim() : '0';
+        const numP = parseInt(safeModel, 10);
+        const numII = parseInt(safeFee, 10);
+        if (!isNaN(numII) && numII >= 1950 && numII <= 2045 && (isNaN(numP) || numP < 1950 || numP > 2045)) {
+            safeModel = String(numII);
+            safeFee = (!isNaN(numP) && numP >= 1000 && numP <= 500000) ? String(numP) : '0';
+        } else if (!isNaN(numP) && numP >= 5000 && (isNaN(numII) || numII < 1000)) {
+            safeFee = String(numP);
+            safeModel = (!isNaN(numII) && numII >= 1950 && numII <= 2045) ? String(numII) : '0';
+        }
+
         await pool.request()
             .input('id', sql.Int, id)
             .input('A', sql.NVarChar, A || '')
@@ -2437,7 +2463,7 @@ app.put('/api/register/:id', requireAuth, async (req, res) => {
             .input('M', sql.NVarChar, M || '')
             .input('N', sql.NVarChar, N != null ? String(N) : '0')
             .input('O', sql.NVarChar, O != null ? String(O) : '0')
-            .input('P', sql.NVarChar, P != null ? String(P) : '0')
+            .input('P', sql.NVarChar, safeModel)
             .input('Q', sql.NVarChar, Q != null ? String(Q) : '0')
             .input('R', sql.NVarChar, (R || '').trim().toUpperCase().slice(0, 17))
             .input('S', sql.NVarChar, (S || '*').trim().toUpperCase().slice(0, 17))
@@ -2451,7 +2477,7 @@ app.put('/api/register/:id', requireAuth, async (req, res) => {
             .input('AA', sql.NVarChar, AA || '*')
             .input('BB', sql.NVarChar, BB || '')
             .input('CC', sql.NVarChar, CC != null ? String(CC) : '0')
-            .input('II', sql.NVarChar, II != null ? String(II) : '25000')
+            .input('II', sql.NVarChar, safeFee)
             .input('JJ', sql.NVarChar, JJ != null ? String(JJ) : '0')
             .input('GG', sql.NVarChar, userName)
             .input('KK', sql.NVarChar, KK || Barcode || '')

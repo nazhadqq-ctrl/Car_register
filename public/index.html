@@ -1294,10 +1294,14 @@
             border-bottom: 3px solid #2563eb !important;
             text-align: center !important;
             font-weight: 900 !important;
-            font-size: 16px !important;
+            font-size: 17px !important;
             direction: ltr !important;
-            font-family: 'JetBrains Mono', Consolas, monospace !important;
-            letter-spacing: 1.5px !important;
+            font-family: 'Consolas', 'Segoe UI', Arial, sans-serif !important;
+            letter-spacing: 2px !important;
+            font-variant-numeric: tabular-nums lining-nums !important;
+            font-feature-settings: "zero" 1, "tnum" 1, "lnum" 1 !important;
+            line-height: 1.2 !important;
+            vertical-align: middle !important;
             border-radius: 6px !important;
             color: #1e3a8a !important;
         }
@@ -1551,7 +1555,7 @@
         <button class="btn-update-topbar" id="btnTopbarUpdate" onclick="openSystemUpdateModal()" title="پشکنین و نوێکردنەوەی سیستەم">
             <span style="font-size:14px; animation: spin-slow 8s linear infinite; display:inline-block;">🔄</span>
             <span>ئەپدەیت</span>
-            <span class="badge-ver" id="topbarVerBadge">v1.4.9</span>
+            <span class="badge-ver" id="topbarVerBadge">v1.5.0</span>
         </button>
         <button class="btn-out" id="logoutBtn">⬅ دەرچوون</button>
     </div>
@@ -2235,22 +2239,22 @@
                     </select>
                 </div>
 
-                <!-- ROW 6 (Doors, Passengers, Model, Cylinders, Inspection Fee, Fees - Aligned & Full Width) -->
+                <!-- ROW 6 (Doors, Passengers, Cylinders, Model, Inspection Fee, Fees - Aligned & Full Width) -->
                 <div class="df-row" style="width:100%;gap:8px;">
                     <span class="df-label">ژ.دەرگا</span>
-                    <input type="number" id="dfN" class="df-input df-vin-font" style="width:52px;text-align:center;" value="0">
+                    <input type="number" id="dfN" class="df-input df-vin-font" style="width:52px;text-align:center;" value="0" placeholder="4">
                     
                     <span class="df-label">ژ.سەرنشین</span>
-                    <input type="number" id="dfQ" class="df-input df-vin-font" style="width:52px;text-align:center;" value="0">
-                    
-                    <span class="df-label">مۆدێل</span>
-                    <input type="number" id="dfP" class="df-input df-vin-font" style="width:75px;text-align:center;" value="0">
-                    
+                    <input type="number" id="dfQ" class="df-input df-vin-font" style="width:52px;text-align:center;" value="0" placeholder="5">
+
                     <span class="df-label">ژ.بستۆن</span>
-                    <input type="number" id="dfO" class="df-input df-vin-font" style="width:52px;text-align:center;" value="0">
+                    <input type="number" id="dfO" class="df-input df-vin-font" style="width:52px;text-align:center;" value="0" placeholder="4">
                     
-                    <span class="df-label">اجور كشف</span>
-                    <input type="text" id="dfII" list="kashfList" class="df-input df-vin-font" style="width:90px;text-align:center;font-weight:700;" value="0">
+                    <span class="df-label" style="font-weight:900;color:#1e3a8a;">مۆدێل</span>
+                    <input type="number" id="dfP" class="df-input df-vin-font" style="width:80px;text-align:center;font-weight:900;border:1.5px solid #3b82f6;color:#1e3a8a;" value="0" placeholder="2020" min="1950" max="2040" title="ساڵی دروستکردنی ئوتومبێل (مۆدێل وەک 2018 یان 2024)">
+                    
+                    <span class="df-label" style="font-weight:900;color:#065f46;">بڕی پشکنین</span>
+                    <input type="text" id="dfII" list="kashfList" class="df-input df-vin-font" style="width:90px;text-align:center;font-weight:900;border:1.5px solid #10b981;color:#065f46;" value="0" placeholder="25000" title="بڕی پارەی پشکنین (اجور كشف وەک 0 یان 25000)">
                     <datalist id="kashfList">
                         <option value="0">0</option>
                         <option value="25000">25,000</option>
@@ -2848,7 +2852,7 @@
                 <span>نوێکردنەوەی سیستەمی بەرنامە (System Auto-Updater)</span>
             </div>
             <div style="display:flex; align-items:center; gap:10px;">
-                <span style="background: rgba(56, 189, 248, 0.2); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.4); padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 800;" id="updateModalVersionBadge">v1.4.9</span>
+                <span style="background: rgba(56, 189, 248, 0.2); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.4); padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 800;" id="updateModalVersionBadge">v1.5.0</span>
                 <button class="modal-close" style="color: #ffffff;" onclick="closeOverlay('modalSystemUpdate')">✕</button>
             </div>
         </div>
@@ -5177,6 +5181,22 @@ async function dfSearchCar() {
 }
 
 function validateRegistrationForm() {
+    // Auto-correct if user accidentally swapped Model Year (dfP) and Kashf Fee (dfII)
+    const elP = document.getElementById('dfP');
+    const elII = document.getElementById('dfII');
+    if (elP && elII) {
+        const pNum = parseInt(elP.value, 10);
+        const iiNum = parseInt(elII.value, 10);
+        if (!isNaN(iiNum) && iiNum >= 1950 && iiNum <= 2045 && (isNaN(pNum) || pNum < 1950 || pNum > 2045)) {
+            elP.value = iiNum;
+            elII.value = (!isNaN(pNum) && pNum >= 1000 && pNum <= 500000) ? pNum : 0;
+            showToast('ℹ️ ساڵی مۆدێل و بڕی پشکنین بە شێوەی خۆکار ڕێکخرانەوە لە شوێنی دروستی خۆیان', false);
+        } else if (!isNaN(pNum) && pNum >= 5000 && (isNaN(iiNum) || iiNum < 1000)) {
+            elII.value = pNum;
+            elP.value = (!isNaN(iiNum) && iiNum >= 1950 && iiNum <= 2045) ? iiNum : 0;
+        }
+    }
+
     const fields = [
         { id: 'dfA', name: 'ژمارەی ئوتومبێل', isInvalid: v => !v || v.trim() === '' },
         { id: 'dfB', name: 'پارێزگا', isInvalid: v => !v || v.trim() === '' },
@@ -5610,6 +5630,23 @@ async function dfPrintInspection() {
     const placeName = p.D || formPlaceInput || userPlace || getActivePlace() || 'عمر عوسمان';
     const userName = p.FF || currentUser?.name || currentUser?.username || '';
 
+    // ─── ROBUST NORMALIZATION FOR MODEL YEAR & INSPECTION FEE ───
+    let valModel = (p.P !== undefined && p.P !== null && String(p.P).trim() !== '') ? String(p.P).trim() : (pForm.P ? String(pForm.P).trim() : '0');
+    let valKashfFee = (p.II !== undefined && p.II !== null && String(p.II).trim() !== '') ? String(p.II).trim() : (pForm.II ? String(pForm.II).trim() : '0');
+    let valRsumFee = (p.JJ !== undefined && p.JJ !== null && String(p.JJ).trim() !== '') ? String(p.JJ).trim() : (pForm.JJ ? String(pForm.JJ).trim() : '0');
+
+    const numM = parseInt(valModel, 10);
+    const numK = parseInt(valKashfFee, 10);
+
+    // Auto-correct if Model Year and Kashf Fee are inverted (e.g. Kashf Fee has 2010 and Model has 4 or 0 or 25000):
+    if (!isNaN(numK) && numK >= 1950 && numK <= 2045 && (isNaN(numM) || numM < 1950 || numM > 2045)) {
+        valModel = String(numK);
+        valKashfFee = (!isNaN(numM) && numM >= 1000 && numM <= 500000) ? String(numM) : '0';
+    } else if (!isNaN(numM) && numM >= 5000 && (isNaN(numK) || numK < 1000)) {
+        valKashfFee = String(numM);
+        valModel = (!isNaN(numK) && numK >= 1950 && numK <= 2045) ? String(numK) : '0';
+    }
+
     const reportHtml = `
         <!DOCTYPE html>
         <html lang="ku" dir="ltr">
@@ -5827,10 +5864,24 @@ async function dfPrintInspection() {
                     color: #000;
                 }
                 .rdlc-mono {
-                    font-family: 'Courier New', Courier, monospace !important;
+                    font-family: 'Consolas', 'Courier New', monospace !important;
                     letter-spacing: 1.5px;
                     font-weight: 900;
                     direction: ltr;
+                    font-variant-numeric: tabular-nums lining-nums;
+                    vertical-align: middle;
+                }
+                .rdlc-plate-val {
+                    font-family: 'Consolas', 'Segoe UI', Arial, sans-serif !important;
+                    font-weight: 900 !important;
+                    font-size: 17.5px !important;
+                    letter-spacing: 2.5px !important;
+                    font-variant-numeric: tabular-nums lining-nums !important;
+                    font-feature-settings: "zero" 1, "tnum" 1, "lnum" 1 !important;
+                    direction: ltr !important;
+                    text-align: center !important;
+                    vertical-align: middle !important;
+                    line-height: 1.2 !important;
                 }
 
                 /* 5. SIGNATURES ROW (LIFTED ~1.2CM UP TO FIT A4 SINGLE PAGE) */
@@ -5955,11 +6006,11 @@ async function dfPrintInspection() {
                 <!-- 3. FEES ROW -->
                 <div class="rdlc-fees-row">
                     <div class="rdlc-fee-item">
-                        <div class="rdlc-fee-val">${escapeHtml(p.JJ || 0)}</div>
+                        <div class="rdlc-fee-val">${escapeHtml(valRsumFee)}</div>
                         <div class="rdlc-fee-label">بڕی پارەی رسومات</div>
                     </div>
                     <div class="rdlc-fee-item">
-                        <div class="rdlc-fee-val">${escapeHtml(p.II || 0)}</div>
+                        <div class="rdlc-fee-val">${escapeHtml(valKashfFee)}</div>
                         <div class="rdlc-fee-label">بڕی پارەی پشکنین</div>
                     </div>
                 </div>
@@ -5987,7 +6038,7 @@ async function dfPrintInspection() {
                         <td colspan="2" class="rdlc-val rdlc-mono">${escapeHtml(p.T || '')}</td>
                         <td class="rdlc-val">${escapeHtml(p.C || 'تایبەت')}</td>
                         <td class="rdlc-val">${escapeHtml(p.B || 'سلێمانی')}</td>
-                        <td colspan="2" class="rdlc-val" style="font-size: 16.5px;">${escapeHtml(p.A || '')}</td>
+                        <td colspan="2" class="rdlc-val rdlc-plate-val">${escapeHtml(p.A || '')}</td>
                         <td class="rdlc-th">ژمارەی ئوتومبێل</td>
                     </tr>
 
@@ -6033,7 +6084,7 @@ async function dfPrintInspection() {
                         <td class="rdlc-val">${escapeHtml(p.M || 'ئۆتۆماتیک')}</td>
                         <td class="rdlc-val">${escapeHtml(p.K || 'بەنزین')}</td>
                         <td class="rdlc-th">سووتەمەنی</td>
-                        <td class="rdlc-val">${escapeHtml(p.P || '0')}</td>
+                        <td class="rdlc-val">${escapeHtml(valModel)}</td>
                         <td class="rdlc-th">مۆدێل</td>
                     </tr>
 
@@ -8538,14 +8589,14 @@ function showSuspDetail(data) {
 }
 
 // ─── 12. SYSTEM AUTO-UPDATER & VERSION LOGIC ─────────────────────────────
-let currentAppVersion = '1.4.9';
+let currentAppVersion = '1.5.0';
 
 async function loadSystemVersion() {
     try {
         const res = await fetch('/api/system/version');
         if (res.ok) {
             const data = await res.json();
-            currentAppVersion = data.version || '1.4.9';
+            currentAppVersion = data.version || '1.5.0';
             const verStr = `v${currentAppVersion}`;
             const topBadge = document.getElementById('topbarVerBadge');
             if (topBadge) topBadge.textContent = verStr;
