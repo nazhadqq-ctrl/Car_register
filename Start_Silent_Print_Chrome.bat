@@ -32,7 +32,7 @@ if exist "%ProgramFiles%\Google\Chrome\Application\chrome.exe" (
     set "CHROME_EXE=chrome"
 )
 
-start "" "%CHROME_EXE%" --kiosk-printing --app=http://localhost:3000/login.html
+start "" "%CHROME_EXE%" --user-data-dir="%~dp0KioskProfile" --kiosk-printing --app=http://localhost:3000/login.html
 
 echo.
 echo سیستەم کرایەوە بە سەرکەوتوویی!

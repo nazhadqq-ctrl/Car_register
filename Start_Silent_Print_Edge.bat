@@ -33,7 +33,7 @@ if exist "%ProgramFiles(x86)%\Microsoft\Edge\Application\msedge.exe" (
     set "EDGE_EXE=msedge"
 )
 
-start "" "%EDGE_EXE%" --kiosk-printing --app=http://localhost:3000/login.html
+start "" "%EDGE_EXE%" --user-data-dir="%~dp0KioskProfile" --kiosk-printing --app=http://localhost:3000/login.html
 
 echo.
 echo سیستەم کرایەوە بە سەرکەوتوویی!

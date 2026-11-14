@@ -3,7 +3,7 @@
 
 #define MyAppName "TrafficCheck"
 #define MyAppTitle "سیستەمی پشکنینی هاتووچۆ"
-#define MyAppVersion "1.5.2"
+#define MyAppVersion "1.5.3"
 #define MyAppPublisher "Traffic Police Directorate - Sulaymaniyah"
 #define MyAppExeName "TrafficCheck.exe"
 #define SourceDir "C:\Users\Nazha\Desktop\TrafficCheck_Setup"

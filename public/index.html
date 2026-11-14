@@ -888,7 +888,7 @@
         .modal-desktop {
             width: 1416px !important;
             max-width: 99vw !important;
-            height: 655px !important;
+            height: min(735px, 97vh) !important;
             max-height: 98vh !important;
             background: #f8fafc !important;
             border: 1px solid #cbd5e1;
@@ -941,7 +941,7 @@
         }
         
         .desktop-body-wrapper {
-            padding: 8px 14px 10px;
+            padding: 6px 12px 6px;
             background: #f1f5f9;
             flex: 1;
             display: flex;
@@ -1793,11 +1793,17 @@
             display: flex;
             align-items: center;
             justify-content: space-between;
-            margin-top: 6px;
-            padding-top: 8px;
+            margin-top: 4px;
+            padding-top: 6px;
+            padding-bottom: 2px;
             border-top: 1.5px solid #e2e8f0;
             gap: 8px;
             flex-wrap: nowrap;
+            position: sticky;
+            bottom: 0;
+            background: var(--df-bg-card, #ffffff);
+            z-index: 10;
+            flex-shrink: 0;
         }
         .df-actions-group {
             display: flex;
@@ -1965,7 +1971,7 @@
         <button class="btn-update-topbar" id="btnTopbarUpdate" onclick="openSystemUpdateModal()" title="پشکنین و نوێکردنەوەی سیستەم">
             <span style="font-size:14px; animation: spin-slow 8s linear infinite; display:inline-block;">🔄</span>
             <span>ئەپدەیت</span>
-            <span class="badge-ver" id="topbarVerBadge">v1.5.2</span>
+            <span class="badge-ver" id="topbarVerBadge">v1.5.3</span>
         </button>
         <button class="btn-out" id="logoutBtn">⬅ دەرچوون</button>
     </div>
@@ -2818,9 +2824,6 @@
                             <input type="checkbox" id="dfAutoPrintCheck" checked style="width:16px;height:16px;cursor:pointer;accent-color:#2563eb;">
                             <span>🖨️ چاپی ڕاستەوخۆ لەکاتی تۆمارکردن</span>
                         </label>
-                            <input type="checkbox" id="dfAutoPrintCheck" checked style="width:16px;height:16px;cursor:pointer;accent-color:#2563eb;">
-                            <span>🖨️ چاپی ڕاستەوخۆ لەکاتی تۆمارکردن</span>
-                        </label>
                     </div>
 
                     <!-- The ONE Real Dynamic Scannable Barcode (Code 128) -->
@@ -3302,7 +3305,7 @@
                 <span>نوێکردنەوەی سیستەمی بەرنامە (System Auto-Updater)</span>
             </div>
             <div style="display:flex; align-items:center; gap:10px;">
-                <span style="background: rgba(56, 189, 248, 0.2); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.4); padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 800;" id="updateModalVersionBadge">v1.5.2</span>
+                <span style="background: rgba(56, 189, 248, 0.2); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.4); padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 800;" id="updateModalVersionBadge">v1.5.3</span>
                 <button class="modal-close" style="color: #ffffff;" onclick="closeOverlay('modalSystemUpdate')">✕</button>
             </div>
         </div>
@@ -5442,12 +5445,12 @@ async function onBarcodeVAChange() {
             const regAlert = document.getElementById('regAlert');
             if (regAlert) {
                 regAlert.innerHTML = `
-                    <div class="alert-box alert-warning" style="display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 16px;border-radius:6px;font-weight:800;font-size:15px;background:#fef3c7;border:1.5px solid #f59e0b;color:#92400e;box-shadow:0 2px 4px rgba(0,0,0,0.06);margin-bottom:12px;">
-                        <div style="display:flex;align-items:center;gap:10px;">
-                            <span style="font-size:22px;line-height:1;">⛔</span>
+                    <div class="alert-box alert-warning" style="display:flex;align-items:center;justify-content:space-between;gap:8px;padding:4px 10px;border-radius:6px;font-weight:700;font-size:12.5px;background:#fef3c7;border:1.5px solid #f59e0b;color:#92400e;box-shadow:0 1px 3px rgba(0,0,0,0.06);margin-bottom:4px;">
+                        <div style="display:flex;align-items:center;gap:6px;">
+                            <span style="font-size:16px;line-height:1;">⛔</span>
                             <span>ئەم ئوتومبێلە پێشتر تۆمارکراوە لە بەرواری (${dateStr})${userStr} — دوگمەی تۆمارکردن ناچالاک کرا تا گەڕانێکی تر</span>
                         </div>
-                        <button type="button" onclick="closeRegAlert()" style="background:transparent;border:none;color:#92400e;font-size:20px;font-weight:900;cursor:pointer;padding:2px 8px;border-radius:4px;line-height:1;" title="داخستن">✕</button>
+                        <button type="button" onclick="closeRegAlert()" style="background:transparent;border:none;color:#92400e;font-size:16px;font-weight:900;cursor:pointer;padding:0 4px;border-radius:4px;line-height:1;" title="داخستن">✕</button>
                     </div>
                 `;
             }
@@ -5646,12 +5649,12 @@ async function dfSearchCar() {
                 const regAlert = document.getElementById('regAlert');
                 if (regAlert) {
                     regAlert.innerHTML = `
-                        <div class="alert-box alert-success" style="display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 16px;border-radius:6px;font-weight:800;font-size:15px;background:#ecfdf5;border:1.5px solid #10b981;color:#065f46;box-shadow:0 2px 4px rgba(0,0,0,0.06);margin-bottom:12px;">
-                            <div style="display:flex;align-items:center;gap:10px;">
-                                <span style="font-size:22px;line-height:1;">✅</span>
+                        <div class="alert-box alert-success" style="display:flex;align-items:center;justify-content:space-between;gap:8px;padding:4px 10px;border-radius:6px;font-weight:700;font-size:12.5px;background:#ecfdf5;border:1.5px solid #10b981;color:#065f46;box-shadow:0 1px 3px rgba(0,0,0,0.06);margin-bottom:4px;">
+                            <div style="display:flex;align-items:center;gap:6px;">
+                                <span style="font-size:16px;line-height:1;">✅</span>
                                 <span>ئەم ئۆتۆمبێلە ئەمڕۆ (${dateStr}) تۆمارکراوە — زانیارییەکان هێنران و دەتوانیت بە دوگمەی (چاپ کردنی فۆرم) چاپی بکەیت</span>
                             </div>
-                            <button type="button" onclick="closeRegAlert()" style="background:transparent;border:none;color:#065f46;font-size:20px;font-weight:900;cursor:pointer;padding:2px 8px;border-radius:4px;line-height:1;" title="داخستن">✕</button>
+                            <button type="button" onclick="closeRegAlert()" style="background:transparent;border:none;color:#065f46;font-size:16px;font-weight:900;cursor:pointer;padding:0 4px;border-radius:4px;line-height:1;" title="داخستن">✕</button>
                         </div>
                     `;
                 }
@@ -5667,12 +5670,12 @@ async function dfSearchCar() {
                 const regAlert = document.getElementById('regAlert');
                 if (regAlert) {
                     regAlert.innerHTML = `
-                        <div class="alert-box alert-warning" style="display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 16px;border-radius:6px;font-weight:800;font-size:15px;background:#fef3c7;border:1.5px solid #f59e0b;color:#92400e;box-shadow:0 2px 4px rgba(0,0,0,0.06);margin-bottom:12px;">
-                            <div style="display:flex;align-items:center;gap:10px;">
-                                <span style="font-size:22px;line-height:1;">⛔</span>
+                        <div class="alert-box alert-warning" style="display:flex;align-items:center;justify-content:space-between;gap:8px;padding:4px 10px;border-radius:6px;font-weight:700;font-size:12.5px;background:#fef3c7;border:1.5px solid #f59e0b;color:#92400e;box-shadow:0 1px 3px rgba(0,0,0,0.06);margin-bottom:4px;">
+                            <div style="display:flex;align-items:center;gap:6px;">
+                                <span style="font-size:16px;line-height:1;">⛔</span>
                                 <span>ئەم فۆرمە پێشتر کراوە لە بەرواری (${dateStr}) — تەنها فۆڕمی ئەمڕۆ چاپ دەکرێت و دوگمەی تۆمارکردن ناچالاک کرا</span>
                             </div>
-                            <button type="button" onclick="closeRegAlert()" style="background:transparent;border:none;color:#92400e;font-size:20px;font-weight:900;cursor:pointer;padding:2px 8px;border-radius:4px;line-height:1;" title="داخستن">✕</button>
+                            <button type="button" onclick="closeRegAlert()" style="background:transparent;border:none;color:#92400e;font-size:16px;font-weight:900;cursor:pointer;padding:0 4px;border-radius:4px;line-height:1;" title="داخستن">✕</button>
                         </div>
                     `;
                 }
@@ -5698,12 +5701,12 @@ async function dfSearchCar() {
             const regAlert = document.getElementById('regAlert');
             if (regAlert) {
                 regAlert.innerHTML = `
-                    <div class="alert-box alert-warning" style="display:flex;align-items:center;justify-content:space-between;gap:12px;padding:10px 14px;border-radius:6px;font-weight:700;font-size:14.5px;background:#fef3c7;border:1.5px solid #f59e0b;color:#92400e;box-shadow:0 2px 4px rgba(0,0,0,0.06);margin-bottom:12px;">
-                        <div style="display:flex;align-items:center;gap:10px;">
-                            <span style="font-size:20px;line-height:1;">⚠️</span>
+                    <div class="alert-box alert-warning" style="display:flex;align-items:center;justify-content:space-between;gap:8px;padding:4px 10px;border-radius:6px;font-weight:700;font-size:12.5px;background:#fef3c7;border:1.5px solid #f59e0b;color:#92400e;box-shadow:0 1px 3px rgba(0,0,0,0.06);margin-bottom:4px;">
+                        <div style="display:flex;align-items:center;gap:6px;">
+                            <span style="font-size:16px;line-height:1;">⚠️</span>
                             <span>ئەم داتایە لە تاقیگە بەردەست نییە، تکایە خۆت خانەکان پڕبکەرەوە</span>
                         </div>
-                        <button type="button" onclick="closeRegAlert()" style="background:transparent;border:none;color:#92400e;font-size:18px;font-weight:900;cursor:pointer;padding:2px 8px;border-radius:4px;line-height:1;transition:background 0.2s;" onmouseover="this.style.background='rgba(0,0,0,0.08)'" onmouseout="this.style.background='transparent'" title="داخستن">✕</button>
+                        <button type="button" onclick="closeRegAlert()" style="background:transparent;border:none;color:#92400e;font-size:16px;font-weight:900;cursor:pointer;padding:0 4px;border-radius:4px;line-height:1;transition:background 0.2s;" onmouseover="this.style.background='rgba(0,0,0,0.08)'" onmouseout="this.style.background='transparent'" title="داخستن">✕</button>
                     </div>
                 `;
             }
@@ -6136,7 +6139,7 @@ async function dfPrintInspection() {
         showToast('⚠️ تکایە دڵنیابە لە پڕکردنەوەی (ژمارەی ئوتومبێل + تابلۆ/پارێزگا + بەش) پێش چاپکردن', true);
         const regAlert = document.getElementById('regAlert');
         if (regAlert) {
-            regAlert.innerHTML = `<div class="alert-box alert-warning">⚠️ تکایە دڵنیابە لە پڕکردنەوەی (ژمارەی ئوتومبێل + تابلۆ/پارێزگا + بەش) پێش چاپکردن</div>`;
+            regAlert.innerHTML = `<div class="alert-box alert-warning" style="display:flex;align-items:center;justify-content:space-between;gap:8px;padding:4px 10px;border-radius:6px;font-weight:700;font-size:12.5px;background:#fef3c7;border:1.5px solid #f59e0b;color:#92400e;margin-bottom:4px;"><span>⚠️ تکایە دڵنیابە لە پڕکردنەوەی (ژمارەی ئوتومبێل + تابلۆ/پارێزگا + بەش) پێش چاپکردن</span><button type="button" onclick="closeRegAlert()" style="background:transparent;border:none;color:#92400e;font-size:16px;font-weight:900;cursor:pointer;padding:0 4px;border-radius:4px;line-height:1;" title="داخستن">✕</button></div>`;
         }
         return;
     }
@@ -6154,7 +6157,7 @@ async function dfPrintInspection() {
             showToast(msg, true);
             const regAlert = document.getElementById('regAlert');
             if (regAlert) {
-                regAlert.innerHTML = `<div class="alert-box alert-danger">⚠️ ${msg}</div>`;
+                regAlert.innerHTML = `<div class="alert-box alert-danger" style="display:flex;align-items:center;justify-content:space-between;gap:8px;padding:4px 10px;border-radius:6px;font-weight:700;font-size:12.5px;background:#fee2e2;border:1.5px solid #ef4444;color:#991b1b;margin-bottom:4px;"><span>⚠️ ${msg}</span><button type="button" onclick="closeRegAlert()" style="background:transparent;border:none;color:#991b1b;font-size:16px;font-weight:900;cursor:pointer;padding:0 4px;border-radius:4px;line-height:1;" title="داخستن">✕</button></div>`;
             }
             return;
         }
@@ -9148,14 +9151,14 @@ function showSuspDetail(data) {
 }
 
 // ─── 12. SYSTEM AUTO-UPDATER & VERSION LOGIC ─────────────────────────────
-let currentAppVersion = '1.5.2';
+let currentAppVersion = '1.5.3';
 
 async function loadSystemVersion() {
     try {
         const res = await fetch('/api/system/version');
         if (res.ok) {
             const data = await res.json();
-            currentAppVersion = data.version || '1.5.2';
+            currentAppVersion = data.version || '1.5.3';
             const verStr = `v${currentAppVersion}`;
             const topBadge = document.getElementById('topbarVerBadge');
             if (topBadge) topBadge.textContent = verStr;
