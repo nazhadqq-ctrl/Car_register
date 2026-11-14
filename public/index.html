@@ -949,6 +949,416 @@
             overflow-y: auto;
             min-height: 0;
         }
+        /* ══════════════════════════════════════════════════════════════════
+           REGISTRATION FORM LUXURY THEME & DARK MODE SYSTEM
+           ══════════════════════════════════════════════════════════════════ */
+        #modalRegister {
+            --df-bg-window: #f8fafc;
+            --df-bg-body: #f1f5f9;
+            --df-bg-card: #ffffff;
+            --df-bg-banner: #f8fafc;
+            --df-bg-barcode-row: linear-gradient(135deg, #f0f7ff 0%, #e0f2fe 100%);
+            --df-border-window: #cbd5e1;
+            --df-border-card: #e2e8f0;
+            --df-border-input: #cbd5e1;
+            --df-border-input-hover: #94a3b8;
+            --df-border-focus: #2563eb;
+            --df-border-subtle: #e2e8f0;
+            --df-text-main: #0f172a;
+            --df-text-label: #334155;
+            --df-text-muted: #64748b;
+            --df-input-bg: #ffffff;
+            --df-input-text: #0f172a;
+            --df-plate-bg: #f8fafc;
+            --df-plate-text: #1e3a8a;
+            --df-plate-border: #93c5fd;
+            --df-plate-accent: #2563eb;
+            --df-combo-menu-bg: #ffffff;
+            --df-combo-item-text: #1e293b;
+            --df-combo-item-hover: #2563eb;
+            --df-combo-border: #2563eb;
+            --df-trailer-bg: rgba(248, 250, 252, 0.7);
+            --df-title-primary: #1e3a8a;
+            --df-card-shadow: 0 4px 20px -3px rgba(15, 23, 42, 0.08);
+            --df-barcode-bg: #ffffff;
+            --df-barcode-border: #334155;
+            --df-barcode-text: #0f172a;
+        }
+
+        /* 🌙 THEME: MIDNIGHT NAVY (Deep Luxury Dark) */
+        #modalRegister.theme-midnight,
+        #modalRegister.theme-dark {
+            --df-bg-window: #090e17;
+            --df-bg-body: #0d1527;
+            --df-bg-card: #131d33;
+            --df-bg-banner: #192642;
+            --df-bg-barcode-row: linear-gradient(135deg, #112338 0%, #0e3b5e 100%);
+            --df-border-window: #1e293b;
+            --df-border-card: #1e2d4a;
+            --df-border-input: #334668;
+            --df-border-input-hover: #476394;
+            --df-border-focus: #38bdf8;
+            --df-border-subtle: #1e293b;
+            --df-text-main: #f8fafc;
+            --df-text-label: #cbd5e1;
+            --df-text-muted: #94a3b8;
+            --df-input-bg: #0b1120;
+            --df-input-text: #f8fafc;
+            --df-plate-bg: #0f1d38;
+            --df-plate-text: #60a5fa;
+            --df-plate-border: #2563eb;
+            --df-plate-accent: #38bdf8;
+            --df-combo-menu-bg: #131d33;
+            --df-combo-item-text: #f1f5f9;
+            --df-combo-item-hover: #0284c7;
+            --df-combo-border: #38bdf8;
+            --df-trailer-bg: rgba(11, 17, 32, 0.6);
+            --df-title-primary: #60a5fa;
+            --df-card-shadow: 0 8px 30px rgba(0, 0, 0, 0.45);
+            --df-barcode-bg: #ffffff;
+            --df-barcode-border: #38bdf8;
+            --df-barcode-text: #0f172a;
+        }
+
+        /* 🌑 THEME: CHARCOAL PRO (Minimalist High-Contrast) */
+        #modalRegister.theme-charcoal {
+            --df-bg-window: #121214;
+            --df-bg-body: #18181b;
+            --df-bg-card: #202024;
+            --df-bg-banner: #27272a;
+            --df-bg-barcode-row: linear-gradient(135deg, #27272a 0%, #1f2937 100%);
+            --df-border-window: #27272a;
+            --df-border-card: #2e2e33;
+            --df-border-input: #3f3f46;
+            --df-border-input-hover: #52525b;
+            --df-border-focus: #10b981;
+            --df-border-subtle: #27272a;
+            --df-text-main: #fafafa;
+            --df-text-label: #e4e4e7;
+            --df-text-muted: #a1a1aa;
+            --df-input-bg: #141416;
+            --df-input-text: #fafafa;
+            --df-plate-bg: #18181b;
+            --df-plate-text: #34d399;
+            --df-plate-border: #059669;
+            --df-plate-accent: #10b981;
+            --df-combo-menu-bg: #202024;
+            --df-combo-item-text: #f4f4f5;
+            --df-combo-item-hover: #059669;
+            --df-combo-border: #10b981;
+            --df-trailer-bg: rgba(24, 24, 27, 0.6);
+            --df-title-primary: #34d399;
+            --df-card-shadow: 0 8px 30px rgba(0, 0, 0, 0.55);
+            --df-barcode-bg: #ffffff;
+            --df-barcode-border: #10b981;
+            --df-barcode-text: #0f172a;
+        }
+
+        /* 🌾 THEME: WARM COMFORT (Eye Strain Relief) */
+        #modalRegister.theme-warm {
+            --df-bg-window: #f7f3ea;
+            --df-bg-body: #ede7da;
+            --df-bg-card: #fcfbf8;
+            --df-bg-banner: #ebe4d5;
+            --df-bg-barcode-row: linear-gradient(135deg, #eee6d3 0%, #e2d7be 100%);
+            --df-border-window: #d6ccba;
+            --df-border-card: #ded4c0;
+            --df-border-input: #cfc4ae;
+            --df-border-input-hover: #b8ab92;
+            --df-border-focus: #b45309;
+            --df-border-subtle: #ded4c0;
+            --df-text-main: #292524;
+            --df-text-label: #44403c;
+            --df-text-muted: #78716c;
+            --df-input-bg: #ffffff;
+            --df-input-text: #292524;
+            --df-plate-bg: #f5eedf;
+            --df-plate-text: #9a3412;
+            --df-plate-border: #ea580c;
+            --df-plate-accent: #c2410c;
+            --df-combo-menu-bg: #ffffff;
+            --df-combo-item-text: #292524;
+            --df-combo-item-hover: #b45309;
+            --df-combo-border: #b45309;
+            --df-trailer-bg: rgba(235, 228, 213, 0.6);
+            --df-title-primary: #7c2d12;
+            --df-card-shadow: 0 4px 20px -3px rgba(68, 64, 60, 0.1);
+            --df-barcode-bg: #ffffff;
+            --df-barcode-border: #78716c;
+            --df-barcode-text: #292524;
+        }
+
+        /* Elements Integration */
+        #modalRegister .modal-desktop {
+            background: var(--df-bg-window) !important;
+            border-color: var(--df-border-window) !important;
+            transition: background 0.25s ease, border-color 0.25s ease, box-shadow 0.25s ease;
+        }
+        #modalRegister .desktop-body-wrapper {
+            background: var(--df-bg-body) !important;
+            transition: background 0.25s ease;
+        }
+        #modalRegister .desktop-form-container {
+            background: var(--df-bg-card) !important;
+            border-color: var(--df-border-card) !important;
+            box-shadow: var(--df-card-shadow) !important;
+            color: var(--df-text-main) !important;
+            transition: background 0.25s ease, border-color 0.25s ease, color 0.25s ease;
+        }
+        #modalRegister .df-label {
+            color: var(--df-text-label) !important;
+        }
+        #modalRegister .df-input {
+            background: var(--df-input-bg) !important;
+            color: var(--df-input-text) !important;
+            border-color: var(--df-border-input) !important;
+        }
+        #modalRegister .df-input:hover {
+            border-color: var(--df-border-input-hover) !important;
+        }
+        #modalRegister .df-input:focus {
+            border-color: var(--df-border-focus) !important;
+            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.2) !important;
+        }
+        #modalRegister.theme-midnight .df-input:focus,
+        #modalRegister.theme-dark .df-input:focus {
+            box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.25) !important;
+        }
+        #modalRegister.theme-charcoal .df-input:focus {
+            box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.25) !important;
+        }
+        #modalRegister .df-select {
+            background-color: var(--df-input-bg) !important;
+            color: var(--df-input-text) !important;
+            border-color: var(--df-border-input) !important;
+        }
+        #modalRegister .df-select:hover {
+            border-color: var(--df-border-input-hover) !important;
+        }
+        #modalRegister .df-select:focus {
+            border-color: var(--df-border-focus) !important;
+        }
+        #modalRegister .df-plate {
+            background: var(--df-plate-bg) !important;
+            color: var(--df-plate-text) !important;
+            border-color: var(--df-plate-border) !important;
+            border-bottom: 3px solid var(--df-plate-accent) !important;
+        }
+        #modalRegister .df-combo-menu {
+            background: var(--df-combo-menu-bg) !important;
+            border-color: var(--df-combo-border) !important;
+        }
+        #modalRegister .df-combo-item {
+            color: var(--df-combo-item-text) !important;
+            border-bottom: 1px solid var(--df-border-subtle) !important;
+        }
+        #modalRegister .df-combo-item:hover,
+        #modalRegister .df-combo-item.active {
+            background: var(--df-combo-item-hover) !important;
+            color: #ffffff !important;
+        }
+        #modalRegister .df-top-banner {
+            background: var(--df-bg-banner) !important;
+            border: 1px solid var(--df-border-subtle) !important;
+            border-radius: 8px;
+            padding: 4px 10px;
+            margin-bottom: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            transition: all 0.25s ease;
+        }
+        #modalRegister .df-top-banner .df-top-title-text {
+            color: var(--df-title-primary) !important;
+        }
+        #modalRegister .df-barcode-scanner-bar {
+            background: var(--df-bg-barcode-row) !important;
+            border: 1.5px solid var(--df-border-focus) !important;
+            border-radius: 8px;
+            padding: 5px 12px;
+            margin-bottom: 6px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.06);
+            transition: all 0.25s ease;
+        }
+        #modalRegister .df-barcode-scanner-bar label {
+            color: var(--df-title-primary) !important;
+        }
+        #modalRegister .df-trailer-group {
+            border-top: 1px dashed var(--df-border-subtle) !important;
+            background: var(--df-trailer-bg);
+            border-radius: 6px;
+            padding: 4px 8px 2px;
+            margin-top: 3px;
+            transition: background 0.25s ease;
+        }
+        #modalRegister .df-actions-row {
+            border-top-color: var(--df-border-subtle) !important;
+        }
+        #modalRegister .df-barcode-card {
+            background: var(--df-barcode-bg) !important;
+            border-color: var(--df-barcode-border) !important;
+        }
+        #modalRegister .df-barcode-code-text {
+            color: var(--df-barcode-text) !important;
+        }
+        #modalRegister .df-direct-print-label {
+            background: var(--df-bg-banner) !important;
+            border: 1.5px solid var(--df-border-input) !important;
+            color: var(--df-text-label) !important;
+        }
+
+        /* Distinctive Dark Adjustments */
+        #modalRegister.theme-midnight .df-pink,
+        #modalRegister.theme-dark .df-pink,
+        #modalRegister.theme-charcoal .df-pink {
+            background: #2a1122 !important;
+            border-color: #f472b6 !important;
+            color: #fbcfe8 !important;
+        }
+        #modalRegister.theme-midnight .df-cyan,
+        #modalRegister.theme-dark .df-cyan,
+        #modalRegister.theme-charcoal .df-cyan {
+            background: #082f49 !important;
+            border-color: #38bdf8 !important;
+            color: #bae6fd !important;
+        }
+        #modalRegister.theme-midnight .df-red-text,
+        #modalRegister.theme-dark .df-red-text,
+        #modalRegister.theme-charcoal .df-red-text {
+            background: #3b0712 !important;
+            border-color: #f87171 !important;
+            color: #fecaca !important;
+        }
+        #modalRegister.theme-midnight #dfKeyLength,
+        #modalRegister.theme-dark #dfKeyLength,
+        #modalRegister.theme-charcoal #dfKeyLength {
+            background: #1e293b !important;
+            border-color: #475569 !important;
+            color: #fde047 !important;
+        }
+        #modalRegister.theme-midnight #dfDD,
+        #modalRegister.theme-dark #dfDD,
+        #modalRegister.theme-charcoal #dfDD {
+            background: #1e293b !important;
+            border-color: #334155 !important;
+            color: #94a3b8 !important;
+        }
+        #modalRegister.theme-midnight #dfD,
+        #modalRegister.theme-dark #dfD {
+            background: #0f172a !important;
+            border-color: #2563eb !important;
+            color: #93c5fd !important;
+        }
+        #modalRegister.theme-charcoal #dfD {
+            background: #18181b !important;
+            border-color: #059669 !important;
+            color: #6ee7b7 !important;
+        }
+        #modalRegister.theme-midnight #dfP,
+        #modalRegister.theme-dark #dfP {
+            background: #0f172a !important;
+            border-color: #38bdf8 !important;
+            color: #93c5fd !important;
+        }
+        #modalRegister.theme-midnight #dfII,
+        #modalRegister.theme-dark #dfII {
+            background: #0f172a !important;
+            border-color: #34d399 !important;
+            color: #6ee7b7 !important;
+        }
+        #modalRegister.theme-charcoal #dfP {
+            background: #18181b !important;
+            border-color: #38bdf8 !important;
+            color: #93c5fd !important;
+        }
+        #modalRegister.theme-charcoal #dfII {
+            background: #18181b !important;
+            border-color: #10b981 !important;
+            color: #34d399 !important;
+        }
+
+        /* ══ TITLEBAR CONTROLS STYLES ══════════════════════════════════ */
+        .df-titlebar-btn {
+            background: rgba(255, 255, 255, 0.12);
+            border: 1px solid rgba(255, 255, 255, 0.22);
+            color: #f1f5f9;
+            padding: 2px 10px;
+            border-radius: 4px;
+            font-size: 11.5px;
+            font-weight: 700;
+            font-family: var(--ku);
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            height: 22px;
+            transition: all 0.15s ease;
+            user-select: none;
+        }
+        .df-titlebar-btn:hover {
+            background: rgba(255, 255, 255, 0.24);
+            color: #ffffff;
+            border-color: rgba(255, 255, 255, 0.4);
+            transform: translateY(-0.5px);
+        }
+        .df-titlebar-btn:active {
+            transform: translateY(0);
+        }
+        .df-theme-status-pill {
+            font-size: 10px;
+            font-weight: 800;
+            padding: 1px 8px;
+            border-radius: 12px;
+            background: rgba(56, 189, 248, 0.18);
+            color: #38bdf8;
+            border: 1px solid rgba(56, 189, 248, 0.35);
+            display: inline-flex;
+            align-items: center;
+            letter-spacing: 0.2px;
+        }
+        .df-theme-picker-menu {
+            position: absolute;
+            left: 0;
+            top: calc(100% + 5px);
+            background: #0f172a;
+            border: 1px solid #334155;
+            border-radius: 6px;
+            box-shadow: 0 12px 30px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(255, 255, 255, 0.05);
+            padding: 4px 0;
+            z-index: 2000;
+            display: none;
+            min-width: 205px;
+            direction: rtl;
+        }
+        .df-theme-opt {
+            padding: 7px 12px;
+            font-size: 12.5px;
+            font-weight: 700;
+            color: #f1f5f9;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 9px;
+            transition: all 0.12s ease;
+            font-family: var(--ku);
+        }
+        .df-theme-opt:hover {
+            background: #1e293b;
+            color: #38bdf8;
+        }
+        .df-theme-swatch {
+            width: 14px;
+            height: 14px;
+            border-radius: 50%;
+            display: inline-block;
+            flex-shrink: 0;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+        }
+
         .desktop-form-container {
             background: #ffffff;
             border: 1px solid #e2e8f0;
@@ -1555,7 +1965,7 @@
         <button class="btn-update-topbar" id="btnTopbarUpdate" onclick="openSystemUpdateModal()" title="پشکنین و نوێکردنەوەی سیستەم">
             <span style="font-size:14px; animation: spin-slow 8s linear infinite; display:inline-block;">🔄</span>
             <span>ئەپدەیت</span>
-            <span class="badge-ver" id="topbarVerBadge">v1.5.1</span>
+            <span class="badge-ver" id="topbarVerBadge">v1.5.2</span>
         </button>
         <button class="btn-out" id="logoutBtn">⬅ دەرچوون</button>
     </div>
@@ -2093,11 +2503,48 @@
     <div class="modal modal-desktop">
         <!-- Windows Form Window Header -->
         <div class="desktop-window-titlebar">
-            <div style="display:flex;align-items:center;gap:8px;">
-                <span style="font-size:14px;">🚗</span>
+            <div style="display:flex;align-items:center;gap:10px;">
+                <span style="font-size:15px;">🚗</span>
                 <span class="desktop-window-title">ALL - فۆڕمی پشکنین و تۆمارکردنی سوارڕەو</span>
+                <span class="df-theme-status-pill" id="dfThemeStatusPill">کلاسیک ڕووناک</span>
             </div>
-            <button class="desktop-btn-close" onclick="closeOverlay('modalRegister')" title="داخستن">✕</button>
+
+            <div style="display:flex;align-items:center;gap:8px;">
+                <!-- Theme Palette Selector Button -->
+                <div class="df-theme-picker-wrap" style="position:relative;">
+                    <button type="button" class="df-titlebar-btn" id="dfBtnBgPicker" onclick="toggleThemePickerMenu(event)" title="گۆڕینی باکگراوند و ڕەنگی فۆڕم">
+                        <span>🎨 باکگراوند</span>
+                        <span style="font-size:9px;">▼</span>
+                    </button>
+                    <div class="df-theme-picker-menu" id="dfThemePickerMenu">
+                        <div class="df-theme-opt" onclick="setRegisterTheme('light', event)">
+                            <span class="df-theme-swatch" style="background:#f8fafc;border:1px solid #94a3b8;"></span>
+                            <span>☀️ کلاسیک ڕووناک (Default)</span>
+                        </div>
+                        <div class="df-theme-opt" onclick="setRegisterTheme('midnight', event)">
+                            <span class="df-theme-swatch" style="background:#090e17;border:1px solid #38bdf8;"></span>
+                            <span>🌙 دارکی شاهانە (Midnight)</span>
+                        </div>
+                        <div class="df-theme-opt" onclick="setRegisterTheme('charcoal', event)">
+                            <span class="df-theme-swatch" style="background:#18181b;border:1px solid #10b981;"></span>
+                            <span>🌑 خەڵوزی پرۆ (Charcoal)</span>
+                        </div>
+                        <div class="df-theme-opt" onclick="setRegisterTheme('warm', event)">
+                            <span class="df-theme-swatch" style="background:#f7f3ea;border:1px solid #d97706;"></span>
+                            <span>🌾 چاوحەوێن (Warm Comfort)</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Quick Dark / Light Toggle Button -->
+                <button type="button" class="df-titlebar-btn df-btn-dark-toggle" id="dfBtnDarkToggle" onclick="toggleRegisterDarkMode()" title="تۆگڵی دارک / ڕووناک">
+                    <span id="dfDarkToggleIcon">🌙</span>
+                    <span id="dfDarkToggleText">دارک</span>
+                </button>
+
+                <!-- Close Button -->
+                <button class="desktop-btn-close" onclick="closeOverlay('modalRegister')" title="داخستن">✕</button>
+            </div>
         </div>
 
         <div class="desktop-body-wrapper">
@@ -2105,18 +2552,18 @@
             
             <div class="desktop-form-container">
                 <!-- TOP BANNER: INSPECTION PLACE IN RIGHT CORNER, CENTER BILINGUAL TITLE, USER BADGE 9 (ROW 0) -->
-                <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;padding:3px 8px;background:#f8fafc;border:1px solid #e2e8f0;border-radius:8px;">
+                <div class="df-top-banner">
                     <!-- RIGHT CORNER: شوێنی پشکنین (Inspection Place) -->
                     <div style="display:flex;align-items:center;gap:6px;">
-                        <span style="font-size:12.5px;font-weight:800;color:#334155;white-space:nowrap;">📍 شوێنی پشکنین:</span>
-                        <input type="text" id="dfD" list="globalPlaceList" style="width:150px;background:#ffffff;font-weight:800;font-size:13px;color:#1e3a8a;border:1.5px solid #93c5fd;border-radius:6px;padding:2px 8px;text-align:center;outline:none;" placeholder="شوێنی پشکنین..." onchange="onGlobalPlaceChange(this.value)">
+                        <span class="df-label" style="font-size:12.5px;font-weight:800;white-space:nowrap;">📍 شوێنی پشکنین:</span>
+                        <input type="text" id="dfD" list="globalPlaceList" class="df-input" style="width:150px;font-weight:800;font-size:13px;text-align:center;" placeholder="شوێنی پشکنین..." onchange="onGlobalPlaceChange(this.value)">
                     </div>
 
                     <!-- CENTER TITLE -->
                     <div style="text-align:center;font-size:17px;font-weight:900;letter-spacing:0.3px;display:flex;align-items:center;gap:10px;">
-                        <span style="color:#1e3a8a;">بەڕێوەبەرایەتی هاتووچۆی پارێزگای سلێمانی</span>
+                        <span class="df-top-title-text" style="font-weight:900;">بەڕێوەبەرایەتی هاتووچۆی پارێزگای سلێمانی</span>
                         <span style="display:inline-block;width:5px;height:5px;background:#94a3b8;border-radius:50%;"></span>
-                        <span style="color:#991b1b;background:#fff1f2;padding:2px 10px;border-radius:6px;border:1px solid #fecdd3;font-size:15px;">هۆبەی پشکنین</span>
+                        <span style="color:#991b1b;background:#fff1f2;padding:2px 10px;border-radius:6px;border:1px solid #fecdd3;font-size:15px;font-weight:900;">هۆبەی پشکنین</span>
                     </div>
 
                     <!-- LEFT CORNER: USER BADGE -->
@@ -2124,12 +2571,12 @@
                 </div>
 
                 <!-- BARCODE SCANNER ROW (گەڕان بە بارکۆد ڕیدەر لە تەیبڵی ڤی ئەی VA) -->
-                <div style="background: linear-gradient(135deg, #f0f7ff 0%, #e0f2fe 100%); border: 1.5px solid #93c5fd; border-radius: 8px; padding: 5px 12px; margin-bottom: 6px; display: flex; align-items: center; justify-content: space-between; gap: 12px; box-shadow: 0 2px 6px rgba(37,99,235,0.06);">
+                <div class="df-barcode-scanner-bar">
                     <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
                         <span style="font-size:18px; line-height:1;">📷</span>
-                        <label for="dfBarcodeVA" style="font-size:13px; font-weight:800; color:#1e40af; cursor:pointer; white-space:nowrap;">گەڕان بە پێی بارکۆد ڕیدەر:</label>
-                        <input type="text" id="dfBarcodeVA" class="df-input auto-en-upper" placeholder="بارکۆد لێرە لێبدە..." autocomplete="off" lang="en" dir="ltr" autocapitalize="characters" spellcheck="false" style="width:280px; height:32px; font-size:15.5px; font-weight:800; text-align:center; border:1.5px solid #60a5fa; border-radius:6px; background:#ffffff; color:#0f172a; outline:none; direction:ltr !important; font-family:'JetBrains Mono', Consolas, monospace !important; text-transform:uppercase;" oninput="this.value = sanitizeEnglishBarcode(this.value);" onchange="onBarcodeVAChange()" onkeydown="if(event.key==='Enter'){event.preventDefault();event.stopPropagation();onBarcodeVAChange();}">
-                        <button type="button" onclick="onBarcodeVAChange()" style="background:linear-gradient(180deg, #3b82f6 0%, #2563eb 100%); color:#ffffff; font-weight:800; font-size:13px; height:32px; padding:0 18px; border:1px solid #1d4ed8; border-radius:6px; cursor:pointer; display:flex; align-items:center; gap:6px; box-shadow:0 2px 4px rgba(37,99,235,0.2);">
+                        <label for="dfBarcodeVA" style="font-size:13px; font-weight:800; cursor:pointer; white-space:nowrap;">گەڕان بە پێی بارکۆد ڕیدەر:</label>
+                        <input type="text" id="dfBarcodeVA" class="df-input auto-en-upper" placeholder="بارکۆد لێرە لێبدە..." autocomplete="off" lang="en" dir="ltr" autocapitalize="characters" spellcheck="false" style="width:280px; height:32px; font-size:15.5px; font-weight:800; text-align:center; outline:none; direction:ltr !important; font-family:'JetBrains Mono', Consolas, monospace !important; text-transform:uppercase;" oninput="this.value = sanitizeEnglishBarcode(this.value);" onchange="onBarcodeVAChange()" onkeydown="if(event.key==='Enter'){event.preventDefault();event.stopPropagation();onBarcodeVAChange();}">
+                        <button type="button" onclick="onBarcodeVAChange()" class="df-btn-search" style="height:32px; padding:0 18px; font-size:13px;">
                             <span>🔍 گەڕان بە بارکۆد</span>
                         </button>
                     </div>
@@ -2311,7 +2758,7 @@
                 </div>
 
                 <!-- ROW 9 (Trailer 1) -->
-                <div style="border-top: 1px dashed #e2e8f0; padding-top: 4px; margin-top: 2px;">
+                <div class="df-trailer-group">
                     <div class="df-row">
                         <span class="df-label">جۆری پاشگری یەکەم</span>
                         <input type="text" id="dfV" class="df-input c4-kurd" style="flex:1;">
@@ -2332,7 +2779,7 @@
                 </div>
 
                 <!-- ROW 10 (Trailer 2) -->
-                <div style="border-top: 1px dashed #e2e8f0; padding-top: 4px; margin-top: 2px;">
+                <div class="df-trailer-group">
                     <div class="df-row">
                         <span class="df-label">جۆری پاشگری دووەم</span>
                         <input type="text" id="dfZ" class="df-input c4-kurd" style="flex:1;">
@@ -2367,7 +2814,10 @@
                         <button type="button" class="btn-df btn-df-orange" onclick="dfUpdateVehicle()">
                             <span>✏️ ڕاست کردنەوەی زانیاری لە کاتی ڕاکێشان و کەم و کورتی</span>
                         </button>
-                        <label style="display:inline-flex;align-items:center;gap:6px;cursor:pointer;font-size:12.5px;font-weight:700;color:#334155;background:#f8fafc;padding:5px 12px;border-radius:6px;border:1.5px solid #cbd5e1;user-select:none;margin-right:4px;" title="لە کاتی کارپێکردن بە دۆخی بێ دایالۆگ (Silent Print) یەکسەر پەڕەکە لە پرنتەرەوە دێتە دەرەوە">
+                        <label class="df-direct-print-label" style="display:inline-flex;align-items:center;gap:6px;cursor:pointer;font-size:12.5px;font-weight:700;padding:5px 12px;border-radius:6px;user-select:none;margin-right:4px;" title="لە کاتی کارپێکردن بە دۆخی بێ دایالۆگ (Silent Print) یەکسەر پەڕەکە لە پرنتەرەوە دێتە دەرەوە">
+                            <input type="checkbox" id="dfAutoPrintCheck" checked style="width:16px;height:16px;cursor:pointer;accent-color:#2563eb;">
+                            <span>🖨️ چاپی ڕاستەوخۆ لەکاتی تۆمارکردن</span>
+                        </label>
                             <input type="checkbox" id="dfAutoPrintCheck" checked style="width:16px;height:16px;cursor:pointer;accent-color:#2563eb;">
                             <span>🖨️ چاپی ڕاستەوخۆ لەکاتی تۆمارکردن</span>
                         </label>
@@ -2852,7 +3302,7 @@
                 <span>نوێکردنەوەی سیستەمی بەرنامە (System Auto-Updater)</span>
             </div>
             <div style="display:flex; align-items:center; gap:10px;">
-                <span style="background: rgba(56, 189, 248, 0.2); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.4); padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 800;" id="updateModalVersionBadge">v1.5.1</span>
+                <span style="background: rgba(56, 189, 248, 0.2); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.4); padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 800;" id="updateModalVersionBadge">v1.5.2</span>
                 <button class="modal-close" style="color: #ffffff;" onclick="closeOverlay('modalSystemUpdate')">✕</button>
             </div>
         </div>
@@ -3384,14 +3834,17 @@ function updateKeyLength() {
         const cleanVal = dfR.value.replace(/\s+/g, '');
         const count = cleanVal.length;
         keyLenEl.value = count;
+        const modal = document.getElementById('modalRegister');
+        const isDark = modal && (modal.classList.contains('theme-midnight') || modal.classList.contains('theme-charcoal') || modal.classList.contains('theme-dark'));
+        
         if (count === 17) {
-            keyLenEl.style.background = '#dcfce7';
-            keyLenEl.style.color = '#15803d';
-            keyLenEl.style.borderColor = '#22c55e';
+            keyLenEl.style.background = isDark ? '#064e3b' : '#dcfce7';
+            keyLenEl.style.color = isDark ? '#6ee7b7' : '#15803d';
+            keyLenEl.style.borderColor = isDark ? '#10b981' : '#22c55e';
         } else {
-            keyLenEl.style.background = '#fef08a';
-            keyLenEl.style.color = '#854d0e';
-            keyLenEl.style.borderColor = '#ca8a04';
+            keyLenEl.style.background = isDark ? '#451a03' : '#fef08a';
+            keyLenEl.style.color = isDark ? '#fde047' : '#854d0e';
+            keyLenEl.style.borderColor = isDark ? '#d97706' : '#ca8a04';
         }
     }
 }
@@ -4597,11 +5050,99 @@ function initEnterAsTab() {
     });
 }
 
+// ─── REGISTRATION FORM THEME & DARK MODE CONTROLLER ───────────────────
+function initRegisterTheme() {
+    const savedTheme = localStorage.getItem('traffic_register_theme') || 'light';
+    applyRegisterTheme(savedTheme, false);
+}
+
+function applyRegisterTheme(themeName, showNotification = true) {
+    const modal = document.getElementById('modalRegister');
+    if (!modal) return;
+
+    modal.classList.remove('theme-light', 'theme-midnight', 'theme-charcoal', 'theme-warm', 'theme-dark');
+
+    let label = 'کلاسیک ڕووناک';
+    let isDark = false;
+
+    if (themeName === 'midnight' || themeName === 'dark') {
+        modal.classList.add('theme-midnight');
+        label = 'دارکی شاهانە (Midnight)';
+        isDark = true;
+    } else if (themeName === 'charcoal') {
+        modal.classList.add('theme-charcoal');
+        label = 'خەڵوزی پرۆ (Charcoal)';
+        isDark = true;
+    } else if (themeName === 'warm') {
+        modal.classList.add('theme-warm');
+        label = 'چاوحەوێن (Warm Comfort)';
+        isDark = false;
+    } else {
+        modal.classList.add('theme-light');
+        label = 'کلاسیک ڕووناک';
+        isDark = false;
+    }
+
+    localStorage.setItem('traffic_register_theme', themeName);
+
+    // Update buttons in titlebar
+    const darkToggleIcon = document.getElementById('dfDarkToggleIcon');
+    const darkToggleText = document.getElementById('dfDarkToggleText');
+    const statusPill = document.getElementById('dfThemeStatusPill');
+
+    if (darkToggleIcon && darkToggleText) {
+        darkToggleIcon.textContent = isDark ? '☀️' : '🌙';
+        darkToggleText.textContent = isDark ? 'ڕووناک' : 'دارک';
+    }
+    if (statusPill) {
+        statusPill.textContent = label;
+    }
+
+    if (typeof updateKeyLength === 'function') {
+        updateKeyLength();
+    }
+
+    if (showNotification && typeof showToast === 'function') {
+        showToast(`🎨 ڕووکاری فۆڕم گۆڕدرا بۆ: ${label}`);
+    }
+}
+
+function toggleRegisterDarkMode() {
+    const current = localStorage.getItem('traffic_register_theme') || 'light';
+    if (current === 'midnight' || current === 'charcoal' || current === 'dark') {
+        applyRegisterTheme('light');
+    } else {
+        applyRegisterTheme('midnight');
+    }
+}
+
+function setRegisterTheme(themeName, event) {
+    if (event) event.stopPropagation();
+    applyRegisterTheme(themeName);
+    const menu = document.getElementById('dfThemePickerMenu');
+    if (menu) menu.style.display = 'none';
+}
+
+function toggleThemePickerMenu(event) {
+    if (event) event.stopPropagation();
+    const menu = document.getElementById('dfThemePickerMenu');
+    if (!menu) return;
+    menu.style.display = (menu.style.display === 'block') ? 'none' : 'block';
+}
+
+document.addEventListener('click', (e) => {
+    if (!e.target.closest('.df-theme-picker-wrap')) {
+        const menu = document.getElementById('dfThemePickerMenu');
+        if (menu) menu.style.display = 'none';
+    }
+});
+
 // ─── 1. MODULE: REGISTER VEHICLE (EXACT C# DESKTOP LOGIC) ───────────────
 let loadedVehicleId = null;
 
 function openRegisterModal() {
     try {
+        initRegisterTheme();
         initEnterAsTab();
         initFeeCombobox();
         initFeeTransactionSync();
@@ -8607,14 +9148,14 @@ function showSuspDetail(data) {
 }
 
 // ─── 12. SYSTEM AUTO-UPDATER & VERSION LOGIC ─────────────────────────────
-let currentAppVersion = '1.5.1';
+let currentAppVersion = '1.5.2';
 
 async function loadSystemVersion() {
     try {
         const res = await fetch('/api/system/version');
         if (res.ok) {
             const data = await res.json();
-            currentAppVersion = data.version || '1.5.1';
+            currentAppVersion = data.version || '1.5.2';
             const verStr = `v${currentAppVersion}`;
             const topBadge = document.getElementById('topbarVerBadge');
             if (topBadge) topBadge.textContent = verStr;
@@ -8799,8 +9340,9 @@ async function performSystemUpdate(isForce = false) {
     }
 }
 
-// Initial version fetch
+// Initial version fetch & register theme
 setTimeout(loadSystemVersion, 500);
+setTimeout(initRegisterTheme, 300);
 </script>
 </body>
 </html>
