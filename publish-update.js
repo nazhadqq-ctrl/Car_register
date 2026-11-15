@@ -32,6 +32,7 @@ const FILES_TO_PUBLISH = [
     'public/preview_gomrg.html',
     'public/profile-avatar.jpg',
     'public/traffic-it-logo.jpg',
+    'public/app-icon.png',
     'Update_TrafficCheck.bat',
     'Start_Silent_Print_Chrome.bat',
     'Start_Silent_Print_Edge.bat'
