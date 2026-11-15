@@ -589,6 +589,160 @@ app.get('/api/stats', requireAuth, async (req, res) => {
     }
 });
 
+// ─── DASHBOARD TODAY RECORDS (DATA GRID VIEW) ───────────────────────────
+app.get('/api/dashboard/today-records', requireAuth, async (req, res) => {
+    try {
+        const pool = await getPool();
+        const currentUser = req.session.user || {};
+        const isManager = Boolean(
+            currentUser.permission === 'MANAGER' || 
+            currentUser.place === '*' || 
+            currentUser.username === '9' ||
+            String(currentUser.permission || '').toUpperCase() === 'ADMIN'
+        );
+
+        const category = String(req.query.category || 'registration').toLowerCase();
+        const requestedScope = req.query.scope; // 'all' or 'user'
+        const shouldFilterByUser = (!requestedScope) || requestedScope === 'user' || (!isManager);
+
+        const userName = (currentUser.name || currentUser.username || '').trim();
+        const userId = (currentUser.username || '').trim();
+        const searchTerm = (req.query.q || '').trim();
+
+        const request = pool.request();
+        request.input('userName', sql.NVarChar, userName);
+        request.input('userId', sql.NVarChar, userId);
+        if (searchTerm) {
+            request.input('searchTerm', sql.NVarChar, `%${searchTerm}%`);
+        }
+
+        let query = '';
+
+        if (category === 'registration' || category === 't1') {
+            let filter = 'CAST(DD as date) = CAST(GETDATE() as date)';
+            if (shouldFilterByUser) {
+                filter += ' AND (GG = @userName OR FF = @userName OR FF = @userId OR GG = @userId)';
+            }
+            if (searchTerm) {
+                filter += ' AND (A LIKE @searchTerm OR R LIKE @searchTerm OR G LIKE @searchTerm OR E LIKE @searchTerm OR P LIKE @searchTerm OR KK LIKE @searchTerm)';
+            }
+            query = `
+                SELECT TOP 300
+                    id,
+                    A as plateNo,
+                    B as province,
+                    C as plateType,
+                    D as place,
+                    E as carType,
+                    P as model,
+                    L as color,
+                    R as chassis,
+                    G as owner,
+                    H as transactionType,
+                    DD as date_,
+                    FF as registrar,
+                    GG as checker,
+                    KK as barcode
+                FROM T1
+                WHERE ${filter}
+                ORDER BY id DESC
+            `;
+        } else if (category === 'gomrg') {
+            let filter = 'CAST(date_insert as date) = CAST(GETDATE() as date)';
+            if (shouldFilterByUser) {
+                filter += ' AND (user_ = @userName OR user_ = @userId)';
+            }
+            if (searchTerm) {
+                filter += ' AND (car_n LIKE @searchTerm OR shassy LIKE @searchTerm OR Full_name LIKE @searchTerm OR car_type LIKE @searchTerm OR CAST(IDD AS NVARCHAR) LIKE @searchTerm)';
+            }
+            query = `
+                SELECT TOP 300
+                    id,
+                    IDD,
+                    car_n as plateNo,
+                    parezga as province,
+                    bash as plateType,
+                    shassy as chassis,
+                    car_type as carType,
+                    model,
+                    Full_name as owner,
+                    resoon as reason,
+                    place,
+                    date_insert as date_,
+                    user_ as registrar
+                FROM Gomrg
+                WHERE ${filter}
+                ORDER BY id DESC
+            `;
+        } else if (category === 'raport') {
+            let filter = 'CAST(O as date) = CAST(GETDATE() as date)';
+            if (shouldFilterByUser) {
+                filter += ' AND (R = @userName OR R = @userId)';
+            }
+            if (searchTerm) {
+                filter += ' AND (A LIKE @searchTerm OR D LIKE @searchTerm OR F LIKE @searchTerm OR H LIKE @searchTerm OR I LIKE @searchTerm)';
+            }
+            query = `
+                SELECT TOP 300
+                    id,
+                    A as plateNo,
+                    B as province,
+                    C as plateType,
+                    D as chassis,
+                    E as chassisProblem,
+                    F as carType,
+                    G as model,
+                    H as problem,
+                    I as sentTo,
+                    O as date_,
+                    P as place,
+                    R as registrar,
+                    S as outSeq
+                FROM RAP
+                WHERE ${filter}
+                ORDER BY id DESC
+            `;
+        } else if (category === 'hijz') {
+            let filter = 'CAST(Date_Releasing as date) = CAST(GETDATE() as date)';
+            if (shouldFilterByUser) {
+                filter += ' AND (UUser = @userName OR UUser = @userId)';
+            }
+            if (searchTerm) {
+                filter += ' AND (Auto_No LIKE @searchTerm OR Reg_Name LIKE @searchTerm OR car_Note LIKE @searchTerm OR Place_ LIKE @searchTerm)';
+            }
+            query = `
+                SELECT TOP 300
+                    idd as id,
+                    Auto_No as plateNo,
+                    Place_ as province,
+                    Car_Plet as plateType,
+                    Date_Releasing as date_,
+                    Reg_Name as owner,
+                    car_Note as note,
+                    UUser as registrar
+                FROM Hijz
+                WHERE ${filter}
+                ORDER BY idd DESC
+            `;
+        } else {
+            return res.status(400).json({ error: 'جۆری نادیار' });
+        }
+
+        const result = await request.query(query);
+        res.json({
+            success: true,
+            category,
+            scope: shouldFilterByUser ? 'user' : 'all',
+            scopedName: shouldFilterByUser ? userName : 'گشتی (سەرجەم بەکارهێنەران)',
+            count: result.recordset.length,
+            records: result.recordset
+        });
+    } catch (err) {
+        console.error('Dashboard today records error:', err);
+        res.status(500).json({ error: err.message });
+    }
+});
+
 // ─── GET SUSPICIOUS VEHICLES (RAP) ──────────────────────────────────
 app.get('/api/suspicious', requireAuth, async (req, res) => {
     try {

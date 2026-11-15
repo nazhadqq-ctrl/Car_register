@@ -2773,7 +2773,261 @@
             color: #64748b;
             line-height: 1.6;
         }
-    </style>
+    
+        /* ══ TODAY'S DATA GRID VIEW (داتا گراید ڤیوی تۆمارەکانی ئەمڕۆ) ═══════ */
+        .stat-card-modern.active-card {
+            border-color: var(--card-accent, #0284c7) !important;
+            box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.25), 0 10px 25px rgba(15, 23, 42, 0.08) !important;
+            transform: translateY(-2px);
+        }
+        .stat-card-modern.active-card::before {
+            height: 5px !important;
+        }
+
+        .today-grid-container {
+            background: #ffffff;
+            border: 1.5px solid #cbd5e1;
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(15, 23, 42, 0.06);
+            margin-bottom: 24px;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            transition: all 0.2s ease;
+        }
+        .today-grid-header {
+            background: linear-gradient(135deg, #090e17 0%, #0f1d38 100%);
+            color: #ffffff;
+            padding: 14px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 12px;
+            border-bottom: 2px solid #38bdf8;
+        }
+        .today-grid-title-box {
+            display: flex;
+            flex-direction: column;
+            gap: 3px;
+        }
+        .today-grid-main-title {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 15.5px;
+            font-weight: 900;
+            color: #38bdf8;
+            font-family: var(--ku), sans-serif;
+        }
+        .today-grid-count-badge {
+            background: rgba(56, 189, 248, 0.2);
+            color: #38bdf8;
+            border: 1px solid rgba(56, 189, 248, 0.4);
+            border-radius: 20px;
+            padding: 2px 10px;
+            font-size: 12px;
+            font-weight: 800;
+        }
+        .today-grid-sub {
+            font-size: 11.5px;
+            color: #94a3b8;
+            font-weight: 700;
+        }
+        .today-grid-tabs {
+            display: flex;
+            align-items: center;
+            background: rgba(15, 23, 42, 0.6);
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            padding: 4px;
+            border-radius: 10px;
+            gap: 4px;
+        }
+        .today-tab-btn {
+            background: transparent;
+            border: none;
+            color: #cbd5e1;
+            padding: 6px 14px;
+            border-radius: 7px;
+            font-size: 12.5px;
+            font-weight: 800;
+            cursor: pointer;
+            font-family: var(--ku), sans-serif;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            transition: all 0.2s ease;
+        }
+        .today-tab-btn:hover {
+            color: #ffffff;
+            background: rgba(255, 255, 255, 0.08);
+        }
+        .today-tab-btn.active {
+            background: linear-gradient(135deg, #0284c7, #0369a1);
+            color: #ffffff;
+            box-shadow: 0 2px 8px rgba(2, 132, 199, 0.4);
+        }
+        .today-tab-btn .tab-cnt {
+            background: rgba(0, 0, 0, 0.35);
+            color: #ffffff;
+            padding: 1px 7px;
+            border-radius: 999px;
+            font-size: 11px;
+            font-weight: 900;
+        }
+        .today-grid-actions {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+        .today-grid-search-wrap {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            background: rgba(15, 23, 42, 0.7);
+            border: 1.5px solid rgba(56, 189, 248, 0.35);
+            border-radius: 8px;
+            padding: 5px 12px;
+            transition: border-color 0.2s;
+        }
+        .today-grid-search-wrap:focus-within {
+            border-color: #38bdf8;
+            box-shadow: 0 0 0 2px rgba(56, 189, 248, 0.2);
+        }
+        .today-grid-search-wrap input {
+            background: transparent;
+            border: none;
+            outline: none;
+            color: #ffffff;
+            font-family: var(--ku), sans-serif;
+            font-size: 12.5px;
+            width: 190px;
+        }
+        .today-grid-search-wrap input::placeholder {
+            color: #64748b;
+        }
+        .btn-grid-action {
+            background: rgba(255, 255, 255, 0.1);
+            color: #ffffff;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            padding: 6px 12px;
+            border-radius: 7px;
+            font-size: 12px;
+            font-weight: 800;
+            cursor: pointer;
+            font-family: var(--ku), sans-serif;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            transition: all 0.2s;
+        }
+        .btn-grid-action:hover {
+            background: rgba(255, 255, 255, 0.2);
+            transform: translateY(-1px);
+        }
+        .btn-grid-action.refresh {
+            background: rgba(56, 189, 248, 0.15);
+            border-color: rgba(56, 189, 248, 0.4);
+            color: #38bdf8;
+        }
+        .btn-grid-action.refresh:hover {
+            background: #0284c7;
+            color: #ffffff;
+        }
+
+        .today-grid-table-wrap {
+            position: relative;
+            max-height: 440px;
+            overflow: auto;
+            background: #ffffff;
+        }
+        .today-datagrid {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 12.5px;
+            text-align: right;
+            direction: rtl;
+        }
+        .today-datagrid thead tr {
+            position: sticky;
+            top: 0;
+            z-index: 5;
+            background: #0f172a;
+            color: #ffffff;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+        }
+        .today-datagrid th {
+            padding: 10px 12px;
+            font-weight: 800;
+            color: #e2e8f0;
+            border-bottom: 2px solid #0284c7;
+            white-space: nowrap;
+            font-size: 12px;
+            background: #0f172a;
+        }
+        .today-datagrid td {
+            padding: 8px 12px;
+            border-bottom: 1px solid #f1f5f9;
+            color: #1e293b;
+            white-space: nowrap;
+            vertical-align: middle;
+        }
+        .today-datagrid tbody tr:nth-child(even) {
+            background: #f8fafc;
+        }
+        .today-datagrid tbody tr:hover {
+            background: #e0f2fe !important;
+        }
+        .today-grid-empty, .today-grid-loading {
+            padding: 45px 20px;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        .today-grid-footer {
+            background: #f8fafc;
+            border-top: 1px solid #e2e8f0;
+            padding: 9px 18px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+        .btn-row-action {
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+            padding: 4px 10px;
+            border-radius: 6px;
+            font-size: 11px;
+            font-weight: 800;
+            cursor: pointer;
+            border: 1px solid transparent;
+            font-family: inherit;
+            transition: all 0.15s ease;
+        }
+        .btn-row-action.view {
+            background: #eff6ff;
+            color: #1d4ed8;
+            border-color: #bfdbfe;
+        }
+        .btn-row-action.view:hover {
+            background: #1d4ed8;
+            color: #ffffff;
+        }
+        .btn-row-action.print {
+            background: #ecfdf5;
+            color: #047857;
+            border-color: #a7f3d0;
+        }
+        .btn-row-action.print:hover {
+            background: #047857;
+            color: #ffffff;
+        }
+
+</style>
 </head>
 <body>
 
@@ -2843,7 +3097,7 @@
     <!-- ══ 4 MODERN STAT CARDS: TODAY'S EMPLOYEE OPERATIONS ═══════════ -->
     <div class="stats-row">
         <!-- Card 1: Registration (تۆمارکردن) -->
-        <div class="stat-card-modern blue" onclick="openRegisterModal()" style="cursor:pointer;" title="تۆمارکردنەکانی ئەمڕۆت لە فۆرمی سەرەکی">
+        <div class="stat-card-modern blue active-card" id="cardStatReg" onclick="selectTodayGridCategory('registration')" style="cursor:pointer;" title="پیشاندانی داتا گراید ڤیوی تۆمارکردنەکانی ئەمڕۆت">
             <div class="stat-main-info">
                 <div class="sval" id="statRegToday">0</div>
                 <div class="slabel">تۆمارکردن (ئەمڕۆ)</div>
@@ -2853,7 +3107,7 @@
         </div>
 
         <!-- Card 2: Customs (گومرگ) -->
-        <div class="stat-card-modern green" onclick="openGomrgModal()" style="cursor:pointer;" title="نوسراوەکانی گومرگی ئەمڕۆت">
+        <div class="stat-card-modern green" id="cardStatGomrg" onclick="selectTodayGridCategory('gomrg')" style="cursor:pointer;" title="پیشاندانی داتا گراید ڤیوی نوسراوەکانی گومرگی ئەمڕۆت">
             <div class="stat-main-info">
                 <div class="sval" id="statGomrgToday">0</div>
                 <div class="slabel">گومرگ (ئەمڕۆ)</div>
@@ -2863,7 +3117,7 @@
         </div>
 
         <!-- Card 3: Raport (ڕاپۆرت) -->
-        <div class="stat-card-modern amber" onclick="openRaportPage()" style="cursor:pointer;" title="ڕاپۆرتەکانی کێشەی ئۆتۆمبێلی ئەمڕۆت">
+        <div class="stat-card-modern amber" id="cardStatRap" onclick="selectTodayGridCategory('raport')" style="cursor:pointer;" title="پیشاندانی داتا گراید ڤیوی ڕاپۆرتەکانی کێشەی ئۆتۆمبێلی ئەمڕۆت">
             <div class="stat-main-info">
                 <div class="sval" id="statRapToday">0</div>
                 <div class="slabel">ڕاپۆرت (ئەمڕۆ)</div>
@@ -2873,13 +3127,103 @@
         </div>
 
         <!-- Card 4: Hijz (حیجزکردن) - تەنها بە دەسەڵاتی ئەدمین پیشان دەدرێت -->
-        <div class="stat-card-modern purple" id="cardStatHijz" onclick="openHijzListModal()" style="display:none; cursor:pointer;" title="ئۆتۆمبێلە حیجزکراوەکانی ئەمڕۆ (تایبەت بە دەسەڵاتی ئەدمین)">
+        <div class="stat-card-modern purple" id="cardStatHijz" onclick="selectTodayGridCategory('hijz')" style="display:none; cursor:pointer;" title="پیشاندانی داتا گراید ڤیوی ئۆتۆمبێلە حیجزکراوەکانی ئەمڕۆ">
             <div class="stat-main-info">
                 <div class="sval" id="statHijzToday">0</div>
                 <div class="slabel">حیجزکردن (ئەمڕۆ)</div>
                 <span class="stat-scope-badge" id="statBadgeHijz" style="background:#ede9fe; color:#6d28d9; font-weight:800;">👑 ئەدمین</span>
             </div>
             <div class="stat-icon-wrap">🔒</div>
+        </div>
+    </div>
+
+    <!-- ══ TODAY'S DATA GRID VIEW (داتا گراید ڤیوی داتاکانی ئەمڕۆ) ════════════ -->
+    <div class="today-grid-container" id="todayGridContainer">
+        <div class="today-grid-header">
+            <div class="today-grid-title-box">
+                <div class="today-grid-main-title">
+                    <span id="todayGridIcon">📊</span>
+                    <span id="todayGridTitleText">داتا گراید ڤیوی تۆمارەکانی ئەمڕۆ (تۆمارکردن - T1)</span>
+                    <span class="today-grid-count-badge" id="todayGridCountBadge">٠ تۆمار</span>
+                </div>
+                <div class="today-grid-sub" id="todayGridSubText">
+                    خشتەی پێرستی تەواوی ئەو داتایانەی لەلایەن بەکارهێنەر لە بەرواری ئەمڕۆ تۆمارکراون
+                </div>
+            </div>
+
+            <!-- Category Switcher Tabs -->
+            <div class="today-grid-tabs">
+                <button type="button" class="today-tab-btn active" id="tabGridReg" onclick="selectTodayGridCategory('registration')">
+                    <span>📝</span>
+                    <span>تۆمارکردن</span>
+                    <span class="tab-cnt" id="tabCntReg">0</span>
+                </button>
+                <button type="button" class="today-tab-btn" id="tabGridGomrg" onclick="selectTodayGridCategory('gomrg')">
+                    <span>🛃</span>
+                    <span>گومرگ</span>
+                    <span class="tab-cnt" id="tabCntGomrg">0</span>
+                </button>
+                <button type="button" class="today-tab-btn" id="tabGridRap" onclick="selectTodayGridCategory('raport')">
+                    <span>📄</span>
+                    <span>ڕاپۆرت</span>
+                    <span class="tab-cnt" id="tabCntRap">0</span>
+                </button>
+                <button type="button" class="today-tab-btn" id="tabGridHijz" onclick="selectTodayGridCategory('hijz')" style="display:none;">
+                    <span>🔒</span>
+                    <span>حیجزکردن</span>
+                    <span class="tab-cnt" id="tabCntHijz">0</span>
+                </button>
+            </div>
+
+            <!-- Search & Actions -->
+            <div class="today-grid-actions">
+                <div class="today-grid-search-wrap">
+                    <span style="font-size:14px; color:#94a3b8;">🔍</span>
+                    <input type="text" id="todayGridSearchInput" placeholder="فلتەرکردنی خشتە بە تابلۆ، شاسی..." oninput="filterTodayGridClient(this.value)">
+                </div>
+                <button type="button" class="btn-grid-action refresh" onclick="reloadTodayDataGrid()" title="نوێکردنەوەی خشتە">
+                    <span>🔄</span>
+                    <span>نوێکردنەوە</span>
+                </button>
+                <button type="button" class="btn-grid-action" onclick="printTodayDataGrid()" title="چاپی خشتەی داتاکان">
+                    <span>🖨️</span>
+                    <span>چاپکردنی خشتە</span>
+                </button>
+            </div>
+        </div>
+
+        <!-- Table Viewport -->
+        <div class="today-grid-table-wrap" id="todayGridTableWrap">
+            <table class="today-datagrid" id="todayDataGridTable">
+                <thead id="todayGridThead">
+                </thead>
+                <tbody id="todayGridTbody">
+                </tbody>
+            </table>
+            <!-- Empty state placeholder -->
+            <div id="todayGridEmptyState" class="today-grid-empty" style="display:none;">
+                <div style="font-size:38px; margin-bottom:8px;">📋</div>
+                <div style="font-size:15px; font-weight:800; color:#334155;">هیچ داتایەک نەدۆزرایەوە</div>
+                <div style="font-size:12.5px; color:#64748b; margin-top:4px;" id="todayGridEmptyMsg">
+                    لە بەرواری ئەمڕۆدا هیچ تۆمارێک لەلایەن ئەم بەکارهێنەرەوە ئەنجام نەدراوە.
+                </div>
+            </div>
+            <!-- Loading state spinner -->
+            <div id="todayGridLoadingState" class="today-grid-loading" style="display:none;">
+                <div class="spinner"></div>
+                <div style="font-size:13px; font-weight:700; color:#0284c7; margin-top:8px;">لە بارکردنی داتاکانی ئەمڕۆدایە...</div>
+            </div>
+        </div>
+
+        <!-- Grid Footer Bar: Summary & Date -->
+        <div class="today-grid-footer">
+            <div id="todayGridFooterInfo" style="font-size:12.5px; color:#64748b; font-weight:700;">
+                پیشاندانی هەموو تۆمارەکانی ئەمڕۆ
+            </div>
+            <div style="display:flex; align-items:center; gap:8px;">
+                <span style="font-size:12px; color:#94a3b8;">بەرواری ئەمڕۆ:</span>
+                <span id="todayGridFooterDate" style="background:#e2e8f0; color:#0f172a; padding:2px 8px; border-radius:4px; font-weight:800; font-size:12px;"></span>
+            </div>
         </div>
     </div>
 
@@ -10533,6 +10877,421 @@ async function loadSuspicious() {
 // ─── STATS & REPORTS ───────────────────────────────────────────────────
 let currentStatScope = 'user'; // Defaults directly to logged-in user
 
+
+// ─── DASHBOARD TODAY RECORDS DATA GRID VIEW ─────────────────────────────
+let currentTodayGridCategory = 'registration';
+let currentTodayRecords = [];
+
+function selectTodayGridCategory(cat) {
+    currentTodayGridCategory = cat;
+
+    // Update active class on the 4 top stat cards
+    const cReg = document.getElementById('cardStatReg');
+    const cGomrg = document.getElementById('cardStatGomrg');
+    const cRap = document.getElementById('cardStatRap');
+    const cHijz = document.getElementById('cardStatHijz');
+
+    if (cReg) cReg.classList.toggle('active-card', cat === 'registration');
+    if (cGomrg) cGomrg.classList.toggle('active-card', cat === 'gomrg');
+    if (cRap) cRap.classList.toggle('active-card', cat === 'raport');
+    if (cHijz) cHijz.classList.toggle('active-card', cat === 'hijz');
+
+    // Update active class on DataGridView tab buttons
+    const tReg = document.getElementById('tabGridReg');
+    const tGomrg = document.getElementById('tabGridGomrg');
+    const tRap = document.getElementById('tabGridRap');
+    const tHijz = document.getElementById('tabGridHijz');
+
+    if (tReg) tReg.classList.toggle('active', cat === 'registration');
+    if (tGomrg) tGomrg.classList.toggle('active', cat === 'gomrg');
+    if (tRap) tRap.classList.toggle('active', cat === 'raport');
+    if (tHijz) tHijz.classList.toggle('active', cat === 'hijz');
+
+    // Reset search box
+    const sInput = document.getElementById('todayGridSearchInput');
+    if (sInput) sInput.value = '';
+
+    fetchTodayDataGrid();
+
+    // Smooth scroll down to grid view
+    const gridEl = document.getElementById('todayGridContainer');
+    if (gridEl) {
+        gridEl.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    }
+}
+
+async function fetchTodayDataGrid(searchQuery = '') {
+    const tableWrap = document.getElementById('todayGridTableWrap');
+    const tbody = document.getElementById('todayGridTbody');
+    const thead = document.getElementById('todayGridThead');
+    const emptyBox = document.getElementById('todayGridEmptyState');
+    const loadingBox = document.getElementById('todayGridLoadingState');
+    const countBadge = document.getElementById('todayGridCountBadge');
+    const titleText = document.getElementById('todayGridTitleText');
+    const iconEl = document.getElementById('todayGridIcon');
+    const subText = document.getElementById('todayGridSubText');
+    const footerDate = document.getElementById('todayGridFooterDate');
+
+    if (loadingBox) loadingBox.style.display = 'flex';
+    if (emptyBox) emptyBox.style.display = 'none';
+    if (tbody) tbody.innerHTML = '';
+
+    if (footerDate) {
+        footerDate.textContent = new Date().toISOString().slice(0, 10);
+    }
+
+    try {
+        const cat = currentTodayGridCategory || 'registration';
+        const scope = (typeof currentStatScope !== 'undefined') ? currentStatScope : 'user';
+        const url = `/api/dashboard/today-records?category=${cat}&scope=${scope}${searchQuery ? '&q=' + encodeURIComponent(searchQuery) : ''}`;
+        
+        const res = await fetch(url).then(r => r.json());
+        if (loadingBox) loadingBox.style.display = 'none';
+
+        if (!res.success) {
+            throw new Error(res.error || 'هەڵە لە وەرگرتنی داتا');
+        }
+
+        currentTodayRecords = res.records || [];
+        renderTodayDataGrid(currentTodayRecords);
+
+    } catch (err) {
+        if (loadingBox) loadingBox.style.display = 'none';
+        if (emptyBox) {
+            emptyBox.style.display = 'flex';
+            const msgEl = document.getElementById('todayGridEmptyMsg');
+            if (msgEl) msgEl.textContent = 'کێشە لە وەرگرتنی داتاکان: ' + err.message;
+        }
+    }
+}
+
+function renderTodayDataGrid(records) {
+    const thead = document.getElementById('todayGridThead');
+    const tbody = document.getElementById('todayGridTbody');
+    const emptyBox = document.getElementById('todayGridEmptyState');
+    const countBadge = document.getElementById('todayGridCountBadge');
+    const titleText = document.getElementById('todayGridTitleText');
+    const iconEl = document.getElementById('todayGridIcon');
+    const subText = document.getElementById('todayGridSubText');
+    const footerInfo = document.getElementById('todayGridFooterInfo');
+
+    const cat = currentTodayGridCategory;
+    const catTitles = {
+        registration: { title: 'تۆمارکردنەکانی پشکنین (T1)', icon: '📝' },
+        gomrg: { title: 'نوسراوەکانی گومرگ (Gomrg)', icon: '🛃' },
+        raport: { title: 'فۆڕمی ڕاپۆرتی کێشەی ئۆتۆمبێل (Raport)', icon: '📄' },
+        hijz: { title: 'ئۆتۆمبێلە حیجزکراوەکان (Hijz)', icon: '🔒' }
+    };
+
+    const cur = catTitles[cat] || catTitles.registration;
+    if (titleText) titleText.textContent = `داتا گراید ڤیوی تۆمارەکانی ئەمڕۆ (${cur.title})`;
+    if (iconEl) iconEl.textContent = cur.icon;
+    if (countBadge) countBadge.textContent = `${(records.length || 0).toLocaleString()} تۆمار`;
+    if (footerInfo) footerInfo.textContent = `کۆی گشتی داتاکانی دۆزراوە: ${(records.length || 0)} تۆمار`;
+
+    if (!records || records.length === 0) {
+        if (tbody) tbody.innerHTML = '';
+        if (emptyBox) {
+            emptyBox.style.display = 'flex';
+            const msgEl = document.getElementById('todayGridEmptyMsg');
+            if (msgEl) msgEl.textContent = `هیچ داتایەکی تۆمارکراو بۆ (${cur.title}) لە بەرواری ئەمڕۆدا نەدۆزرایەوە.`;
+        }
+        return;
+    }
+
+    if (emptyBox) emptyBox.style.display = 'none';
+
+    // Build Table Header & Body according to active category
+    if (cat === 'registration') {
+        thead.innerHTML = `
+            <tr>
+                <th style="width:35px;">#</th>
+                <th>زنجیرە (ID)</th>
+                <th>ژمارەی تابلۆ</th>
+                <th>پارێزگا</th>
+                <th>جۆری تابلۆ</th>
+                <th>شاسی</th>
+                <th>جۆری ئۆتۆمبێل</th>
+                <th>مۆدێل</th>
+                <th>ڕەنگ</th>
+                <th>خاوەن</th>
+                <th>جۆری مامەڵە</th>
+                <th>بارکۆد</th>
+                <th>تۆمارکەر</th>
+                <th style="text-align:center;">کردار</th>
+            </tr>
+        `;
+        tbody.innerHTML = records.map((r, idx) => {
+            const plateBadge = `<span style="font-weight:900; color:#0f172a; font-family:monospace; font-size:13px;">${r.plateNo || '-'}</span>`;
+            const chassisStr = r.chassis ? `<span style="font-family:monospace; letter-spacing:0.5px; font-weight:800; color:#0284c7;">${r.chassis}</span>` : '-';
+            return `
+                <tr>
+                    <td style="color:#64748b; font-weight:700;">${idx + 1}</td>
+                    <td style="font-weight:800; color:#0284c7;">${r.id}</td>
+                    <td>${plateBadge}</td>
+                    <td>${r.province || '-'}</td>
+                    <td><span class="badge badge-private">${r.plateType || '-'}</span></td>
+                    <td>${chassisStr}</td>
+                    <td><b>${r.carType || '-'}</b></td>
+                    <td>${r.model || '-'}</td>
+                    <td>${r.color || '-'}</td>
+                    <td>${r.owner || '-'}</td>
+                    <td><span style="background:#f1f5f9; padding:2px 6px; border-radius:4px; font-size:11px;">${r.transactionType || '-'}</span></td>
+                    <td style="font-family:monospace; font-size:11.5px;">${r.barcode || '-'}</td>
+                    <td><span style="color:#047857; font-weight:700;">${r.registrar || r.checker || '-'}</span></td>
+                    <td style="text-align:center;">
+                        <button type="button" class="btn-row-action view" onclick="showDetail(${r.id})" title="بینینی تەواوی زانیاری">
+                            <span>👁️</span> <span>بینین</span>
+                        </button>
+                    </td>
+                </tr>
+            `;
+        }).join('');
+    } else if (cat === 'gomrg') {
+        thead.innerHTML = `
+            <tr>
+                <th style="width:35px;">#</th>
+                <th>زنجیرە (IDD)</th>
+                <th>ژمارەی تابلۆ</th>
+                <th>پارێزگا</th>
+                <th>جۆری تابلۆ</th>
+                <th>شاسی</th>
+                <th>جۆری ئۆتۆمبێل</th>
+                <th>مۆدێل</th>
+                <th>ناوی خاوەن</th>
+                <th>شوێن / دەروازە</th>
+                <th>هۆکار</th>
+                <th>تۆمارکەر</th>
+                <th style="text-align:center;">کردار</th>
+            </tr>
+        `;
+        tbody.innerHTML = records.map((r, idx) => {
+            const plateBadge = `<span style="font-weight:900; color:#0f172a; font-family:monospace; font-size:13px;">${r.plateNo || '-'}</span>`;
+            const chassisStr = r.chassis ? `<span style="font-family:monospace; letter-spacing:0.5px; font-weight:800; color:#0284c7;">${r.chassis}</span>` : '-';
+            return `
+                <tr>
+                    <td style="color:#64748b; font-weight:700;">${idx + 1}</td>
+                    <td style="font-weight:800; color:#059669;">${r.IDD || r.id}</td>
+                    <td>${plateBadge}</td>
+                    <td>${r.province || '-'}</td>
+                    <td><span class="badge badge-cargo">${r.plateType || '-'}</span></td>
+                    <td>${chassisStr}</td>
+                    <td><b>${r.carType || '-'}</b></td>
+                    <td>${r.model || '-'}</td>
+                    <td>${r.owner || '-'}</td>
+                    <td><span style="background:#f0fdf4; color:#15803d; border:1px solid #bbf7d0; padding:2px 6px; border-radius:4px; font-weight:700;">${r.place || '-'}</span></td>
+                    <td style="max-width:180px; overflow:hidden; text-overflow:ellipsis;" title="${r.reason || ''}">${r.reason || '-'}</td>
+                    <td><span style="color:#047857; font-weight:700;">${r.registrar || '-'}</span></td>
+                    <td style="text-align:center;">
+                        <button type="button" class="btn-row-action view" onclick="showDetailGomrgRow(${r.id || r.IDD})" title="بینینی زانیاری">
+                            <span>👁️</span> <span>بینین</span>
+                        </button>
+                    </td>
+                </tr>
+            `;
+        }).join('');
+    } else if (cat === 'raport') {
+        thead.innerHTML = `
+            <tr>
+                <th style="width:35px;">#</th>
+                <th>ز - ڕۆشتوو</th>
+                <th>ژمارەی ئۆتۆمبێل</th>
+                <th>پارێزگا</th>
+                <th>جۆری تابلۆ</th>
+                <th>شاسی</th>
+                <th>جۆری ئۆتۆمبێل</th>
+                <th>مۆدێل</th>
+                <th>کێشە / هۆکار</th>
+                <th>دەینێرین بۆتان</th>
+                <th>شوێن</th>
+                <th>تۆمارکەر</th>
+                <th style="text-align:center;">کردار</th>
+            </tr>
+        `;
+        tbody.innerHTML = records.map((r, idx) => {
+            const plateBadge = `<span style="font-weight:900; color:#0f172a; font-family:monospace; font-size:13px;">${r.plateNo || '-'}</span>`;
+            const chassisStr = r.chassis ? `<span style="font-family:monospace; letter-spacing:0.5px; font-weight:800; color:#b91c1c;">${r.chassis}</span>` : '-';
+            return `
+                <tr>
+                    <td style="color:#64748b; font-weight:700;">${idx + 1}</td>
+                    <td style="font-weight:900; color:#b91c1c;">${r.outSeq || r.id}</td>
+                    <td>${plateBadge}</td>
+                    <td>${r.province || '-'}</td>
+                    <td><span class="badge badge-danger">${r.plateType || '-'}</span></td>
+                    <td>${chassisStr}</td>
+                    <td><b>${r.carType || '-'}</b></td>
+                    <td>${r.model || '-'}</td>
+                    <td style="max-width:200px; overflow:hidden; text-overflow:ellipsis; color:#991b1b; font-weight:700;" title="${r.problem || ''}">${r.problem || '-'}</td>
+                    <td style="max-width:180px; overflow:hidden; text-overflow:ellipsis;">${r.sentTo || '-'}</td>
+                    <td>${r.place || '-'}</td>
+                    <td><span style="color:#047857; font-weight:700;">${r.registrar || '-'}</span></td>
+                    <td style="text-align:center;">
+                        <button type="button" class="btn-row-action print" onclick="openRaportPrintDirect(${r.id})" title="چاپی فەرمی نوسراوی ڕاپۆرت">
+                            <span>🖨️</span> <span>چاپ</span>
+                        </button>
+                    </td>
+                </tr>
+            `;
+        }).join('');
+    } else if (cat === 'hijz') {
+        thead.innerHTML = `
+            <tr>
+                <th style="width:35px;">#</th>
+                <th>ژمارەی ئۆتۆمبێل</th>
+                <th>پارێزگا</th>
+                <th>جۆری تابلۆ</th>
+                <th>خاوەن / تێبینی</th>
+                <th>هۆکاری گلدانەوە</th>
+                <th>بەروار</th>
+                <th>تۆمارکەر</th>
+            </tr>
+        `;
+        tbody.innerHTML = records.map((r, idx) => {
+            const plateBadge = `<span style="font-weight:900; color:#dc2626; font-family:monospace; font-size:13px;">${r.plateNo || '-'}</span>`;
+            return `
+                <tr>
+                    <td style="color:#64748b; font-weight:700;">${idx + 1}</td>
+                    <td>${plateBadge}</td>
+                    <td>${r.province || '-'}</td>
+                    <td><span class="badge badge-warning">${r.plateType || '-'}</span></td>
+                    <td>${r.owner || '-'}</td>
+                    <td style="color:#b91c1c; font-weight:700;">${r.note || '-'}</td>
+                    <td style="font-size:11.5px;">${r.date_ ? String(r.date_).slice(0, 10) : '-'}</td>
+                    <td><span style="color:#6d28d9; font-weight:700;">${r.registrar || '-'}</span></td>
+                </tr>
+            `;
+        }).join('');
+    }
+}
+
+function filterTodayGridClient(term) {
+    term = (term || '').trim().toLowerCase();
+    if (!term) {
+        renderTodayDataGrid(currentTodayRecords);
+        return;
+    }
+    const filtered = currentTodayRecords.filter(r => {
+        return Object.values(r).some(val => {
+            if (val == null) return false;
+            return String(val).toLowerCase().includes(term);
+        });
+    });
+    renderTodayDataGrid(filtered);
+}
+
+function reloadTodayDataGrid() {
+    loadStats();
+    fetchTodayDataGrid();
+}
+
+function printTodayDataGrid() {
+    const tableEl = document.getElementById('todayDataGridTable');
+    if (!tableEl) return;
+    const catTitles = {
+        registration: 'تۆمارکردنەکانی پشکنین (T1)',
+        gomrg: 'نوسراوەکانی گومرگ (Gomrg)',
+        raport: 'فۆڕمی ڕاپۆرتی کێشەی ئۆتۆمبێل (Raport)',
+        hijz: 'ئۆتۆمبێلە حیجزکراوەکان (Hijz)'
+    };
+    const title = catTitles[currentTodayGridCategory] || 'تۆمارەکانی ئەمڕۆ';
+    const dateStr = new Date().toISOString().slice(0, 10);
+    const win = window.open('', '_blank');
+    win.document.write(`
+        <!DOCTYPE html>
+        <html lang="ckb" dir="rtl">
+        <head>
+            <meta charset="UTF-8">
+            <title>خشتەی ${title} - ${dateStr}</title>
+            <style>
+                body { font-family: 'Speda', 'Segoe UI', Tahoma, sans-serif; padding: 20px; direction: rtl; }
+                h2, h4 { text-align: center; margin: 4px 0; }
+                table { width: 100%; border-collapse: collapse; margin-top: 15px; font-size: 12px; }
+                th, td { border: 1px solid #333; padding: 6px 8px; text-align: right; }
+                th { background: #f0f0f0; }
+                @media print { body { padding: 0; } }
+            </style>
+        </head>
+        <body>
+            <h2>بەڕێوەبەرایەتی هاتووچۆی پارێزگای سلێمانی - هۆبەی پشکنین</h2>
+            <h4>خشتەی داتاکانی ئەمڕۆ: ${title} — بەروار: ${dateStr}</h4>
+            ${tableEl.outerHTML}
+            <script>window.onload = function() { window.print(); }</script>
+        </body>
+        </html>
+    `);
+    win.document.close();
+}
+
+async function openRaportPrintDirect(id) {
+    try {
+        const res = await fetch('/api/raport/' + id).then(r => r.json());
+        if (!res.success || !res.data) {
+            alert('ڕاپۆرت نەدۆزرایەوە');
+            return;
+        }
+        const d = res.data;
+        const outSEl = document.getElementById('rapPrintOutS');
+        const dateEl = document.getElementById('rapPrintDate');
+        const placeEl = document.getElementById('rapPrintPlace');
+        const aEl = document.getElementById('rapPrintA');
+        const bEl = document.getElementById('rapPrintB');
+        const cEl = document.getElementById('rapPrintC');
+        const dEl = document.getElementById('rapPrintD');
+        const fEl = document.getElementById('rapPrintF');
+        const gEl = document.getElementById('rapPrintG');
+        const hEl = document.getElementById('rapPrintH');
+        const iEl = document.getElementById('rapPrintI');
+        const userEl = document.getElementById('rapPrintUser');
+
+        if (outSEl) outSEl.textContent = d.S || d.A || '-';
+        if (dateEl) dateEl.textContent = d.O ? String(d.O).slice(0, 10) : new Date().toISOString().slice(0, 10);
+        if (placeEl) placeEl.textContent = d.Q || d.P || 'سلێمانی';
+        if (aEl) aEl.textContent = d.A || '-';
+        if (bEl) bEl.textContent = d.B || '-';
+        if (cEl) cEl.textContent = d.C || '-';
+        if (dEl) dEl.textContent = d.D || '-';
+        if (fEl) fEl.textContent = d.F || '-';
+        if (gEl) gEl.textContent = d.G || '-';
+        if (hEl) hEl.textContent = d.H || '-';
+        if (iEl) iEl.textContent = d.I || '-';
+        if (userEl) userEl.textContent = d.R || '-';
+
+        openOverlay('modalRaportPrint');
+    } catch (e) {
+        alert('کێشە لە کردنەوەی ڕاپۆرت: ' + e.message);
+    }
+}
+
+async function showDetailGomrgRow(id) {
+    try {
+        const res = await fetch('/api/gomrg?q=' + id).then(r => r.json());
+        if (Array.isArray(res) && res.length > 0) {
+            const r = res[0];
+            document.getElementById('modalTitle').textContent = '🛃 نوسراوی گومرگ – ' + (r.car_n || r.IDD || '');
+            openOverlay('detailModal');
+            document.getElementById('modalBody').innerHTML = `
+                <div class="d-item"><div class="d-label">زنجیرەی گومرگ (IDD)</div><div class="d-val hl">${r.IDD || '-'}</div></div>
+                <div class="d-item"><div class="d-label">ژمارەی تابلۆ</div><div class="d-val hl">${r.car_n || '-'}</div></div>
+                <div class="d-item"><div class="d-label">پارێزگا</div><div class="d-val">${r.parezga || '-'}</div></div>
+                <div class="d-item"><div class="d-label">جۆری تابلۆ</div><div class="d-val">${r.bash || '-'}</div></div>
+                <div class="d-item"><div class="d-label">شاسی</div><div class="d-val" style="font-family:monospace; font-weight:800; color:#0284c7;">${r.shassy || '-'}</div></div>
+                <div class="d-item"><div class="d-label">جۆری ئۆتۆمبێل</div><div class="d-val">${r.car_type || '-'}</div></div>
+                <div class="d-item"><div class="d-label">مۆدێل</div><div class="d-val">${r.model || '-'}</div></div>
+                <div class="d-item"><div class="d-label">خاوەن</div><div class="d-val">${r.Full_name || '-'}</div></div>
+                <div class="d-item"><div class="d-label">شوێن / دەروازە</div><div class="d-val">${r.place || '-'}</div></div>
+                <div class="d-item"><div class="d-label">بەرواری تۆمار</div><div class="d-val">${r.date_insert ? String(r.date_insert).slice(0, 10) : '-'}</div></div>
+                <div class="d-item"><div class="d-label">تۆمارکەر</div><div class="d-val" style="color:#059669; font-weight:800;">${r.user_ || '-'}</div></div>
+                <div class="d-item full" style="background:#f0fdf4; border:1px solid #bbf7d0;"><div class="d-label">تێبینی / هۆکار</div><div class="d-val">${r.resoon || '-'}</div></div>
+            `;
+        } else {
+            alert('داتای گومرگ نەدۆزرایەوە');
+        }
+    } catch (e) {
+        alert('کێشە لە پیشاندانی گومرگ: ' + e.message);
+    }
+}
+
+
 async function loadStats(forcedScope) {
     try {
         if (forcedScope) currentStatScope = forcedScope;
@@ -10549,7 +11308,21 @@ async function loadStats(forcedScope) {
         if (elRap) elRap.textContent = (d.raportToday || 0).toLocaleString();
         if (elHijz) elHijz.textContent = (d.hijzToday || 0).toLocaleString();
 
+        
+        const tabReg = document.getElementById('tabCntReg');
+        const tabGomrg = document.getElementById('tabCntGomrg');
+        const tabRap = document.getElementById('tabCntRap');
+        const tabHijz = document.getElementById('tabCntHijz');
+        if (tabReg) tabReg.textContent = (d.t1Today || 0).toLocaleString();
+        if (tabGomrg) tabGomrg.textContent = (d.gomrgToday || 0).toLocaleString();
+        if (tabRap) tabRap.textContent = (d.raportToday || 0).toLocaleString();
+        if (tabHijz) tabHijz.textContent = (d.hijzToday || 0).toLocaleString();
+
+        const tGridHijz = document.getElementById('tabGridHijz');
+        if (tGridHijz) tGridHijz.style.display = d.isManager ? '' : 'none';
+
         updateDashboardScopeUI(d);
+        fetchTodayDataGrid();
     } catch(e) {
         console.error('loadStats error:', e);
     }
