@@ -2640,8 +2640,8 @@
                         <span>🔍 گەڕان</span>
                     </button>
                     
-                    <button type="button" class="df-btn-search df-btn-search-t1" id="dfBtnSearchT1" onclick="dfSearchT1()" title="گەڕان بەدوای ئۆتۆمبێلە تۆمارکراوەکانی تەیبڵی T1 بۆ ڕاستکردنەوە">
-                        <span>🔍 گەڕان لە (T1)</span>
+                    <button type="button" class="df-btn-search df-btn-search-t1" id="dfBtnSearchT1" onclick="dfSearchT1()" title="گەڕان بەدوای ئۆتۆمبێلە تۆمارکراوەکانی ئەمڕۆ بۆ ئەپدەیت و ڕاستکردنەوە">
+                        <span>🔍 گەڕان بۆ ئەپدەیت</span>
                     </button>
                     
                     <span class="df-label">بۆ</span>
@@ -6521,7 +6521,7 @@ async function dfSearchT1() {
 
 async function dfUpdateVehicle() {
     if (!loadedVehicleId) {
-        alert('⚠️ تکایە سەرەتا بە دوگمەی (🔍 گەڕان لە T1) ئۆتۆمبێلێکی پێشتر تۆمارکراوی ئەمڕۆ بدۆزەرەوە پێش ئەنجامدانی ڕاستکردنەوە.');
+        alert('⚠️ تکایە سەرەتا بە دوگمەی (🔍 گەڕان بۆ ئەپدەیت) ئۆتۆمبێلێکی پێشتر تۆمارکراوی ئەمڕۆ بدۆزەرەوە پێش ئەنجامدانی ڕاستکردنەوە.');
         return;
     }
     if (!loadedVehicleIsToday) {
