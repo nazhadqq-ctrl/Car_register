@@ -5471,6 +5471,13 @@ function openRegisterModal() {
         initEnterAsTab();
         initFeeCombobox();
         initFeeTransactionSync();
+        if (typeof initOperationCombobox === 'function') {
+            initOperationCombobox();
+        }
+        // Ensure operations from Tbl_Operations are loaded
+        fetch('/api/operations').then(r => r.json()).then(ops => {
+            if (Array.isArray(ops) && ops.length > 0) initOperationCombobox(ops);
+        }).catch(e => console.warn('Operations fetch warning:', e));
         const regAlert = document.getElementById('regAlert');
         if (regAlert) regAlert.innerHTML = '';
         if (currentUser) {

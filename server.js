@@ -280,7 +280,7 @@ app.get('/api/bash', requireAuth, async (req, res) => {
 });
 
 // ─── GET OPERATIONS LIST (Tbl_Operations) ───────────────────────────
-app.get('/api/operations', requireAuth, async (req, res) => {
+app.get('/api/operations', async (req, res) => {
     try {
         const pool = await getPool();
         const result = await pool.request().query(`

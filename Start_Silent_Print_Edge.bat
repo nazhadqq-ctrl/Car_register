@@ -8,15 +8,12 @@ echo  Traffic Inspection System - Direct Silent Printing
 echo ========================================================
 echo.
 
-:: 1. تاقیکردنەوەی ئایا سێرڤەر کار دەکات
-netstat -ano | findstr :3000 >nul
-if %errorlevel% neq 0 (
-    echo [1/2] سێرڤەری Node.js دەستپێدەکات...
-    start /b "" node server.js
-    timeout /t 3 /nobreak >nul
-) else (
-    echo [1/2] سێرڤەری Node.js لە پێشترەوە چالاکە.
-)
+:: 1. دەستپێکردنی سێرڤەری Node.js بە نوێترین کۆد
+for /f "tokens=5" %%a in ('netstat -aon ^| findstr :3000') do taskkill /F /PID %%a >nul 2>&1
+timeout /t 1 /nobreak >nul
+echo [1/2] دەستپێکردنی سێرڤەری سیستەم...
+start /b "" node server.js
+timeout /t 3 /nobreak >nul
 
 echo [2/2] کردنەوەی پەڕە بە دۆخی Kiosk Printing (بێ کردنەوەی پرنت دایالۆگ)...
 echo تکایە دڵنیابە پرنتەرەکەت دیاری کراوە وەک Default Printer لە ویندۆز.
