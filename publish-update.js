@@ -30,6 +30,8 @@ const FILES_TO_PUBLISH = [
     'public/index.html',
     'public/login.html',
     'public/preview_gomrg.html',
+    'public/profile-avatar.jpg',
+    'public/traffic-it-logo.jpg',
     'Update_TrafficCheck.bat',
     'Start_Silent_Print_Chrome.bat',
     'Start_Silent_Print_Edge.bat'
@@ -72,8 +74,17 @@ async function publish() {
             continue;
         }
 
-        const content = fs.readFileSync(fullPath, 'utf8');
-        const sizeKb = (Buffer.byteLength(content, 'utf8') / 1024).toFixed(1);
+        const isBinary = /\.(jpg|jpeg|png|gif|ico|ttf|woff|woff2|eot|pdf)$/i.test(relFile);
+        let content;
+        let sizeKb;
+        if (isBinary) {
+            const buf = fs.readFileSync(fullPath);
+            content = 'BASE64:' + buf.toString('base64');
+            sizeKb = (buf.length / 1024).toFixed(1);
+        } else {
+            content = fs.readFileSync(fullPath, 'utf8');
+            sizeKb = (Buffer.byteLength(content, 'utf8') / 1024).toFixed(1);
+        }
 
         try {
             await pool.request()

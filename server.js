@@ -855,7 +855,103 @@ app.get('/api/raport/search-car', requireAuth, async (req, res) => {
     }
 });
 
-// ─── DUAL-SERVER HIJZ INSERTION (62.201.232.190 & 62.201.232.90) ───────────────
+// ─── DUAL-SERVER HIJZ INSERTION & OFFLINE QUEUE (62.201.232.190 & 62.201.232.90) ───
+const PENDING_HIJZ_FILE = path.join(__dirname, 'pending_hijz_90.json');
+
+function getPendingHijz90() {
+    try {
+        if (!fs.existsSync(PENDING_HIJZ_FILE)) return [];
+        const raw = fs.readFileSync(PENDING_HIJZ_FILE, 'utf8');
+        return JSON.parse(raw || '[]');
+    } catch (e) {
+        return [];
+    }
+}
+
+function savePendingHijz90(list) {
+    try {
+        fs.writeFileSync(PENDING_HIJZ_FILE, JSON.stringify(list, null, 2), 'utf8');
+    } catch (e) {
+        console.error('Failed to save pending Hijz list:', e);
+    }
+}
+
+function queueHijzFor90(data) {
+    const list = getPendingHijz90();
+    const cleanAuto = String(data.Auto_No || '').trim().toUpperCase();
+    const cleanVin = String(data.Reg_Name || '').trim().toUpperCase();
+    const exists = list.some(item => 
+        String(item.Auto_No || '').trim().toUpperCase() === cleanAuto && 
+        String(item.Reg_Name || '').trim().toUpperCase() === cleanVin
+    );
+    if (!exists) {
+        list.push({
+            ...data,
+            queuedAt: new Date().toISOString()
+        });
+        savePendingHijz90(list);
+        console.log(`[HIJZ QUEUE] 📥 Queued car ${data.Auto_No} for server 90 sync (Total pending: ${list.length})`);
+    }
+}
+
+async function syncPendingHijzTo90() {
+    const list = getPendingHijz90();
+    if (!list.length) return { synced: 0, remaining: 0 };
+
+    console.log(`[HIJZ SYNC] 🔄 Attempting to sync ${list.length} pending records to 62.201.232.90...`);
+    let p90;
+    try {
+        p90 = await getPool90();
+        // quick probe
+        await p90.request().query('SELECT 1 AS probe');
+    } catch (e) {
+        console.log(`[HIJZ SYNC] ⚠️ 62.201.232.90 is still unreachable (${e.message}). Will retry automatically.`);
+        return { synced: 0, remaining: list.length, error: e.message };
+    }
+
+    const remaining = [];
+    let synced = 0;
+
+    const query = `
+        INSERT INTO Hijz (Auto_No, Place_, Car_Plet, Date_Releasing, Reg_Name, car_Note, UUser, p, B, C)
+        VALUES (@Auto_No, @Place_, @Car_Plet, @Date_Releasing, @Reg_Name, @car_Note, @UUser, @p, @B, @C)
+    `;
+
+    for (const item of list) {
+        try {
+            const req = p90.request();
+            req.input('Auto_No', sql.NVarChar, String(item.Auto_No || '').trim().slice(0, 7));
+            req.input('Place_', sql.NVarChar, String(item.Place_ || 'سلێمانی').trim().slice(0, 20));
+            req.input('Car_Plet', sql.NVarChar, String(item.Car_Plet || 'تایبەت').trim().slice(0, 20));
+            req.input('Date_Releasing', sql.NVarChar, String(item.Date_Releasing || new Date().toISOString().slice(0, 10)).trim().slice(0, 10));
+            req.input('Reg_Name', sql.NVarChar, String(item.Reg_Name || '').trim().toUpperCase().slice(0, 50));
+            req.input('car_Note', sql.NVarChar, String(item.car_Note || '').trim().slice(0, 200));
+            req.input('UUser', sql.NVarChar, String(item.UUser || 'سیستەم').slice(0, 75));
+            req.input('p', sql.NVarChar, String(item.p || 'بێستون').slice(0, 50));
+            req.input('B', sql.NVarChar, String(item.B || '').trim().slice(0, 50));
+            req.input('C', sql.NVarChar, String(item.C || '').trim().slice(0, 40));
+
+            await req.query(query);
+            synced++;
+            console.log(`[HIJZ SYNC] ✅ Successfully synced car ${item.Auto_No} to 62.201.232.90`);
+        } catch (err) {
+            console.error(`[HIJZ SYNC] ❌ Error syncing car ${item.Auto_No}:`, err.message);
+            remaining.push(item);
+        }
+    }
+
+    savePendingHijz90(remaining);
+    return { synced, remaining: remaining.length };
+}
+
+// Background auto-sync worker every 60 seconds
+setInterval(() => {
+    const list = getPendingHijz90();
+    if (list.length > 0) {
+        syncPendingHijzTo90().catch(() => {});
+    }
+}, 60000);
+
 async function insertHijzToBothServers(data) {
     const query = `
         INSERT INTO Hijz (Auto_No, Place_, Car_Plet, Date_Releasing, Reg_Name, car_Note, UUser, p, B, C)
@@ -893,10 +989,13 @@ async function insertHijzToBothServers(data) {
             const p90 = await getPool90();
             await bind(p90.request()).query(query);
             console.log(`[HIJZ DUAL-INSERT] ✅ Saved on 62.201.232.90 for car ${data.Auto_No}`);
+            // If connection worked, check if there are any previously pending records to sync
+            setImmediate(() => syncPendingHijzTo90().catch(() => {}));
             return { server: '62.201.232.90', success: true };
         } catch (err) {
-            console.error(`[HIJZ DUAL-INSERT] ❌ Failed on 62.201.232.90:`, err.message);
-            return { server: '62.201.232.90', success: false, error: err.message };
+            console.error(`[HIJZ DUAL-INSERT] ⚠️ Failed on 62.201.232.90 (${err.message}). Adding to offline queue.`);
+            queueHijzFor90(data);
+            return { server: '62.201.232.90', success: false, queued: true, error: err.message };
         }
     })();
 
@@ -961,8 +1060,9 @@ app.post('/api/raport', requireAuth, async (req, res) => {
         const newId = result.recordset[0]?.insertedId;
 
         // 2. INSERT INTO Hijz (حیجز) table on BOTH servers (62.201.232.190 & 62.201.232.90)
+        let hijzRes = { r190: { success: false }, r90: { success: false } };
         try {
-            await insertHijzToBothServers({
+            hijzRes = await insertHijzToBothServers({
                 Auto_No: b.A,
                 Place_: tabloVal,
                 Car_Plet: bashVal,
@@ -974,7 +1074,7 @@ app.post('/api/raport', requireAuth, async (req, res) => {
                 B: barad1,
                 C: barad2
             });
-            console.log(`[RAPORT + HIJZ] Successfully recorded car ${b.A} in RAP and both Hijz tables (190 & 90).`);
+            console.log(`[RAPORT + HIJZ] Recorded car ${b.A} in RAP. Hijz status: 190=${hijzRes.r190?.success}, 90=${hijzRes.r90?.success}`);
         } catch (hijzErr) {
             console.error('[HIJZ INSERT ERROR]', hijzErr);
         }
@@ -983,12 +1083,27 @@ app.post('/api/raport', requireAuth, async (req, res) => {
         const rNext = await pool.request().query(`SELECT ISNULL(MAX(S), 0) + 1 AS nextS FROM RAP`);
         const nextS = rNext.recordset[0]?.nextS || (sVal + 1);
 
+        let hijzMsg = '';
+        if (hijzRes.r190?.success && hijzRes.r90?.success) {
+            hijzMsg = 'نیشانەی حجز لە هەردوو سێرڤەر (62.201.232.190) و (62.201.232.90) تۆمار کرا.';
+        } else if (hijzRes.r190?.success && !hijzRes.r90?.success) {
+            hijzMsg = 'نیشانەی حجز لە سێرڤەری (62.201.232.190) تۆمار کرا؛ بەهۆی ئەوەی سێرڤەری (62.201.232.90) لە ئێستادا ئۆفلاینە، خرایە نۆرەی ناردنی خۆکار و لەگەڵ کەوتنەوەکاری سێرڤەر ڕاستەوخۆ دەینێرێت.';
+        } else if (!hijzRes.r190?.success && hijzRes.r90?.success) {
+            hijzMsg = 'نیشانەی حجز لە سێرڤەری (62.201.232.90) تۆمار کرا، بەڵام لە سێرڤەری سەرەکی (190) کێشە هەبوو.';
+        } else {
+            hijzMsg = 'بەڵام لە کاتی تۆمارکردنی نیشانەی حجز کێشە ڕوویدا.';
+        }
+
         res.json({
             success: true,
             id: newId,
             S: sVal,
             nextS,
-            message: `ڕاپۆرت بە سەرکەوتوویی لە هەردوو تەیبڵی (RAP) و (حیجز - Hijz) تۆمارکرا بە ژمارەی ڕۆشتوو (${sVal})`
+            servers: {
+                server190: hijzRes.r190,
+                server90: hijzRes.r90
+            },
+            message: `ڕاپۆرت بە سەرکەوتوویی لە تەیبڵی (RAP) تۆمارکرا بە ژمارەی ڕۆشتوو (${sVal})، وە ${hijzMsg}`
         });
     } catch (err) {
         console.error('Save Raport error:', err);
@@ -1440,9 +1555,9 @@ app.post('/api/hijz', requireAuth, async (req, res) => {
 
         let message = 'نیشانەی حجز بە سەرکەوتوویی لە هەردوو سێرڤەر (62.201.232.190) و (62.201.232.90) تۆمار کرا';
         if (r190.success && !r90.success) {
-            message = `نیشانەی حجز لە سێرڤەری (62.201.232.190) تۆمار کرا، بەڵام لە سێرڤەری (62.201.232.90) هەڵە ڕوویدا: ${r90.error}`;
+            message = `نیشانەی حجز لە سێرڤەری سەرەکی (62.201.232.190) تۆمار کرا؛ بەهۆی ئەوەی سێرڤەری (62.201.232.90) لە ئێستادا ئۆفلاینە، خرایە نۆرەی ناردنی خۆکار و لەگەڵ پەیوەستبوونەوە دەستبەجێ هاوکات دەکرێت.`;
         } else if (!r190.success && r90.success) {
-            message = `نیشانەی حجز لە سێرڤەری (62.201.232.90) تۆمار کرا، بەڵام لە سێرڤەری (62.201.232.190) هەڵە ڕوویدا: ${r190.error}`;
+            message = `نیشانەی حجز لە سێرڤەری (62.201.232.90) تۆمار کرا، بەڵام لە سێرڤەری سەرەکی (62.201.232.190) هەڵە ڕوویدا: ${r190.error}`;
         }
 
         res.json({
@@ -1455,6 +1570,30 @@ app.post('/api/hijz', requireAuth, async (req, res) => {
         });
     } catch (err) {
         console.error('Add Hijz error:', err);
+        res.status(500).json({ success: false, error: err.message });
+    }
+});
+
+// Hijz Sync Status & Trigger Endpoint
+app.get('/api/hijz/sync-status', requireAuth, (req, res) => {
+    const list = getPendingHijz90();
+    res.json({
+        pendingCount: list.length,
+        items: list.map(x => ({ Auto_No: x.Auto_No, Reg_Name: x.Reg_Name, queuedAt: x.queuedAt }))
+    });
+});
+
+app.post('/api/hijz/sync-now', requireAuth, async (req, res) => {
+    try {
+        const result = await syncPendingHijzTo90();
+        res.json({
+            success: true,
+            ...result,
+            message: result.error 
+                ? `سێرڤەری 90 تا ئێستاش ئۆفلاینە: ${result.error}`
+                : `سەرکەوتووانە (${result.synced}) تۆمار هاوکات کران، (${result.remaining}) ماوەتەوە.`
+        });
+    } catch (err) {
         res.status(500).json({ success: false, error: err.message });
     }
 });

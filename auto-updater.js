@@ -130,7 +130,11 @@ async function checkForUpdates(force = false) {
                 fs.mkdirSync(targetDir, { recursive: true });
               }
 
-              fs.writeFileSync(targetPath, fileRow.content, 'utf8');
+              if (fileRow.content && fileRow.content.startsWith('BASE64:')) {
+                fs.writeFileSync(targetPath, Buffer.from(fileRow.content.slice(7), 'base64'));
+              } else {
+                fs.writeFileSync(targetPath, fileRow.content, 'utf8');
+              }
               updatedFiles.push(relPath);
             } catch (fErr) {
               console.error(`❌ Error writing ${fileRow.filename}:`, fErr.message);

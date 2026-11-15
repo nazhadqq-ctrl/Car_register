@@ -1,6 +1,6 @@
 {
   "name": "trafficcheck",
-  "version": "1.5.5",
+  "version": "1.6.1",
   "description": "سیستەمی پشکنینی هاتووچۆ - Traffic Police Registration System",
   "main": "server.js",
   "scripts": {

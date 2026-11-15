@@ -30,11 +30,11 @@ const config90 = {
     options: {
         encrypt: false,
         trustServerCertificate: true,
-        connectTimeout: 15000,
-        requestTimeout: 30000
+        connectTimeout: 4000,
+        requestTimeout: 10000
     },
     pool: {
-        max: 10,
+        max: 5,
         min: 0,
         idleTimeoutMillis: 30000
     }
