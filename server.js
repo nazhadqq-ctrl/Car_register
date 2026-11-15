@@ -3,7 +3,7 @@ const session = require('express-session');
 const path = require('path');
 const https = require('https');
 const fs = require('fs');
-const { getPool, sql } = require('./db');
+const { getPool, getPool90, sql } = require('./db');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -855,6 +855,55 @@ app.get('/api/raport/search-car', requireAuth, async (req, res) => {
     }
 });
 
+// ─── DUAL-SERVER HIJZ INSERTION (62.201.232.190 & 62.201.232.90) ───────────────
+async function insertHijzToBothServers(data) {
+    const query = `
+        INSERT INTO Hijz (Auto_No, Place_, Car_Plet, Date_Releasing, Reg_Name, car_Note, UUser, p, B, C)
+        VALUES (@Auto_No, @Place_, @Car_Plet, @Date_Releasing, @Reg_Name, @car_Note, @UUser, @p, @B, @C)
+    `;
+
+    const bind = (req) => {
+        req.input('Auto_No', sql.NVarChar, String(data.Auto_No || '').trim().slice(0, 7));
+        req.input('Place_', sql.NVarChar, String(data.Place_ || 'سلێمانی').trim().slice(0, 20));
+        req.input('Car_Plet', sql.NVarChar, String(data.Car_Plet || 'تایبەت').trim().slice(0, 20));
+        req.input('Date_Releasing', sql.NVarChar, String(data.Date_Releasing || new Date().toISOString().slice(0, 10)).trim().slice(0, 10));
+        req.input('Reg_Name', sql.NVarChar, String(data.Reg_Name || '').trim().toUpperCase().slice(0, 50));
+        req.input('car_Note', sql.NVarChar, String(data.car_Note || '').trim().slice(0, 200));
+        req.input('UUser', sql.NVarChar, String(data.UUser || 'سیستەم').slice(0, 75));
+        req.input('p', sql.NVarChar, String(data.p || 'بێستون').slice(0, 50));
+        req.input('B', sql.NVarChar, String(data.B || '').trim().slice(0, 50));
+        req.input('C', sql.NVarChar, String(data.C || '').trim().slice(0, 40));
+        return req;
+    };
+
+    const task190 = (async () => {
+        try {
+            const p190 = await getPool();
+            await bind(p190.request()).query(query);
+            console.log(`[HIJZ DUAL-INSERT] ✅ Saved on 62.201.232.190 for car ${data.Auto_No}`);
+            return { server: '62.201.232.190', success: true };
+        } catch (err) {
+            console.error(`[HIJZ DUAL-INSERT] ❌ Failed on 62.201.232.190:`, err.message);
+            return { server: '62.201.232.190', success: false, error: err.message };
+        }
+    })();
+
+    const task90 = (async () => {
+        try {
+            const p90 = await getPool90();
+            await bind(p90.request()).query(query);
+            console.log(`[HIJZ DUAL-INSERT] ✅ Saved on 62.201.232.90 for car ${data.Auto_No}`);
+            return { server: '62.201.232.90', success: true };
+        } catch (err) {
+            console.error(`[HIJZ DUAL-INSERT] ❌ Failed on 62.201.232.90:`, err.message);
+            return { server: '62.201.232.90', success: false, error: err.message };
+        }
+    })();
+
+    const [r190, r90] = await Promise.all([task190, task90]);
+    return { r190, r90 };
+}
+
 app.post('/api/raport', requireAuth, async (req, res) => {
     try {
         const pool = await getPool();
@@ -911,24 +960,21 @@ app.post('/api/raport', requireAuth, async (req, res) => {
         const result = await insertRapReq.query(qRap);
         const newId = result.recordset[0]?.insertedId;
 
-        // 2. INSERT INTO Hijz (حیجز) table
+        // 2. INSERT INTO Hijz (حیجز) table on BOTH servers (62.201.232.190 & 62.201.232.90)
         try {
-            await pool.request()
-                .input('hAutoNo', sql.NVarChar, String(b.A || '').trim().slice(0, 7))
-                .input('hPlace', sql.NVarChar, tabloVal.slice(0, 20))
-                .input('hCarPlet', sql.NVarChar, bashVal.slice(0, 20))
-                .input('hDate', sql.NVarChar, dateStr.slice(0, 10))
-                .input('hRegName', sql.NVarChar, String(b.G || '').trim().slice(0, 50))
-                .input('hCarNote', sql.NVarChar, String(b.N || '').trim().slice(0, 200))
-                .input('hUser', sql.NVarChar, userName.slice(0, 75))
-                .input('hP', sql.NVarChar, placeVal.slice(0, 50))
-                .input('hB', sql.NVarChar, barad1.slice(0, 50))
-                .input('hC', sql.NVarChar, barad2.slice(0, 40))
-                .query(`
-                    INSERT INTO Hijz (Auto_No, Place_, Car_Plet, Date_Releasing, Reg_Name, car_Note, UUser, p, B, C)
-                    VALUES (@hAutoNo, @hPlace, @hCarPlet, @hDate, @hRegName, @hCarNote, @hUser, @hP, @hB, @hC)
-                `);
-            console.log(`[RAPORT + HIJZ] Successfully recorded car ${b.A} in both RAP and Hijz tables.`);
+            await insertHijzToBothServers({
+                Auto_No: b.A,
+                Place_: tabloVal,
+                Car_Plet: bashVal,
+                Date_Releasing: dateStr,
+                Reg_Name: b.G,
+                car_Note: b.N,
+                UUser: userName,
+                p: placeVal,
+                B: barad1,
+                C: barad2
+            });
+            console.log(`[RAPORT + HIJZ] Successfully recorded car ${b.A} in RAP and both Hijz tables (190 & 90).`);
         } catch (hijzErr) {
             console.error('[HIJZ INSERT ERROR]', hijzErr);
         }
@@ -1355,7 +1401,6 @@ app.post('/api/hijz', requireAuth, async (req, res) => {
             return res.status(400).json({ success: false, message: 'تکایە ووردەکاری ڕاگرتنی کار بنووسە' });
         }
 
-        const pool = await getPool();
         const user = req.session.user.name || req.session.user.username || 'سیستەم';
         const userPlace = req.session.user.place || 'بێستون';
 
@@ -1373,23 +1418,41 @@ app.post('/api/hijz', requireAuth, async (req, res) => {
 
         const cleanChassis = String(Reg_Name).trim().toUpperCase();
 
-        await pool.request()
-            .input('Auto_No', sql.NVarChar, String(Auto_No).trim().slice(0, 7))
-            .input('Place_', sql.NVarChar, String(Place_ || 'سلێمانی').trim().slice(0, 20))
-            .input('Car_Plet', sql.NVarChar, String(Car_Plet || 'تایبەت').trim().slice(0, 20))
-            .input('Date_Releasing', sql.NVarChar, String(Date_Releasing || new Date().toISOString().slice(0, 10)).trim().slice(0, 10))
-            .input('Reg_Name', sql.NVarChar, cleanChassis.slice(0, 50))
-            .input('car_Note', sql.NVarChar, finalNote)
-            .input('UUser', sql.NVarChar, String(user).slice(0, 75))
-            .input('p', sql.NVarChar, String(userPlace).slice(0, 50))
-            .input('B', sql.NVarChar, String(Barad1 || '').trim().slice(0, 50))
-            .input('C', sql.NVarChar, String(Barad2 || '').trim().slice(0, 40))
-            .query(`
-                INSERT INTO Hijz (Auto_No, Place_, Car_Plet, Date_Releasing, Reg_Name, car_Note, UUser, p, B, C)
-                VALUES (@Auto_No, @Place_, @Car_Plet, @Date_Releasing, @Reg_Name, @car_Note, @UUser, @p, @B, @C)
-            `);
+        const { r190, r90 } = await insertHijzToBothServers({
+            Auto_No,
+            Place_,
+            Car_Plet,
+            Date_Releasing,
+            Reg_Name: cleanChassis,
+            car_Note: finalNote,
+            UUser: user,
+            p: userPlace,
+            B: Barad1,
+            C: Barad2
+        });
 
-        res.json({ success: true, message: 'نیشانەی حجز بە سەرکەوتوویی لە سەر سوارڕەو تۆمار کرا' });
+        if (!r190.success && !r90.success) {
+            return res.status(500).json({
+                success: false,
+                message: `شکست لە تۆمارکردن لە هەردوو سێرڤەر: (190: ${r190.error || 'هەڵە'})، (90: ${r90.error || 'هەڵە'})`
+            });
+        }
+
+        let message = 'نیشانەی حجز بە سەرکەوتوویی لە هەردوو سێرڤەر (62.201.232.190) و (62.201.232.90) تۆمار کرا';
+        if (r190.success && !r90.success) {
+            message = `نیشانەی حجز لە سێرڤەری (62.201.232.190) تۆمار کرا، بەڵام لە سێرڤەری (62.201.232.90) هەڵە ڕوویدا: ${r90.error}`;
+        } else if (!r190.success && r90.success) {
+            message = `نیشانەی حجز لە سێرڤەری (62.201.232.90) تۆمار کرا، بەڵام لە سێرڤەری (62.201.232.190) هەڵە ڕوویدا: ${r190.error}`;
+        }
+
+        res.json({
+            success: true,
+            message,
+            servers: {
+                server190: r190,
+                server90: r90
+            }
+        });
     } catch (err) {
         console.error('Add Hijz error:', err);
         res.status(500).json({ success: false, error: err.message });
@@ -1399,10 +1462,37 @@ app.post('/api/hijz', requireAuth, async (req, res) => {
 app.delete('/api/hijz/:id', requireAuth, async (req, res) => {
     try {
         const pool = await getPool();
+        const itemRes = await pool.request()
+            .input('id', sql.Int, req.params.id)
+            .query(`SELECT Auto_No, Reg_Name FROM Hijz WHERE idd = @id`);
+        const car = itemRes.recordset[0];
+
+        // 1. Delete from 190
         await pool.request()
             .input('id', sql.Int, req.params.id)
             .query(`DELETE FROM Hijz WHERE idd = @id`);
-        res.json({ success: true, message: 'حیجزەکە بە سەرکەوتوویی لابرا' });
+
+        // 2. Also delete from 90 if matching Auto_No or Reg_Name exists
+        if (car && (car.Auto_No || car.Reg_Name)) {
+            try {
+                const pool90 = await getPool90();
+                const req90 = pool90.request();
+                let delQ = 'DELETE FROM Hijz WHERE 1=0 ';
+                if (car.Reg_Name && car.Reg_Name.trim()) {
+                    req90.input('reg', sql.NVarChar, car.Reg_Name.trim());
+                    delQ += ' OR UPPER(LTRIM(RTRIM(Reg_Name))) = UPPER(LTRIM(RTRIM(@reg))) ';
+                }
+                if (car.Auto_No && car.Auto_No.trim()) {
+                    req90.input('auto', sql.NVarChar, car.Auto_No.trim());
+                    delQ += ' OR Auto_No = @auto ';
+                }
+                await req90.query(delQ);
+                console.log(`[HIJZ DELETE] Also removed matching record from 62.201.232.90`);
+            } catch (del90Err) {
+                console.warn(`[HIJZ DELETE] Could not delete from 62.201.232.90:`, del90Err.message);
+            }
+        }
+        res.json({ success: true, message: 'حیجزەکە بە سەرکەوتوویی لە هەردوو سێرڤەر لابرا' });
     } catch (err) {
         console.error('Delete Hijz error:', err);
         res.status(500).json({ error: err.message });
@@ -2352,6 +2442,50 @@ app.get('/api/register/find-va-barcode', requireAuth, async (req, res) => {
                     officer: h.B,
                     user: h.UUser
                 };
+            }
+
+            // Also check 62.201.232.90 if not flagged in 190
+            if (!isHijz) {
+                try {
+                    const p90 = await getPool90();
+                    const req90 = p90.request();
+                    let q90 = `SELECT TOP 1 idd, Auto_No, Place_, Car_Plet, Date_Releasing, Reg_Name, car_Note, UUser, B FROM Hijz WHERE 1=0 `;
+                    if (carNo && tablo && bash) {
+                        req90.input('hPlate90', sql.NVarChar, carNo);
+                        req90.input('normTablo90', sql.NVarChar, tablo.replace(/ى/g, 'ی').replace(/ك/g, 'ک'));
+                        req90.input('normBash90', sql.NVarChar, bash.replace(/ى/g, 'ی').replace(/ك/g, 'ک'));
+                        q90 += ` OR (
+                            (Auto_No = @hPlate90 OR REPLACE(Auto_No, ' ', '') = @hPlate90)
+                            AND (REPLACE(Place_, N'ى', N'ی') = @normTablo90)
+                            AND (REPLACE(Car_Plet, N'ى', N'ی') = @normBash90)
+                        )`;
+                    }
+                    if (chassis && chassis !== '*') {
+                        req90.input('hChassis90', sql.NVarChar, chassis);
+                        q90 += ` OR (UPPER(LTRIM(RTRIM(Reg_Name))) = @hChassis90 OR UPPER(REPLACE(Reg_Name, ' ', '')) = @hChassis)`;
+                    }
+                    q90 += ` ORDER BY idd DESC`;
+                    const r90 = await req90.query(q90);
+                    if (r90.recordset && r90.recordset.length > 0) {
+                        isHijz = true;
+                        const h = r90.recordset[0];
+                        const hDate = h.Date_Releasing ? (h.Date_Releasing instanceof Date ? h.Date_Releasing.toISOString().slice(0, 10) : String(h.Date_Releasing).slice(0, 10)) : '';
+                        hijzInfo = {
+                            idd: h.idd,
+                            plate: h.Auto_No,
+                            tablo: h.Place_,
+                            bash: h.Car_Plet,
+                            chassis: h.Reg_Name,
+                            date: hDate,
+                            note: h.car_Note,
+                            officer: h.B,
+                            user: h.UUser,
+                            sourceServer: '62.201.232.90'
+                        };
+                    }
+                } catch (e90) {
+                    console.warn('⚠️ Hijz check on 62.201.232.90 skipped/failed:', e90.message);
+                }
             }
         }
 
