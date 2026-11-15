@@ -2978,6 +2978,24 @@ app.get('/api/system/version', (req, res) => {
 
 let httpServer = null;
 
+async function restoreFileFromDatabase(relPath, destPath) {
+    try {
+        const pool = await getPool();
+        const r = await pool.request()
+            .input('fn', relPath)
+            .query('SELECT content FROM Tbl_System_Updates WHERE filename = @fn');
+        if (r.recordset && r.recordset.length > 0) {
+            const dir = path.dirname(destPath);
+            if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+            fs.writeFileSync(destPath, r.recordset[0].content, 'utf8');
+            return true;
+        }
+    } catch (e) {
+        console.warn('⚠️ Could not restore ' + relPath + ' from database:', e.message);
+    }
+    return false;
+}
+
 function downloadFileFromGitHub(relPath, destPath) {
     const rawUrl = `https://raw.githubusercontent.com/nazhadqq-ctrl/Car_register/main/${relPath}?t=${Date.now()}`;
     return new Promise((resolve, reject) => {
@@ -3038,18 +3056,20 @@ app.post('/api/system/check-update', requireAuth, async (req, res) => {
         let updater;
         const updaterPath = path.join(__dirname, 'auto-updater.js');
 
-        // Self-healing: if auto-updater.js is missing, download directly from GitHub
+        // Self-healing: if auto-updater.js is missing, restore from DB or fallback
         if (!fs.existsSync(updaterPath)) {
-            console.log('⚠️ auto-updater.js not found locally. Downloading from GitHub...');
-            try {
-                await downloadFileFromGitHub('auto-updater.js', updaterPath);
-                console.log('✅ auto-updater.js downloaded successfully.');
-            } catch (dlErr) {
-                console.error('❌ Failed to download auto-updater.js:', dlErr);
-                return res.status(500).json({
-                    success: false,
-                    error: 'فایلی auto-updater بەردەست نییە و نەتوانرا لە گیت هاب دابگیرێت: ' + dlErr.message
-                });
+            console.log('⚠️ auto-updater.js not found locally. Restoring from database...');
+            const restored = await restoreFileFromDatabase('auto-updater.js', updaterPath);
+            if (!restored) {
+                try {
+                    await downloadFileFromGitHub('auto-updater.js', updaterPath);
+                } catch (dlErr) {
+                    console.error('❌ Failed to download auto-updater.js:', dlErr);
+                    return res.status(500).json({
+                        success: false,
+                        error: 'فایلی auto-updater بەردەست نییە: ' + dlErr.message
+                    });
+                }
             }
         }
 
@@ -3085,7 +3105,7 @@ httpServer = app.listen(PORT, () => {
         try {
             const updaterPath = path.join(__dirname, 'auto-updater.js');
             if (!fs.existsSync(updaterPath)) {
-                await downloadFileFromGitHub('auto-updater.js', updaterPath);
+                await restoreFileFromDatabase('auto-updater.js', updaterPath);
             }
             const updater = require('./auto-updater');
             const chk = await updater.checkForUpdates(false);
@@ -3103,7 +3123,7 @@ httpServer = app.listen(PORT, () => {
         try {
             const updaterPath = path.join(__dirname, 'auto-updater.js');
             if (!fs.existsSync(updaterPath)) {
-                await downloadFileFromGitHub('auto-updater.js', updaterPath);
+                await restoreFileFromDatabase('auto-updater.js', updaterPath);
             }
             const updater = require('./auto-updater');
             const chk = await updater.checkForUpdates(false);

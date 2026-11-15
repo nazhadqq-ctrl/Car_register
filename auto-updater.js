@@ -1,6 +1,6 @@
 /* ═══════════════════════════════════════════════════════════════
-   🚦 AUTOMATIC GITHUB UPDATER FOR TRAFFICCHECK DESKTOP CLIENTS
-   Fetches and applies the latest updates directly from GitHub
+   🚦 CENTRAL DATABASE & GITHUB AUTO-UPDATER FOR TRAFFICCHECK
+   نوێکردنەوەی بنەڕەتی سیستەم لە ڕێگەی داتابەیسی ناوەندی (SQL Server)
    ═══════════════════════════════════════════════════════════════ */
 
 const fs = require('fs');
@@ -24,12 +24,10 @@ const FILES_TO_UPDATE = [
   'Start_Silent_Print_Edge.bat',
   'public/index.html',
   'public/login.html',
-  'public/preview_gomrg.html',
-  'src_desktop/SetupWizard.cs',
-  'src_desktop/TrafficCheckApp.cs'
+  'public/preview_gomrg.html'
 ];
 
-function fetchUrl(url, timeoutMs = 12000) {
+function fetchUrl(url, timeoutMs = 10000) {
   return new Promise((resolve, reject) => {
     const req = https.get(url, {
       headers: {
@@ -80,10 +78,101 @@ function runCommandAsync(cmd, cwd = __dirname) {
 
 async function checkForUpdates(force = false) {
   const localVer = getLocalVersion();
-  let remoteVer = null;
-  let hasUpdate = false;
+  const localBuild = parseInt(localVer.build, 10) || 0;
 
-  // ─── METHOD 1: CHECK VIA GIT IF GIT REPOSITORY IS AVAILABLE ─────
+  // ═══════════════════════════════════════════════════════════════
+  // METHOD 1: DIRECT UPDATE FROM CENTRAL SQL DATABASE (PRIMARY)
+  // ئەپدەیتی ڕاستەوخۆ لە تەیبڵی Tbl_System_Updates لە داتابەیسی ناوەندی
+  // ئەم ڕێگەیە پێویستی بە گیت هاب یان ئینتەرنێتی دەرەکی نییە
+  // ═══════════════════════════════════════════════════════════════
+  try {
+    let db;
+    try {
+      db = require('./db');
+    } catch (e) {
+      db = require(path.join(__dirname, 'db'));
+    }
+
+    if (db && typeof db.getPool === 'function') {
+      const pool = await db.getPool();
+      const vResult = await pool.request()
+        .input('fn', 'version.json')
+        .query('SELECT filename, content, version, build FROM Tbl_System_Updates WHERE filename = @fn');
+
+      if (vResult.recordset && vResult.recordset.length > 0) {
+        const row = vResult.recordset[0];
+        const remoteBuild = parseInt(row.build, 10) || 0;
+        const remoteVersion = row.version || '1.0.0';
+
+        let remoteVerObj = null;
+        try {
+          remoteVerObj = JSON.parse(row.content);
+        } catch (e) {
+          remoteVerObj = { version: remoteVersion, build: remoteBuild, developer: 'نەژاد قادر محەمەد' };
+        }
+
+        if (remoteBuild > localBuild || force) {
+          console.log(`🚀 [Auto-Updater] New database version available: v${remoteVersion} (Build ${remoteBuild}) [Local: Build ${localBuild}, force=${force}]`);
+
+          const allFilesResult = await pool.request()
+            .query('SELECT filename, content, version, build FROM Tbl_System_Updates');
+
+          const updatedFiles = [];
+          const errors = [];
+
+          for (const fileRow of allFilesResult.recordset) {
+            try {
+              const relPath = fileRow.filename.trim().replace(/\\/g, '/');
+              const targetPath = path.join(__dirname, relPath);
+              const targetDir = path.dirname(targetPath);
+
+              if (!fs.existsSync(targetDir)) {
+                fs.mkdirSync(targetDir, { recursive: true });
+              }
+
+              fs.writeFileSync(targetPath, fileRow.content, 'utf8');
+              updatedFiles.push(relPath);
+            } catch (fErr) {
+              console.error(`❌ Error writing ${fileRow.filename}:`, fErr.message);
+              errors.push(`${fileRow.filename}: ${fErr.message}`);
+            }
+          }
+
+          // Ensure local version.json is updated
+          try {
+            fs.writeFileSync(path.join(__dirname, 'version.json'), JSON.stringify(remoteVerObj, null, 2), 'utf8');
+          } catch (e) {}
+
+          return {
+            success: errors.length === 0,
+            hasUpdate: true,
+            source: 'database',
+            previousVersion: localVer.version,
+            newVersion: remoteVersion,
+            newBuild: remoteBuild,
+            updatedFiles,
+            errors: errors.length > 0 ? errors : undefined,
+            message: `سیستەمەکە بە سەرکەوتوویی لە ڕێگەی داتابەیسی ناوەندییەوە نوێکرایەوە بۆ وەشانی (${remoteVersion})!`
+          };
+        } else {
+          return {
+            success: true,
+            hasUpdate: false,
+            source: 'database',
+            currentVersion: localVer.version,
+            latestVersion: remoteVersion,
+            message: 'سیستەمەکەت نوێترین وەشانە و هیچ نوێکارییەکی نوێ بەردەست نییە.'
+          };
+        }
+      }
+    }
+  } catch (dbErr) {
+    console.warn('⚠️ [Auto-Updater] Database check skipped or failed:', dbErr.message);
+  }
+
+  // ═══════════════════════════════════════════════════════════════
+  // METHOD 2: CHECK VIA LOCAL GIT (FALLBACK FOR DEVELOPER PC)
+  // ═══════════════════════════════════════════════════════════════
   const isGitRepo = fs.existsSync(path.join(__dirname, '.git'));
   if (isGitRepo) {
     try {
@@ -92,52 +181,47 @@ async function checkForUpdates(force = false) {
       const remoteCommit = await runCommandAsync('git rev-parse origin/main');
 
       if (localCommit !== remoteCommit || force) {
-        hasUpdate = true;
-        // Perform git pull to update all tracked files
         await runCommandAsync('git pull origin main');
         const updatedVer = getLocalVersion();
         return {
           success: true,
           hasUpdate: true,
+          source: 'git',
           previousVersion: localVer.version,
           newVersion: updatedVer.version || localVer.version,
           updatedFiles: ['Git pull (سەرجەم فایلە نوێکراوەکان)'],
-          message: `سیستەمەکە بە سەرکەوتوویی لە گیت هابەوە نوێکرایەوە بۆ وەشانی (${updatedVer.version || localVer.version})!`
-        };
-      } else {
-        return {
-          success: true,
-          hasUpdate: false,
-          currentVersion: localVer.version,
-          latestVersion: localVer.version,
-          message: 'سیستەمەکەت نوێترین وەشانە.'
+          message: `سیستەمەکە بە سەرکەوتوویی لە گیتەوە نوێکرایەوە بۆ وەشانی (${updatedVer.version || localVer.version})!`
         };
       }
     } catch (gitErr) {
-      console.warn('Git update attempt failed, falling back to direct raw HTTP download:', gitErr.error || gitErr);
-      // Fall through to Method 2 (HTTP download)
+      console.warn('⚠️ Git pull failed:', gitErr.error || gitErr);
     }
   }
 
-  // ─── METHOD 2: DIRECT HTTP DOWNLOAD FROM GITHUB RAW ───────────────
+  // ═══════════════════════════════════════════════════════════════
+  // METHOD 3: DIRECT HTTP DOWNLOAD (LEGACY FALLBACK)
+  // ═══════════════════════════════════════════════════════════════
+  let remoteVer = null;
+  let hasUpdate = false;
+
   try {
-    const verData = await fetchUrl(`${BASE_RAW_URL}/version.json?t=${Date.now()}`, 8000);
+    const verData = await fetchUrl(`${BASE_RAW_URL}/version.json?t=${Date.now()}`, 5000);
     remoteVer = JSON.parse(verData.toString('utf8'));
-    if (remoteVer && remoteVer.build && remoteVer.build > (localVer.build || 0)) {
+    if (remoteVer && remoteVer.build && remoteVer.build > localBuild) {
       hasUpdate = true;
     }
   } catch (err) {
-    console.warn('Failed to fetch remote version.json:', err.message);
     if (force) {
       hasUpdate = true;
-      remoteVer = { version: localVer.version, build: (localVer.build || 120) + 1 };
+      remoteVer = { version: localVer.version, build: localBuild + 1 };
     } else {
       return {
         success: true,
         hasUpdate: false,
+        source: 'none',
         currentVersion: localVer.version,
         latestVersion: localVer.version,
-        message: 'پەیوەندی بە گیت هاب نەکرا یان سیستەمەکەت نوێترین وەشانە.'
+        message: 'سیستەمەکەت نوێترین وەشانە.'
       };
     }
   }
@@ -151,20 +235,20 @@ async function checkForUpdates(force = false) {
     return {
       success: true,
       hasUpdate: false,
+      source: 'none',
       currentVersion: localVer.version,
       latestVersion: remoteVer ? remoteVer.version : localVer.version,
       message: 'سیستەمەکەت نوێترین وەشانە و هیچ نوێکارییەکی نوێ بەردەست نییە.'
     };
   }
 
-  // Perform HTTP download for each file in FILES_TO_UPDATE
   const updatedFiles = [];
   const errors = [];
 
   for (const relPath of FILES_TO_UPDATE) {
     try {
       const fileUrl = `${BASE_RAW_URL}/${relPath}?t=${Date.now()}`;
-      const content = await fetchUrl(fileUrl, 15000);
+      const content = await fetchUrl(fileUrl, 10000);
 
       const localPath = path.join(__dirname, relPath);
       const dir = path.dirname(localPath);
@@ -190,12 +274,41 @@ async function checkForUpdates(force = false) {
   return {
     success: errors.length === 0,
     hasUpdate: true,
+    source: 'http',
     previousVersion: localVer.version,
     newVersion: remoteVer ? remoteVer.version : localVer.version,
     updatedFiles,
     errors: errors.length > 0 ? errors : undefined,
     message: `سیستەمەکە بە سەرکەوتوویی نوێکرایەوە بۆ وەشانی (${remoteVer ? remoteVer.version : localVer.version})!`
   };
+}
+
+if (require.main === module) {
+  const isForce = process.argv.includes('--force') || process.argv.includes('-f');
+  console.log('═══════════════════════════════════════════════════════════════');
+  console.log('   🚦 دەستەی هاتووچۆی سلێمانی - پشکنین و نوێکردنەوەی خۆکار');
+  console.log('═══════════════════════════════════════════════════════════════\n');
+  console.log(`🔍 پشکنینی نوێکارییەکان... (force=${isForce})`);
+
+  checkForUpdates(isForce)
+    .then(res => {
+      console.log('\n--------------------------------------------------');
+      console.log(res.message);
+      if (res.updatedFiles && res.updatedFiles.length > 0) {
+        console.log('📁 فایلە نوێکراوەکان:');
+        res.updatedFiles.forEach(f => console.log('  [+] ' + f));
+      }
+      if (res.errors && res.errors.length > 0) {
+        console.log('⚠️ هەڵەکان:');
+        res.errors.forEach(e => console.log('  [!] ' + e));
+      }
+      console.log('--------------------------------------------------');
+      process.exit(res.success ? 0 : 1);
+    })
+    .catch(err => {
+      console.error('\n❌ کێشە لە نوێکردنەوە:', err.message || err);
+      process.exit(1);
+    });
 }
 
 module.exports = { checkForUpdates, getLocalVersion, FILES_TO_UPDATE };
