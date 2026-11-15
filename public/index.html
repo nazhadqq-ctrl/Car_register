@@ -1789,6 +1789,32 @@
         }
         .df-btn-search:active { transform: translateY(0); }
         
+        .df-btn-search-t1 {
+            background: linear-gradient(180deg, #ea580c 0%, #c2410c 100%) !important;
+            border: 1.5px solid #9a3412 !important;
+            color: #ffffff !important;
+            font-weight: 800 !important;
+            font-size: 13px !important;
+            font-family: var(--ku) !important;
+            padding: 2px 14px !important;
+            height: 29px !important;
+            border-radius: 6px !important;
+            cursor: pointer !important;
+            white-space: nowrap !important;
+            display: inline-flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            gap: 4px !important;
+            box-shadow: 0 2px 4px rgba(194,65,12,0.25) !important;
+            transition: all 0.18s ease !important;
+        }
+        .df-btn-search-t1:hover {
+            background: linear-gradient(180deg, #c2410c 0%, #9a3412 100%) !important;
+            box-shadow: 0 4px 10px rgba(194, 65, 12, 0.4) !important;
+            transform: translateY(-1px) !important;
+        }
+        .df-btn-search-t1:active { transform: translateY(0) !important; }
+        
         .df-actions-row {
             display: flex;
             align-items: center;
@@ -1971,7 +1997,7 @@
         <button class="btn-update-topbar" id="btnTopbarUpdate" onclick="openSystemUpdateModal()" title="پشکنین و نوێکردنەوەی سیستەم">
             <span style="font-size:14px; animation: spin-slow 8s linear infinite; display:inline-block;">🔄</span>
             <span>ئەپدەیت</span>
-            <span class="badge-ver" id="topbarVerBadge">v1.5.4</span>
+            <span class="badge-ver" id="topbarVerBadge">v1.5.5</span>
         </button>
         <button class="btn-out" id="logoutBtn">⬅ دەرچوون</button>
     </div>
@@ -2610,12 +2636,16 @@
                         <div class="df-combo-menu" id="dfCMenu"></div>
                     </div>
                     
-                    <button type="button" class="df-btn-search" id="dfBtnSearch" onclick="dfSearchCar()">
+                    <button type="button" class="df-btn-search" id="dfBtnSearch" onclick="dfSearchCar()" title="گەڕان لە تاقیگە (Taqega / VA)">
                         <span>🔍 گەڕان</span>
                     </button>
                     
+                    <button type="button" class="df-btn-search df-btn-search-t1" id="dfBtnSearchT1" onclick="dfSearchT1()" title="گەڕان بەدوای ئۆتۆمبێلە تۆمارکراوەکانی تەیبڵی T1 بۆ ڕاستکردنەوە">
+                        <span>🔍 گەڕان لە (T1)</span>
+                    </button>
+                    
                     <span class="df-label">بۆ</span>
-                    <select id="dfTo" class="df-select df-pink" style="width:250px;font-weight:800;">
+                    <select id="dfTo" class="df-select df-pink" style="width:210px;font-weight:800;">
                         <option value="هاتووچۆی پارێزگای سلێمانی" selected>هاتووچۆی پارێزگای سلێمانی</option>
                         <option value="هاتووچۆی پارێزگای هەولێر">هاتووچۆی پارێزگای هەولێر</option>
                         <option value="هاتووچۆی پارێزگای دهۆک">هاتووچۆی پارێزگای دهۆک</option>
@@ -2815,7 +2845,7 @@
                         <button type="button" class="btn-df btn-df-purple" onclick="dfResetNew()">
                             <span>✨ تۆماری نوێ</span>
                         </button>
-                        <button type="button" class="btn-df btn-df-orange" onclick="dfUpdateVehicle()">
+                        <button type="button" id="dfBtnUpdate" class="btn-df btn-df-orange" onclick="dfUpdateVehicle()" title="ڕاستکردنەوەی زانیاری هەڵەی تۆمارکراو تەنها بۆ تۆمارەکانی ئەمڕۆ">
                             <span>✏️ ڕاست کردنەوەی زانیاری لە کاتی ڕاکێشان و کەم و کورتی</span>
                         </button>
                         <label class="df-direct-print-label" style="display:inline-flex;align-items:center;gap:6px;cursor:pointer;font-size:12.5px;font-weight:700;padding:5px 12px;border-radius:6px;user-select:none;margin-right:4px;" title="لە کاتی کارپێکردن بە دۆخی بێ دایالۆگ (Silent Print) یەکسەر پەڕەکە لە پرنتەرەوە دێتە دەرەوە">
@@ -3303,7 +3333,7 @@
                 <span>نوێکردنەوەی سیستەمی بەرنامە (System Auto-Updater)</span>
             </div>
             <div style="display:flex; align-items:center; gap:10px;">
-                <span style="background: rgba(56, 189, 248, 0.2); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.4); padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 800;" id="updateModalVersionBadge">v1.5.4</span>
+                <span style="background: rgba(56, 189, 248, 0.2); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.4); padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 800;" id="updateModalVersionBadge">v1.5.5</span>
                 <button class="modal-close" style="color: #ffffff;" onclick="closeOverlay('modalSystemUpdate')">✕</button>
             </div>
         </div>
@@ -5432,6 +5462,8 @@ document.addEventListener('click', (e) => {
 
 // ─── 1. MODULE: REGISTER VEHICLE (EXACT C# DESKTOP LOGIC) ───────────────
 let loadedVehicleId = null;
+let loadedVehicleIsToday = false;
+let loadedVehicleRegDate = null;
 
 function openRegisterModal() {
     try {
@@ -5481,6 +5513,9 @@ function openRegisterModal() {
 
 function dfResetNew() {
     loadedVehicleId = null;
+    loadedVehicleIsToday = false;
+    loadedVehicleRegDate = null;
+    setUpdateBtnState(false);
     clearHijzAlert();
     const setVal = (id, val) => {
         const el = document.getElementById(id);
@@ -5934,20 +5969,23 @@ async function dfSearchCar() {
             const isToday = r.isToday || (r.DD && new Date(r.DD).toDateString() === new Date().toDateString());
 
             if (isToday) {
-                // Vehicle was already registered TODAY: load complete record, enable print, disable save
+                // Vehicle was already registered TODAY: load complete record, enable print, disable save, enable update
                 populateRegistrationFields(r, plate, tablo, bash);
                 loadedVehicleId = r.id || null;
+                loadedVehicleIsToday = true;
+                loadedVehicleRegDate = dateStr;
                 setPrintButtonState(true);
-                setSaveButtonState(false, 'ئەم ئۆتۆمبێلە پێشتر ئەمڕۆ تۆمارکراوە - تۆمارکردن ناچالاک کراوە');
+                setSaveButtonState(false, 'ئەم ئۆتۆمبێلە پێشتر ئەمڕۆ تۆمارکراوە - بۆ نوێکردنەوە دوگمەی ڕاستکردنەوە دابگرە');
+                setUpdateBtnState(true, true);
 
-                showToast(`ℹ️ ئەم ئۆتۆمبێلە ئەمڕۆ (${dateStr}) تۆمارکراوە - زانیارییەکان هێنران و دەتوانیت چاپی بکەیت`);
+                showToast(`ℹ️ ئەم ئۆتۆمبێلە ئەمڕۆ (${dateStr}) تۆمارکراوە - زانیارییەکان هێنران و دەتوانیت چاپی بکەیت یان ڕاستی بکەیتەوە`);
                 const regAlert = document.getElementById('regAlert');
                 if (regAlert) {
                     regAlert.innerHTML = `
                         <div class="alert-box alert-success" style="display:flex;align-items:center;justify-content:space-between;gap:8px;padding:4px 10px;border-radius:6px;font-weight:700;font-size:12.5px;background:#ecfdf5;border:1.5px solid #10b981;color:#065f46;box-shadow:0 1px 3px rgba(0,0,0,0.06);margin-bottom:4px;">
                             <div style="display:flex;align-items:center;gap:6px;">
                                 <span style="font-size:16px;line-height:1;">✅</span>
-                                <span>ئەم ئۆتۆمبێلە ئەمڕۆ (${dateStr}) تۆمارکراوە — زانیارییەکان هێنران و دەتوانیت بە دوگمەی (چاپ کردنی فۆرم) چاپی بکەیت</span>
+                                <span>ئەم ئۆتۆمبێلە ئەمڕۆ (${dateStr}) تۆمارکراوە — زانیارییەکان هێنران، دەتوانیت چاپی بکەیت یان بە دوگمەی (ڕاست کردنەوەی زانیاری) دەستکاری بکەیت</span>
                             </div>
                             <button type="button" onclick="closeRegAlert()" style="background:transparent;border:none;color:#065f46;font-size:16px;font-weight:900;cursor:pointer;padding:0 4px;border-radius:4px;line-height:1;" title="داخستن">✕</button>
                         </div>
@@ -5957,9 +5995,12 @@ async function dfSearchCar() {
             } else {
                 // Vehicle was registered on an earlier date:
                 // Keep typed inputs (dfA, dfB, dfC) intact - do NOT wipe!
-                loadedVehicleId = r.id || null;
+                loadedVehicleId = null;
+                loadedVehicleIsToday = false;
+                loadedVehicleRegDate = dateStr;
                 setPrintButtonState(false);
                 setSaveButtonState(false, `ئەم ئۆتۆمبێلە پێشتر تۆمارکراوە لە بەرواری (${dateStr}) - تۆمارکردن ناچالاک کراوە`);
+                setUpdateBtnState(false);
 
                 showToast(`⚠️ ئەم فۆرمە پێشتر کراوە لە بەرواری (${dateStr}) - تۆمارکردن ناچالاک کرا`, true);
                 const regAlert = document.getElementById('regAlert');
@@ -6297,15 +6338,203 @@ async function dfSaveVehicle() {
     }
 }
 
+function setUpdateBtnState(enabled, highlight = false) {
+    const btn = document.getElementById('dfBtnUpdate');
+    if (!btn) return;
+    if (enabled) {
+        btn.disabled = false;
+        btn.style.opacity = '1';
+        btn.style.cursor = 'pointer';
+        if (highlight) {
+            btn.style.boxShadow = '0 0 0 3px rgba(249, 115, 22, 0.45), 0 2px 6px rgba(0,0,0,0.15)';
+            btn.style.fontWeight = '900';
+        } else {
+            btn.style.boxShadow = '';
+            btn.style.fontWeight = '';
+        }
+    } else {
+        btn.disabled = false;
+        btn.style.opacity = '0.85';
+        btn.style.boxShadow = '';
+        btn.style.fontWeight = '';
+    }
+}
+
+async function dfSearchT1() {
+    const plate = document.getElementById('dfA') ? document.getElementById('dfA').value.trim() : '';
+    const tablo = document.getElementById('dfB') ? document.getElementById('dfB').value.trim() : '';
+    const bash = document.getElementById('dfC') ? document.getElementById('dfC').value.trim() : '';
+    const chassis = document.getElementById('dfR') ? document.getElementById('dfR').value.trim() : '';
+    const barcode = document.getElementById('dfBarcode') ? document.getElementById('dfBarcode').value.trim() : '';
+
+    closeRegAlert();
+
+    if (!plate && !chassis && !barcode) {
+        showToast('⚠️ تکایە ژمارەی تابلۆ یان شاسی بنووسە بۆ گەڕان لە T1', true);
+        const regAlert = document.getElementById('regAlert');
+        if (regAlert) {
+            regAlert.innerHTML = `
+                <div class="alert-box alert-warning" style="display:flex;align-items:center;justify-content:space-between;gap:8px;padding:6px 12px;border-radius:6px;font-weight:700;font-size:13px;background:#fef3c7;border:1.5px solid #f59e0b;color:#92400e;box-shadow:0 1px 3px rgba(0,0,0,0.06);margin-bottom:6px;">
+                    <div style="display:flex;align-items:center;gap:6px;">
+                        <span style="font-size:18px;">⚠️</span>
+                        <span>تکایە سەرەتا ژمارەی ئۆتۆمبێل (ژمارە + تابلۆ + بەش) یان ژمارەی شاسی بنووسە بۆ گەڕان لە تەیبڵی T1.</span>
+                    </div>
+                    <button type="button" onclick="closeRegAlert()" style="background:transparent;border:none;color:#92400e;font-size:16px;font-weight:900;cursor:pointer;">✕</button>
+                </div>
+            `;
+        }
+        return;
+    }
+
+    const btnT1 = document.getElementById('dfBtnSearchT1');
+    const origT1Html = btnT1 ? btnT1.innerHTML : '';
+    if (btnT1) {
+        btnT1.disabled = true;
+        btnT1.innerHTML = '<span>⏳ دەگەڕێت...</span>';
+    }
+
+    try {
+        const params = new URLSearchParams();
+        if (plate) params.append('plate', plate);
+        if (tablo) params.append('tablo', tablo);
+        if (bash) params.append('bash', bash);
+        if (chassis) params.append('chassis', chassis);
+        if (barcode) params.append('barcode', barcode);
+
+        const res = await fetch('/api/register/find-t1?' + params.toString());
+        const r = await res.json();
+
+        // 1. Check Hijz (Seizure hold)
+        if (r && r.isHijz) {
+            loadedVehicleId = null;
+            loadedVehicleIsToday = false;
+            loadedVehicleRegDate = null;
+            dfResetNew();
+            const elA = document.getElementById('dfA'); if (elA) elA.value = '';
+            const elB = document.getElementById('dfB'); if (elB) elB.value = '';
+            const elC = document.getElementById('dfC'); if (elC) elC.value = '';
+            const elR = document.getElementById('dfR'); if (elR) elR.value = '';
+            setPrintButtonState(false);
+            setSaveButtonState(false, 'ئەم ئۆتۆمبێلە نیشانەی گلدانەوەی (حجز) لەسەرە');
+            setUpdateBtnState(false);
+            showHijzRedAlert(r);
+            return;
+        }
+
+        clearHijzAlert();
+
+        // 2. Not found in T1
+        if (!r || !r.found) {
+            loadedVehicleId = null;
+            loadedVehicleIsToday = false;
+            loadedVehicleRegDate = null;
+            setUpdateBtnState(false);
+            setPrintButtonState(false);
+
+            showToast('⚠️ ئەم ئۆتۆمبێلە لە تەیبڵی T1 تۆمار نەکراوە!', true);
+            const regAlert = document.getElementById('regAlert');
+            if (regAlert) {
+                regAlert.innerHTML = `
+                    <div class="alert-box alert-warning" style="display:flex;align-items:center;justify-content:space-between;gap:8px;padding:6px 12px;border-radius:6px;font-weight:700;font-size:13px;background:#fef3c7;border:1.5px solid #f59e0b;color:#92400e;box-shadow:0 1px 3px rgba(0,0,0,0.06);margin-bottom:6px;">
+                        <div style="display:flex;align-items:center;gap:6px;">
+                            <span style="font-size:18px;">ℹ️</span>
+                            <span>هیچ تۆمارێک بۆ ئەم ئۆتۆمبێلە لە تەیبڵی T1 نەدۆزرایەوە. دەتوانیت بە دوگمەی گەڕانی ئاسایی لە تاقیگە بگەڕێیت.</span>
+                        </div>
+                        <button type="button" onclick="closeRegAlert()" style="background:transparent;border:none;color:#92400e;font-size:16px;font-weight:900;cursor:pointer;">✕</button>
+                    </div>
+                `;
+            }
+            return;
+        }
+
+        // 3. Found in T1
+        const record = r.data || r;
+        const regDate = r.date || (record.DD ? String(record.DD).slice(0, 10) : 'نەزانراو');
+        const isToday = !!r.isToday;
+
+        populateRegistrationFields(record, plate, tablo, bash);
+
+        if (isToday) {
+            // REGISTERED TODAY: Can be updated and corrected!
+            loadedVehicleId = record.id;
+            loadedVehicleIsToday = true;
+            loadedVehicleRegDate = regDate;
+
+            setPrintButtonState(true);
+            setSaveButtonState(false, 'ئەم ئۆتۆمبێلە ئەمڕۆ تۆمارکراوە - بۆ نوێکردنەوە دوگمەی ڕاستکردنەوە بەکاربهێنە');
+            setUpdateBtnState(true, true);
+
+            showToast(`✅ داتای تۆمارکراوی ئەمڕۆ (${regDate}) لە T1 هێنرایەوە`);
+            const regAlert = document.getElementById('regAlert');
+            if (regAlert) {
+                regAlert.innerHTML = `
+                    <div class="alert-box alert-success" style="display:flex;align-items:center;justify-content:space-between;gap:8px;padding:6px 12px;border-radius:6px;font-weight:700;font-size:13px;background:#ecfdf5;border:1.5px solid #10b981;color:#065f46;box-shadow:0 1px 3px rgba(0,0,0,0.06);margin-bottom:6px;">
+                        <div style="display:flex;align-items:center;gap:6px;">
+                            <span style="font-size:18px;">✏️</span>
+                            <span>داتای ئۆتۆمبێل (ID: ${record.id}) بۆ ئەمڕۆ (${regDate}) لە تەیبڵی T1 هێنرایەوە — دەتوانیت دەستکاری بکەیت و دوگمەی (ڕاست کردنەوەی زانیاری) دابگریت. بەرواری تۆمارکردن ناگۆڕدرێت.</span>
+                        </div>
+                        <button type="button" onclick="closeRegAlert()" style="background:transparent;border:none;color:#065f46;font-size:16px;font-weight:900;cursor:pointer;">✕</button>
+                    </div>
+                `;
+            }
+        } else {
+            // REGISTERED ON A PAST DATE: Cannot be updated!
+            loadedVehicleId = null;
+            loadedVehicleIsToday = false;
+            loadedVehicleRegDate = regDate;
+
+            setPrintButtonState(false);
+            setSaveButtonState(false, `ئەم ئۆتۆمبێلە لە بەرواری ڕابردوو (${regDate}) تۆمارکراوە`);
+            setUpdateBtnState(false);
+
+            showToast(`⛔ ڕاستکردنەوە تەنها بۆ تۆمارەکانی ئەمڕۆ ڕێگەپێدراوە! بەروار: ${regDate}`, true);
+            const regAlert = document.getElementById('regAlert');
+            if (regAlert) {
+                regAlert.innerHTML = `
+                    <div class="alert-box alert-warning" style="display:flex;align-items:center;justify-content:space-between;gap:8px;padding:6px 12px;border-radius:6px;font-weight:700;font-size:13px;background:#fef2f2;border:1.5px solid #ef4444;color:#991b1b;box-shadow:0 1px 3px rgba(0,0,0,0.06);margin-bottom:6px;">
+                        <div style="display:flex;align-items:center;gap:6px;">
+                            <span style="font-size:18px;">⛔</span>
+                            <span>ئەم ئۆتۆمبێلە لە بەرواری ڕابردوو (${regDate}) تۆمارکراوە — بەپێی ڕێنماییەکان، دەستکاریکردن و ڕاستکردنەوە تەنها بۆ تۆمارەکانی ئەمڕۆ ڕێگەپێدراوە و ناتوانرێت دەستکاری بکرێت!</span>
+                        </div>
+                        <button type="button" onclick="closeRegAlert()" style="background:transparent;border:none;color:#991b1b;font-size:16px;font-weight:900;cursor:pointer;">✕</button>
+                    </div>
+                `;
+            }
+        }
+    } catch (err) {
+        console.error('dfSearchT1 error:', err);
+        showToast('⚠️ هەڵە لە پەیوەندی بە سێرڤەر بۆ گەڕانی T1', true);
+    } finally {
+        if (btnT1) {
+            btnT1.disabled = false;
+            btnT1.innerHTML = origT1Html;
+        }
+    }
+}
+
 async function dfUpdateVehicle() {
     if (!loadedVehicleId) {
-        alert('⚠️ تکایە سەرەتا بە دوگمەی گەڕان ئوتومبێلێکی پێشتر تۆمارکراو لە سیستەم (T1) بدۆزەرەوە پێش ڕاستکردنەوە.');
+        alert('⚠️ تکایە سەرەتا بە دوگمەی (🔍 گەڕان لە T1) ئۆتۆمبێلێکی پێشتر تۆمارکراوی ئەمڕۆ بدۆزەرەوە پێش ئەنجامدانی ڕاستکردنەوە.');
+        return;
+    }
+    if (!loadedVehicleIsToday) {
+        alert(`⛔ ناتوانرێت نوێ بکرێتەوە!\nڕاستکردنەوە تەنها بۆ تۆمارەکانی ئەمڕۆ ڕێگەپێدراوە.\nبەرواری تۆمارکردنی ئەم ئۆتۆمبێلە (${loadedVehicleRegDate || 'پێشوو'}) یە و دەستکاریکردنی قەدەغەیە.`);
         return;
     }
     if (!validateRegistrationForm()) {
         return;
     }
+
+    const confirmUpdate = confirm(`ئایا دڵنیایت لە ڕاستکردنەوەی زانیارییەکانی ئەم ئۆتۆمبێلە (ID: ${loadedVehicleId}) لە تەیبڵی T1؟\n\nتێبینی: بەرواری تۆمارکردن دەستکاری ناکرێت و پارێزراو دەبێت.`);
+    if (!confirmUpdate) return;
+
     const payload = getFormPayload();
+    const btn = document.getElementById('dfBtnUpdate');
+    const origText = btn ? btn.innerHTML : '';
+    if (btn) {
+        btn.disabled = true;
+        btn.innerHTML = '<span>⏳ خەریکی نوێکردنەوەیە...</span>';
+    }
 
     try {
         const res = await fetch('/api/register/' + loadedVehicleId, {
@@ -6316,18 +6545,40 @@ async function dfUpdateVehicle() {
         const data = await res.json();
         if (res.ok && data.success) {
             setPrintButtonState(true);
-            showToast('✅ ' + data.message);
-            document.getElementById('regAlert').innerHTML = `
-                <div class="alert-box alert-success">✅ زانیاری ئوتومبێل (ID: ${loadedVehicleId}) بە سەرکەوتوویی نوێکرایەوە</div>
-            `;
+            showToast('✅ ' + (data.message || 'زانیارییەکان بە سەرکەوتوویی نوێکرانەوە'));
+            const regAlert = document.getElementById('regAlert');
+            if (regAlert) {
+                regAlert.innerHTML = `
+                    <div class="alert-box alert-success" style="display:flex;align-items:center;justify-content:space-between;gap:8px;padding:6px 12px;border-radius:6px;font-weight:700;font-size:13px;background:#ecfdf5;border:1.5px solid #10b981;color:#065f46;box-shadow:0 1px 3px rgba(0,0,0,0.06);margin-bottom:6px;">
+                        <div style="display:flex;align-items:center;gap:6px;">
+                            <span style="font-size:18px;">✅</span>
+                            <span>زانیارییەکانی ئۆتۆمبێل (ID: ${loadedVehicleId}) بە سەرکەوتوویی لە تەیبڵی T1 ڕاستکرانەوە — بەرواری تۆمارکردن پارێزراوە. دەتوانیت فۆڕمەکە چاپ بکەیتەوە.</span>
+                        </div>
+                        <button type="button" onclick="closeRegAlert()" style="background:transparent;border:none;color:#065f46;font-size:16px;font-weight:900;cursor:pointer;">✕</button>
+                    </div>
+                `;
+            }
+
+            // Auto-print if checkbox is checked
+            const autoPrintCheck = document.getElementById('dfAutoPrintCheck');
+            if (autoPrintCheck && autoPrintCheck.checked) {
+                setTimeout(() => {
+                    dfPrintInspection();
+                }, 300);
+            }
         } else {
-            setPrintButtonState(false);
-            showToast('⚠️ ' + (data.error || 'نەتوانرا نوێ بکرێتەوە'), true);
-            alert('هەڵە: ' + (data.error || 'نەتوانرا نوێ بکرێتەوە'));
+            showToast('⚠️ ' + (data.message || data.error || 'نەتوانرا نوێ بکرێتەوە'), true);
+            alert('هەڵە لە نوێکردنەوە: ' + (data.message || data.error || 'نەتوانرا نوێ بکرێتەوە'));
         }
     } catch(err) {
-        setPrintButtonState(false);
-        alert('کێشەی پەیوەندی بە سێرڤەر');
+        console.error('Update vehicle network error:', err);
+        showToast('⚠️ کێشەی پەیوەندی بە سێرڤەرەوە هەیە!', true);
+        alert('کێشەی پەیوەندی بە سێرڤەرەوە هەیە');
+    } finally {
+        if (btn) {
+            btn.disabled = false;
+            btn.innerHTML = origText;
+        }
     }
 }
 
@@ -9457,7 +9708,7 @@ function showSuspDetail(data) {
 }
 
 // ─── 12. SYSTEM AUTO-UPDATER & VERSION LOGIC ─────────────────────────────
-let currentAppVersion = '1.5.4';
+let currentAppVersion = '1.5.5';
 
 async function loadSystemVersion() {
     try {

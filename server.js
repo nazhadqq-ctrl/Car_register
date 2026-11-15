@@ -1511,6 +1511,158 @@ app.delete('/api/register/:id', requireAuth, async (req, res) => {
     }
 });
 
+// ─── FIND SPECIFIC VEHICLE IN T1 (FOR TODAY'S CORRECTION / UPDATE) ───────
+app.get('/api/register/find-t1', requireAuth, async (req, res) => {
+    try {
+        const { plate, tablo, bash, chassis, barcode } = req.query;
+        if (!plate && !chassis && !barcode) {
+            return res.status(400).json({ success: false, message: 'تکایە ژمارەی تابلۆ یان شاسی بنووسە بۆ گەڕان لە T1.' });
+        }
+
+        const pool = await getPool();
+        const cleanPlate = (plate || '').trim();
+        const cleanTablo = (tablo || '').trim();
+        const cleanBash = (bash || '').trim();
+        const cleanChassis = (chassis || '').trim().toUpperCase();
+        const cleanBarcode = (barcode || '').trim().toUpperCase();
+
+        const reqT1 = pool.request();
+        let query = `
+            SELECT TOP 1 *,
+                   CASE 
+                       WHEN TRY_CONVERT(date, DD) = CONVERT(date, GETDATE()) 
+                         OR TRY_CONVERT(date, EE) = CONVERT(date, GETDATE()) 
+                       THEN 1 ELSE 0 
+                   END AS isTodaySql
+            FROM T1
+            WHERE 1=0
+        `;
+
+        if (cleanBarcode) {
+            reqT1.input('t1Bc', sql.NVarChar, cleanBarcode);
+            query += ` OR (KK = @t1Bc OR R = @t1Bc) `;
+        }
+
+        if (cleanPlate && cleanTablo && cleanBash) {
+            reqT1.input('t1Plate', sql.NVarChar, cleanPlate);
+            reqT1.input('t1Tablo', sql.NVarChar, cleanTablo);
+            const normTablo = cleanTablo.replace(/ى/g, 'ی').replace(/ك/g, 'ک');
+            reqT1.input('normT1Tablo', sql.NVarChar, normTablo);
+
+            reqT1.input('t1Bash', sql.NVarChar, cleanBash);
+            const normBash = cleanBash.replace(/ى/g, 'ی').replace(/ك/g, 'ک');
+            reqT1.input('normT1Bash', sql.NVarChar, normBash);
+
+            query += ` OR (
+                (A = @t1Plate OR REPLACE(A, ' ', '') = @t1Plate)
+                AND (B = @t1Tablo OR REPLACE(B, N'ى', N'ی') = @normT1Tablo)
+                AND (C = @t1Bash OR REPLACE(C, N'ى', N'ی') = @normT1Bash)
+            ) `;
+        } else if (cleanPlate && !cleanTablo && !cleanBash) {
+            reqT1.input('t1PlateOnly', sql.NVarChar, cleanPlate);
+            query += ` OR (A = @t1PlateOnly OR REPLACE(A, ' ', '') = @t1PlateOnly) `;
+        }
+
+        if (cleanChassis && cleanChassis !== '*') {
+            reqT1.input('t1Chassis', sql.NVarChar, cleanChassis);
+            query += ` OR (UPPER(LTRIM(RTRIM(R))) = @t1Chassis OR UPPER(REPLACE(R, ' ', '')) = @t1Chassis) `;
+        }
+
+        query += ` ORDER BY id DESC `;
+
+        const result = await reqT1.query(query);
+        if (result.recordset.length === 0) {
+            return res.json({
+                found: false,
+                message: 'هیچ ئۆتۆمبێلێک لە تەیبڵی T1 نەدۆزرایەوە بەم زانیارییانە!'
+            });
+        }
+
+        const r = result.recordset[0];
+
+        // Check if chassis is in Hijz
+        const ch = (r.R || '').trim().toUpperCase();
+        if (ch) {
+            const hCheck = await pool.request().input('rch', sql.NVarChar, ch).query(`SELECT TOP 1 * FROM Hijz WHERE Reg_Name = @rch`);
+            if (hCheck.recordset.length > 0) {
+                const h = hCheck.recordset[0];
+                return res.json({
+                    found: true,
+                    isHijz: true,
+                    message: 'ئەم ئوتومبێلە کاری بۆ ناکرێت لەبەر ئەوەی نیشانەی گلدانەوەی (حجز) لەسەرە و پەیوەندی بکەن بە سەرپەرشتیاری هۆبەی پشکنین',
+                    hijz: {
+                        idd: h.idd,
+                        plate: h.Auto_No,
+                        tablo: h.Place_,
+                        bash: h.Car_Plet,
+                        chassis: h.Reg_Name,
+                        date: h.Date_Releasing,
+                        note: h.car_Note,
+                        officer: h.B,
+                        user: h.UUser
+                    }
+                });
+            }
+        }
+
+        const regDate = r.DD ? new Date(r.DD).toISOString().slice(0, 10) : (r.EE ? new Date(r.EE).toISOString().slice(0, 10) : 'نەزانراو');
+        const todayStr = new Date().toISOString().slice(0, 10);
+        const todayLocal = new Date().toLocaleDateString('en-CA');
+        const isToday = r.isTodaySql === 1 || regDate === todayStr || regDate === todayLocal;
+
+        return res.json({
+            found: true,
+            source: 'T1',
+            alreadyRegistered: true,
+            isToday,
+            date: regDate,
+            data: {
+                id: r.id,
+                A: r.A || '',
+                B: r.B || 'سلێمانی',
+                C: r.C || 'تایبەت',
+                D: r.D || '',
+                To: (r.To && (r.To.includes('هاتووچۆ') || r.To.includes('پارێزگا'))) ? r.To : 'هاتووچۆی پارێزگای سلێمانی',
+                E: r.E || '',
+                F: r.F || '*',
+                G: (r.G || '').trim(),
+                H: (r.H || '').trim() || 'تۆماری یەکەم جار',
+                I: (r.I || '').trim(),
+                J: (r.J || '').trim() || 'صالون',
+                K: (r.K || '').trim() || 'بەنزین',
+                L: (r.L || '').trim(),
+                M: (r.M || '').trim() || 'ئۆتۆماتیک',
+                N: r.N || 0,
+                O: r.O || 0,
+                P: r.P || 0,
+                Q: r.Q || 0,
+                R: (r.R || '').trim().toUpperCase(),
+                S: r.S || 0,
+                T: (r.T || '').trim() || 0,
+                U: (r.U || '').trim(),
+                V: (r.V || '').trim(),
+                W: r.W || '*',
+                X: r.X || '',
+                Y: r.Y || 0,
+                Z: r.Z || '',
+                AA: r.AA || '*',
+                BB: r.BB || '',
+                CC: r.CC || 0,
+                II: r.II || 0,
+                JJ: r.JJ || 0,
+                DD: regDate,
+                KK: r.KK || '',
+                Barcod: r.KK || '',
+                user: r.FF,
+                updatedBy: r.GG
+            }
+        });
+    } catch (err) {
+        console.error('Find T1 error:', err);
+        res.status(500).json({ success: false, message: 'کێشەی سێرڤەر لە گەڕانی T1: ' + err.message });
+    }
+});
+
 // ─── FIND VEHICLE FOR REGISTRATION FORM (TAQEGA & T1) ────────────────
 app.get('/api/register/find', requireAuth, async (req, res) => {
     try {
@@ -2494,6 +2646,40 @@ app.put('/api/register/:id', requireAuth, async (req, res) => {
         const pool = await getPool();
         const userName = user.name || user.username;
 
+        // 1. Fetch current record from T1 to verify existence and check date
+        const existingCheck = await pool.request()
+            .input('chkId', sql.Int, id)
+            .query(`
+                SELECT id, DD, EE, FF,
+                       CASE 
+                           WHEN TRY_CONVERT(date, DD) = CONVERT(date, GETDATE()) 
+                             OR TRY_CONVERT(date, EE) = CONVERT(date, GETDATE()) 
+                           THEN 1 ELSE 0 
+                       END AS isTodaySql
+                FROM T1 
+                WHERE id = @chkId
+            `);
+
+        if (existingCheck.recordset.length === 0) {
+            return res.status(404).json({ success: false, message: 'ئەم ئۆتۆمبێلە لە تەیبڵی T1 نەدۆزرایەوە!' });
+        }
+
+        const curRec = existingCheck.recordset[0];
+        const regDateStr = curRec.DD ? new Date(curRec.DD).toISOString().slice(0, 10) : (curRec.EE ? new Date(curRec.EE).toISOString().slice(0, 10) : '');
+        const todayStr = new Date().toISOString().slice(0, 10);
+        const todayLocal = new Date().toLocaleDateString('en-CA');
+        const isToday = curRec.isTodaySql === 1 || regDateStr === todayStr || regDateStr === todayLocal;
+
+        // Strict enforcement: Only today's records can be corrected/updated!
+        if (!isToday) {
+            return res.status(403).json({
+                success: false,
+                message: `⛔ ڕاستکردنەوە تەنها بۆ تۆمارەکانی ئەمڕۆ ڕێگەپێدراوە! بەرواری تۆمارکردنی ئەم ئۆتۆمبێلە (${regDateStr}) یە و دەستکاریکردنی ڕێگەپێدراو نییە.`
+            });
+        }
+
+        const origDD = curRec.DD ? new Date(curRec.DD).toISOString().slice(0, 10) : (curRec.EE ? new Date(curRec.EE).toISOString().slice(0, 10) : todayStr);
+
         // Prevent creating duplicate (Plate or Chassis) by checking other records in T1
         const cleanA = (A || '').trim();
         const cleanB = (B || '').trim();
@@ -2608,6 +2794,7 @@ app.put('/api/register/:id', requireAuth, async (req, res) => {
             .input('JJ', sql.NVarChar, JJ != null ? String(JJ) : '0')
             .input('GG', sql.NVarChar, userName)
             .input('KK', sql.NVarChar, KK || Barcode || '')
+            .input('origDD', sql.NVarChar, origDD)
             .query(`UPDATE T1 SET
                         A=@A, B=@B, C=@C, D=@D, E=@E, F=@F, G=@G, H=@H, I=@I, J=@J,
                         K=@K, L=@L, M=@M, N=@N, O=@O, P=@P, Q=@Q, R=@R, S=@S, T=@T,
@@ -2616,7 +2803,7 @@ app.put('/api/register/:id', requireAuth, async (req, res) => {
                     WHERE id = @id;
 
                     INSERT INTO T1_backup (A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U, V, W, X, Y, Z, AA, BB, CC, II, JJ, FF, GG, DD, EE, KK)
-                    VALUES (@A, @B, @C, @D, @E, @F, @G, @H, @I, @J, @K, @L, @M, @N, @O, @P, @Q, @R, @S, @T, @U, @V, @W, @X, @Y, @Z, @AA, @BB, @CC, @II, @JJ, @GG, N'UPDATE_AUDIT', GETDATE(), GETDATE(), @KK);`);
+                    VALUES (@A, @B, @C, @D, @E, @F, @G, @H, @I, @J, @K, @L, @M, @N, @O, @P, @Q, @R, @S, @T, @U, @V, @W, @X, @Y, @Z, @AA, @BB, @CC, @II, @JJ, @GG, N'UPDATE_AUDIT', @origDD, GETDATE(), @KK);`);
 
         res.json({ success: true, message: 'زانیاری ئوتومبێل بە سەرکەوتوویی نوێکرایەوە' });
     } catch (err) {
