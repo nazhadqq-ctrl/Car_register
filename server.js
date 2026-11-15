@@ -279,6 +279,22 @@ app.get('/api/bash', requireAuth, async (req, res) => {
     }
 });
 
+// ─── GET OPERATIONS LIST (Tbl_Operations) ───────────────────────────
+app.get('/api/operations', requireAuth, async (req, res) => {
+    try {
+        const pool = await getPool();
+        const result = await pool.request().query(`
+            SELECT DISTINCT LTRIM(RTRIM(Operation)) AS Operation 
+            FROM Tbl_Operations 
+            WHERE Operation IS NOT NULL AND LEN(LTRIM(RTRIM(Operation))) > 0 
+            ORDER BY Operation
+        `);
+        res.json(result.recordset.map(r => r.Operation));
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+});
+
 // ─── GET BARADS LIST (From Barad Table) ─────────────────────────────
 app.get('/api/barads', requireAuth, async (req, res) => {
     try {
@@ -2358,6 +2374,24 @@ app.post('/api/register', requireAuth, async (req, res) => {
             }
         }
 
+        // Validate that H belongs to Tbl_Operations table
+        if (H && H.trim()) {
+            const allOps = await pool.request().query(`SELECT Operation FROM Tbl_Operations WHERE Operation IS NOT NULL AND LEN(LTRIM(RTRIM(Operation))) > 0`);
+            const normH = String(H).trim().replace(/[يى]/g, 'ی').replace(/[ك]/g, 'ک').replace(/[ة]/g, 'ە').replace(/[\u200B-\u200D\uFEFF]/g, '').replace(/\s+/g, ' ');
+            const matched = allOps.recordset.find(r => {
+                const normOp = String(r.Operation || '').trim().replace(/[يى]/g, 'ی').replace(/[ك]/g, 'ک').replace(/[ة]/g, 'ە').replace(/[\u200B-\u200D\uFEFF]/g, '').replace(/\s+/g, ' ');
+                return normOp === normH;
+            });
+            if (matched) {
+                H = matched.Operation;
+            } else {
+                return res.status(400).json({ 
+                    success: false, 
+                    message: `جۆری مامەڵەی دیاریکراو (${H}) لە لیستی فەرمی (Tbl_Operations) نییە و ڕێگەپێدراو نییە.` 
+                });
+            }
+        }
+
         // ─── UNIQUE BARCODE <= 10 CHARACTERS GUARANTEE ───
         let finalBarcode = (KK || Barcode || '').trim().toUpperCase();
         if (!finalBarcode || finalBarcode.length > 10 || finalBarcode === 'TC00000000') {
@@ -2504,6 +2538,24 @@ app.put('/api/register/:id', requireAuth, async (req, res) => {
                 return res.status(400).json({ 
                     success: false, 
                     message: `تابلۆی دیاریکراو (${B}) لە لیستی فەرمی (parz) نییە و ڕێگەپێدراو نییە.` 
+                });
+            }
+        }
+
+        // Validate that H belongs to Tbl_Operations table
+        if (H && H.trim()) {
+            const allOps = await pool.request().query(`SELECT Operation FROM Tbl_Operations WHERE Operation IS NOT NULL AND LEN(LTRIM(RTRIM(Operation))) > 0`);
+            const normH = String(H).trim().replace(/[يى]/g, 'ی').replace(/[ك]/g, 'ک').replace(/[ة]/g, 'ە').replace(/[\u200B-\u200D\uFEFF]/g, '').replace(/\s+/g, ' ');
+            const matched = allOps.recordset.find(r => {
+                const normOp = String(r.Operation || '').trim().replace(/[يى]/g, 'ی').replace(/[ك]/g, 'ک').replace(/[ة]/g, 'ە').replace(/[\u200B-\u200D\uFEFF]/g, '').replace(/\s+/g, ' ');
+                return normOp === normH;
+            });
+            if (matched) {
+                H = matched.Operation;
+            } else {
+                return res.status(400).json({ 
+                    success: false, 
+                    message: `جۆری مامەڵەی دیاریکراو (${H}) لە لیستی فەرمی (Tbl_Operations) نییە و ڕێگەپێدراو نییە.` 
                 });
             }
         }

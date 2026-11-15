@@ -1971,7 +1971,7 @@
         <button class="btn-update-topbar" id="btnTopbarUpdate" onclick="openSystemUpdateModal()" title="پشکنین و نوێکردنەوەی سیستەم">
             <span style="font-size:14px; animation: spin-slow 8s linear infinite; display:inline-block;">🔄</span>
             <span>ئەپدەیت</span>
-            <span class="badge-ver" id="topbarVerBadge">v1.5.3</span>
+            <span class="badge-ver" id="topbarVerBadge">v1.5.4</span>
         </button>
         <button class="btn-out" id="logoutBtn">⬅ دەرچوون</button>
     </div>
@@ -2635,13 +2635,11 @@
                     <input type="text" id="dfF" list="baradList" class="df-input c4-kurd" style="width:260px;" value="*">
                     
                     <span class="df-label">جۆری مامەڵە</span>
-                    <select id="dfH" class="df-select" style="flex:1;">
-                        <option value="تۆماری یەکەم جار" selected>تۆماری یەکەم جار</option>
-                        <option value="بەناوکردن">بەناوکردن</option>
-                        <option value="گۆڕینی خاوەندارێتی">گۆڕینی خاوەندارێتی</option>
-                        <option value="تازەکردنەوە">تازەکردنەوە</option>
-                        <option value="گۆڕینی تابلۆ">گۆڕینی تابلۆ</option>
-                    </select>
+                    <div class="df-combobox" id="dfHWrapper" style="flex:1; min-width:240px;">
+                        <input type="text" id="dfH" class="df-input c4-kurd df-combo-input" autocomplete="off" value="تۆماری یه‌كه‌م جار" placeholder="جۆری مامەڵە هەڵبژێرە..." title="تەنها لە لیستی فەرمی (Tbl_Operations) قبوڵ دەکرێت">
+                        <button type="button" class="df-combo-btn" id="dfHBtn" tabindex="-1" title="بینینی هەموو جۆرەکانی مامەڵە">▼</button>
+                        <div class="df-combo-menu" id="dfHMenu" style="min-width:100%; max-width:420px;"></div>
+                    </div>
                 </div>
 
                 <!-- ROW 3 (Owner Full Name) -->
@@ -3305,7 +3303,7 @@
                 <span>نوێکردنەوەی سیستەمی بەرنامە (System Auto-Updater)</span>
             </div>
             <div style="display:flex; align-items:center; gap:10px;">
-                <span style="background: rgba(56, 189, 248, 0.2); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.4); padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 800;" id="updateModalVersionBadge">v1.5.3</span>
+                <span style="background: rgba(56, 189, 248, 0.2); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.4); padding: 3px 10px; border-radius: 20px; font-size: 11px; font-weight: 800;" id="updateModalVersionBadge">v1.5.4</span>
                 <button class="modal-close" style="color: #ffffff;" onclick="closeOverlay('modalSystemUpdate')">✕</button>
             </div>
         </div>
@@ -4796,6 +4794,291 @@ function initFeeCombobox() {
     });
 }
 
+// ─── COMBOBOX CONTROLLER FOR OPERATION / جۆری مامەڵە (Tbl_Operations) ───
+let OPERATIONS_ITEMS = [
+    "ئالوگۆری تابلو ",
+    "بردنه‌ ده‌ره‌وه‌ی ئوتومبیل بۆ ده‌ره‌وه‌ی هه‌رێم",
+    "به‌ناوكردن +وون بوونی سالانه‌",
+    "بەستنی عەرەبانە",
+    "بەناو کردن",
+    "بەناو کردن+ڕاست کردنەوەى شاصی ",
+    "بەناوکردن + تازەکردنەوە",
+    "بەناوکردن +گەڕایەوە لە گومرگ",
+    "پیشه‌ گۆڕین له‌ تایبه‌ت بۆ كرێ",
+    "پیشه‌ گۆڕین له‌ كرێ بۆ تایبه‌ت",
+    "تابلۆ گۆڕین",
+    "تابلۆگۆڕین+ بەناوکردن+تازەکردنەوە",
+    "تازه‌كردنه‌وه‌ +وون بوونی سالانه‌",
+    "تازه‌كردنه‌وه‌ی جام ڕه‌ش",
+    "تازەکردنەوە",
+    "تازەکردنەوە + تابلۆگۆڕین",
+    "تازەکردنەوە +بەناوکردن +گەڕایەوە لە گومرگ",
+    "تۆماری یه‌كه‌م جار",
+    "تۆماری یه‌كه‌م جار  + بەکارهاتوو",
+    "تێكچونی ساڵانه‌",
+    "دزینی عه‌ره‌بانه‌ پاشگر",
+    "راست كردنه‌وه‌ی ره‌نگ",
+    "راستكردنه‌وه‌ی پاشگر",
+    "راستكردنه‌وه‌ی ته‌ن",
+    "ساڵانەى شێواوە",
+    "گؤڕینى ژمارە",
+    "گواستنەوەى تۆمار",
+    "گۆرینى مواصفات",
+    "گۆرینی ناونیشان ",
+    "گۆڕینى ڕەنگ",
+    "گۆڕینی ناو",
+    "گۆینى شیوە",
+    "گەڕایەوە لە گومرگ",
+    "گەڕایەوە لە گومرگ + تازەکردنەوە",
+    "لۆگۆى نیە + تازەکردنەوە + بەناوکردن",
+    "لۆگۆى هەیە+ تازەکردنەوە + بەناوکردن",
+    "مامه‌له‌ی جام ره‌ش كردن",
+    "هەڵوەشاندن",
+    "وون بونى سالانە",
+    "وون بونی تابلۆ",
+    "ڕاست کردنەوەى ساڵانه‌",
+    "ڕاست کردنەوەى شاصی",
+    "ڕاست کردنەوەى مۆدێل",
+    "کەم کردنەوەى مواصفات"
+];
+let activeOpIndex = -1;
+let openOpMenu = null;
+let lastValidOperation = 'تۆماری یه‌كه‌م جار';
+
+function setOperationValue(val) {
+    const input = document.getElementById('dfH');
+    if (!input) return;
+    if (val && OPERATIONS_ITEMS.length > 0) {
+        const found = OPERATIONS_ITEMS.find(p => normKu(p) === normKu(val));
+        if (found) {
+            input.value = found;
+            lastValidOperation = found;
+            input.dispatchEvent(new Event('change'));
+            return;
+        }
+    }
+    input.value = val || (OPERATIONS_ITEMS[0] || 'تۆماری یه‌كه‌م جار');
+    lastValidOperation = input.value;
+    input.dispatchEvent(new Event('change'));
+}
+
+function initOperationCombobox(items) {
+    if (Array.isArray(items) && items.length > 0) {
+        OPERATIONS_ITEMS = items;
+        const cur = document.getElementById('dfH');
+        if (cur && cur.value) {
+            const found = OPERATIONS_ITEMS.find(p => normKu(p) === normKu(cur.value));
+            if (found) {
+                cur.value = found;
+                lastValidOperation = found;
+            }
+        }
+    }
+    const input = document.getElementById('dfH');
+    const btn = document.getElementById('dfHBtn');
+    const menu = document.getElementById('dfHMenu');
+    if (!input || !menu) return;
+    if (input._opInit) return;
+    input._opInit = true;
+
+    function renderMenu(filterText = '', showAll = false) {
+        const query = normKu(filterText);
+        let matches = [];
+        if (showAll || !query) {
+            matches = OPERATIONS_ITEMS;
+        } else {
+            const startsWith = [];
+            const contains = [];
+            OPERATIONS_ITEMS.forEach(item => {
+                const n = normKu(item);
+                if (n.startsWith(query)) startsWith.push(item);
+                else if (n.includes(query)) contains.push(item);
+            });
+            matches = [...startsWith, ...contains];
+        }
+
+        if (matches.length === 0) {
+            menu.innerHTML = `<div class="df-combo-empty">⚠️ هیچ جۆرە مامەڵەیەک بەم پیتانە لە (Tbl_Operations) نەدۆزرایەوە</div>`;
+            activeOpIndex = -1;
+        } else {
+            menu.innerHTML = matches.map((item, idx) => {
+                let textHtml = item;
+                if (query) {
+                    const regex = new RegExp(`(${query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
+                    textHtml = item.replace(regex, '<mark>$1</mark>');
+                }
+                return `<div class="df-combo-item" data-value="${item}" data-index="${idx}">${textHtml}</div>`;
+            }).join('');
+            activeOpIndex = matches.length > 0 ? 0 : -1;
+            updateActiveItem();
+        }
+        menu.style.display = 'block';
+    }
+
+    function hideMenu() {
+        menu.style.display = 'none';
+        activeOpIndex = -1;
+    }
+
+    openOpMenu = function() {
+        renderMenu(input.value, true);
+    };
+
+    function updateActiveItem() {
+        const items = menu.querySelectorAll('.df-combo-item');
+        items.forEach((it, idx) => {
+            if (idx === activeOpIndex) {
+                it.classList.add('active');
+                it.scrollIntoView({ block: 'nearest' });
+            } else {
+                it.classList.remove('active');
+            }
+        });
+    }
+
+    function selectOpItem(val) {
+        input.value = val;
+        lastValidOperation = val;
+        hideMenu();
+        input.classList.remove('df-invalid-shake');
+        input.dispatchEvent(new Event('change'));
+
+        setTimeout(() => {
+            const dfG = document.getElementById('dfG');
+            if (dfG) {
+                dfG.focus();
+                if (dfG.select) dfG.select();
+            }
+        }, 60);
+    }
+
+    function validateAndEnforce() {
+        const currentVal = input.value.trim();
+        if (!currentVal) {
+            input.value = lastValidOperation || (OPERATIONS_ITEMS[0] || 'تۆماری یه‌كه‌م جار');
+            input.dispatchEvent(new Event('change'));
+            return;
+        }
+
+        // Exact match
+        const exactMatch = OPERATIONS_ITEMS.find(p => normKu(p) === normKu(currentVal));
+        if (exactMatch) {
+            input.value = exactMatch;
+            lastValidOperation = exactMatch;
+            input.classList.remove('df-invalid-shake');
+            input.dispatchEvent(new Event('change'));
+            return;
+        }
+
+        // Single unique prefix match
+        const prefixMatches = OPERATIONS_ITEMS.filter(p => normKu(p).startsWith(normKu(currentVal)));
+        if (prefixMatches.length === 1) {
+            input.value = prefixMatches[0];
+            lastValidOperation = prefixMatches[0];
+            input.classList.remove('df-invalid-shake');
+            input.dispatchEvent(new Event('change'));
+            return;
+        }
+
+        // Strict enforcement: cannot be outside Tbl_Operations!
+        showToast(`⚠️ جۆری مامەڵەی "${currentVal}" لە لیستی فەرمی (Tbl_Operations) نییە!`, true);
+        input.classList.add('df-invalid-shake');
+        setTimeout(() => input.classList.remove('df-invalid-shake'), 600);
+        input.value = lastValidOperation || (OPERATIONS_ITEMS[0] || 'تۆماری یه‌كه‌م جار');
+        input.dispatchEvent(new Event('change'));
+    }
+
+    input.addEventListener('input', () => {
+        renderMenu(input.value, false);
+    });
+
+    input.addEventListener('focus', () => {
+        renderMenu(input.value, true);
+    });
+
+    if (btn) {
+        btn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            if (menu.style.display === 'block') {
+                hideMenu();
+            } else {
+                renderMenu('', true);
+                input.focus();
+            }
+        });
+    }
+
+    menu.addEventListener('mousedown', (e) => {
+        const target = e.target.closest('.df-combo-item');
+        if (target) {
+            const val = target.getAttribute('data-value');
+            selectOpItem(val);
+        }
+    });
+
+    input.addEventListener('keydown', (e) => {
+        if (menu.style.display === 'block') {
+            const items = menu.querySelectorAll('.df-combo-item');
+            if (e.key === 'ArrowDown') {
+                e.preventDefault();
+                if (items.length > 0) {
+                    activeOpIndex = (activeOpIndex + 1) % items.length;
+                    updateActiveItem();
+                }
+            } else if (e.key === 'ArrowUp') {
+                e.preventDefault();
+                if (items.length > 0) {
+                    activeOpIndex = (activeOpIndex - 1 + items.length) % items.length;
+                    updateActiveItem();
+                }
+            } else if (e.key === 'Enter') {
+                e.preventDefault();
+                if (activeOpIndex >= 0 && items[activeOpIndex]) {
+                    const val = items[activeOpIndex].getAttribute('data-value');
+                    selectOpItem(val);
+                } else {
+                    validateAndEnforce();
+                    hideMenu();
+                    const dfG = document.getElementById('dfG');
+                    if (dfG) dfG.focus();
+                }
+            } else if (e.key === 'Tab') {
+                if (activeOpIndex >= 0 && items[activeOpIndex]) {
+                    const val = items[activeOpIndex].getAttribute('data-value');
+                    selectOpItem(val);
+                } else {
+                    validateAndEnforce();
+                    hideMenu();
+                }
+            } else if (e.key === 'Escape') {
+                hideMenu();
+            }
+        } else {
+            if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+                renderMenu(input.value, true);
+            } else if (e.key === 'Enter') {
+                e.preventDefault();
+                validateAndEnforce();
+                const dfG = document.getElementById('dfG');
+                if (dfG) dfG.focus();
+            }
+        }
+    });
+
+    input.addEventListener('blur', () => {
+        setTimeout(() => {
+            hideMenu();
+            validateAndEnforce();
+        }, 220);
+    });
+
+    document.addEventListener('click', (e) => {
+        if (!e.target.closest('#dfHWrapper')) {
+            hideMenu();
+        }
+    });
+}
+
 // ─── HIJZ RED ALERT CONTROLLERS ────────────────────────────────────
 function showHijzRedAlert(r) {
     const mainWrap = document.querySelector('.df-container') || document.body;
@@ -4860,18 +5143,20 @@ function clearHijzAlert() {
     if (banner) banner.remove();
 }
 
-// ─── LOAD LOOKUPS (COLORS, TABLO/PROVINCES, USERS, PLACES, BARADS, BASH) ────────────
+// ─── LOAD LOOKUPS (COLORS, TABLO/PROVINCES, USERS, PLACES, BARADS, BASH, OPERATIONS) ────────────
 async function loadLookups() {
     try {
         initBashCombobox(); // Initialize immediately with default options
         initFeeCombobox();  // Initialize fee combobox with standard Kurdistan fees
+        initOperationCombobox(); // Initialize immediately with default operations from Tbl_Operations
 
-        const [colors, tabloList, staff, barads, bashList] = await Promise.all([
+        const [colors, tabloList, staff, barads, bashList, operationsList] = await Promise.all([
             fetch('/api/colors').then(r=>r.json()).catch(()=>[]),
             fetch('/api/tablo').then(r=>r.json()).catch(()=>fetch('/api/provinces').then(r=>r.json()).catch(()=>[])),
             fetch('/api/staff-list').then(r=>r.json()).catch(()=>({users:[], places:[]})),
             fetch('/api/barads').then(r=>r.json()).catch(()=>[]),
-            fetch('/api/bash').then(r=>r.json()).catch(()=>[])
+            fetch('/api/bash').then(r=>r.json()).catch(()=>[]),
+            fetch('/api/operations').then(r=>r.json()).catch(()=>[])
         ]);
 
         // 1. Populate Color Combobox (#dfL) and datalist (#colorList) from Tbl_Color
@@ -4904,7 +5189,12 @@ async function loadLookups() {
             initBashCombobox(bashList);
         }
 
-        // 4. Staff users & places
+        // 4. Populate Operation Combobox (#dfH) from Tbl_Operations
+        if (Array.isArray(operationsList) && operationsList.length > 0) {
+            initOperationCombobox(operationsList);
+        }
+
+        // 5. Staff users & places
         const userList = document.getElementById('userList');
         if (userList && staff.users) {
             userList.innerHTML = staff.users.map(u => `<option value="${u.User_id}">${u.User_Name ? u.User_Name : ''}</option>`).join('');
@@ -5164,7 +5454,8 @@ function openRegisterModal() {
             dfResetNew();
         } else {
             const dfHEl = document.getElementById('dfH');
-            if (dfHEl && dfHEl.value !== 'تۆماری یەکەم جار') {
+            const hVal = dfHEl ? (typeof normKu === 'function' ? normKu(dfHEl.value) : dfHEl.value.trim()) : '';
+            if (hVal && hVal !== normKu('تۆماری یەکەم جار') && hVal !== normKu('تۆماری یه‌كه‌م جار')) {
                 const feeEl = document.getElementById('dfJJ');
                 if (feeEl) feeEl.value = '0';
             }
@@ -5214,7 +5505,8 @@ function dfResetNew() {
     const curBarad = document.getElementById('dfE') ? document.getElementById('dfE').value : '';
     if (curBarad) setVal('dfE', curBarad);
     setVal('dfF', '*');
-    setVal('dfH', 'تۆماری یەکەم جار');
+    setVal('dfH', 'تۆماری یه‌كه‌م جار');
+    if (typeof setOperationValue === 'function') setOperationValue('تۆماری یه‌كه‌م جار');
     setVal('dfG', '');
     setVal('dfI', '');
     setVal('dfJ', 'صالون');
@@ -5263,7 +5555,8 @@ function initFeeTransactionSync() {
         dfHEl._feeSyncInit = true;
         dfHEl.addEventListener('change', function() {
             const feeEl = document.getElementById('dfJJ');
-            if (this.value !== 'تۆماری یەکەم جار') {
+            const v = typeof normKu === 'function' ? normKu(this.value) : this.value.trim();
+            if (v !== normKu('تۆماری یەکەم جار') && v !== normKu('تۆماری یه‌كه‌م جار')) {
                 if (feeEl) feeEl.value = '0';
             }
         });
@@ -5387,7 +5680,8 @@ async function onBarcodeVAChange() {
         }
         set('dfF', d.F || '*');
         set('dfG', d.G || '');
-        set('dfH', d.H || 'تۆماری یەکەم جار');
+        set('dfH', d.H || 'تۆماری یه‌كه‌م جار');
+        if (typeof setOperationValue === 'function') setOperationValue(d.H || 'تۆماری یه‌كه‌م جار');
         set('dfI', d.I || '');
         set('dfJ', d.J || 'صالون');
         set('dfK', d.K || 'بەنزین');
@@ -5520,7 +5814,8 @@ function populateRegistrationFields(r, fallbackPlate = '', fallbackTablo = '', f
     }
     set('dfF', r.F || '*');
     set('dfG', r.G || '');
-    set('dfH', r.H || 'تۆماری یەکەم جار');
+    set('dfH', r.H || 'تۆماری یه‌كه‌م جار');
+    if (typeof setOperationValue === 'function') setOperationValue(r.H || 'تۆماری یه‌كه‌م جار');
     set('dfI', r.I || '');
     set('dfJ', r.J || 'صالون');
     set('dfK', r.K || 'بەنزین');
@@ -5760,7 +6055,11 @@ function validateRegistrationForm() {
         { id: 'dfC', name: 'بەش', isInvalid: v => !v || v.trim() === '' },
         { id: 'dfG', name: 'ناوی خاوەن سوارەو', isInvalid: v => !v || v.trim() === '' },
         { id: 'dfE', name: 'بەڕادی هاتووچۆ', isInvalid: v => !v || v.trim() === '' },
-        { id: 'dfH', name: 'جۆری مامەڵە', isInvalid: v => !v || v.trim() === '' },
+        { 
+            id: 'dfH', 
+            name: 'جۆری مامەڵە', 
+            isInvalid: v => !v || v.trim() === '' || (OPERATIONS_ITEMS.length > 0 && !OPERATIONS_ITEMS.some(op => normKu(op) === normKu(v))) 
+        },
         { id: 'dfI', name: 'جۆری ئوتومبێل', isInvalid: v => !v || v.trim() === '' },
         { id: 'dfL', name: 'ڕەنگ', isInvalid: v => !v || v.trim() === '' || v.includes('--') },
         { id: 'dfR', name: 'ژمارەی شاسی', isInvalid: v => !v || v.trim() === '' },
@@ -5773,7 +6072,10 @@ function validateRegistrationForm() {
         const val = el ? (el.value || '').trim() : '';
 
         if (f.isInvalid(val)) {
-            const msg = `ناکرێت ئەم خانەیە ( ${f.name} ) پڕ نەکرێتەوە`;
+            let msg = `ناکرێت ئەم خانەیە ( ${f.name} ) پڕ نەکرێتەوە`;
+            if (f.id === 'dfH' && val && OPERATIONS_ITEMS.length > 0 && !OPERATIONS_ITEMS.some(op => normKu(op) === normKu(val))) {
+                msg = `جۆری مامەڵەی دیاریکراو ( ${val} ) لە لیستی فەرمی (Tbl_Operations) نییە و قبوڵ ناکرێت`;
+            }
             showToast(`⛔ ${msg}`, true);
             const regAlert = document.getElementById('regAlert');
             if (regAlert) {
@@ -6047,7 +6349,11 @@ function getFormPayload() {
         E: val('dfE'),
         F: val('dfF'),
         G: val('dfG'),
-        H: val('dfH'),
+        H: (() => {
+            const rawH = val('dfH');
+            const matched = (typeof OPERATIONS_ITEMS !== 'undefined' && Array.isArray(OPERATIONS_ITEMS)) ? OPERATIONS_ITEMS.find(op => normKu(op) === normKu(rawH)) : null;
+            return matched || rawH;
+        })(),
         I: val('dfI'),
         J: val('dfJ'),
         K: val('dfK'),
@@ -9151,14 +9457,14 @@ function showSuspDetail(data) {
 }
 
 // ─── 12. SYSTEM AUTO-UPDATER & VERSION LOGIC ─────────────────────────────
-let currentAppVersion = '1.5.3';
+let currentAppVersion = '1.5.4';
 
 async function loadSystemVersion() {
     try {
         const res = await fetch('/api/system/version');
         if (res.ok) {
             const data = await res.json();
-            currentAppVersion = data.version || '1.5.3';
+            currentAppVersion = data.version || '1.5.4';
             const verStr = `v${currentAppVersion}`;
             const topBadge = document.getElementById('topbarVerBadge');
             if (topBadge) topBadge.textContent = verStr;
