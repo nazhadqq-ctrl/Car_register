@@ -7201,9 +7201,9 @@ async function dfSearchCar() {
         clearHijzAlert();
 
         // ─── CHECK ALREADY REGISTERED IN T1 ───
-        if (r && r.alreadyRegistered) {
-            const dateStr = r.date || 'نەزانراو';
-            const isToday = r.isToday || (r.DD && new Date(r.DD).toDateString() === new Date().toDateString());
+        if (r && (r.alreadyRegistered || r.source === 'T1' || r.id)) {
+            const dateStr = r.date || (r.DD ? String(r.DD).slice(0, 10) : 'نەزانراو');
+            const isToday = !!r.isToday || (r.DD && new Date(r.DD).toDateString() === new Date().toDateString());
 
             if (isToday) {
                 // Vehicle was already registered TODAY: load complete record, enable print, disable save, enable update
@@ -7212,7 +7212,7 @@ async function dfSearchCar() {
                 loadedVehicleIsToday = true;
                 loadedVehicleRegDate = dateStr;
                 setPrintButtonState(true);
-                setSaveButtonState(false, 'ئەم ئۆتۆمبێلە پێشتر ئەمڕۆ تۆمارکراوە - بۆ نوێکردنەوە دوگمەی ڕاستکردنەوە دابگرە');
+                setSaveButtonState(false, 'ئەم ئۆتۆمبێلە ئەمڕۆ تۆمارکراوە - بۆ نوێکردنەوە دوگمەی ڕاستکردنەوە دابگرە');
                 setUpdateBtnState(true, true);
 
                 showToast(`ℹ️ ئەم ئۆتۆمبێلە ئەمڕۆ (${dateStr}) تۆمارکراوە - زانیارییەکان هێنران و دەتوانیت چاپی بکەیت یان ڕاستی بکەیتەوە`);
@@ -7232,21 +7232,21 @@ async function dfSearchCar() {
             } else {
                 // Vehicle was registered on an earlier date:
                 // Keep typed inputs (dfA, dfB, dfC) intact - do NOT wipe!
-                loadedVehicleId = null;
+                loadedVehicleId = r.id || null;
                 loadedVehicleIsToday = false;
                 loadedVehicleRegDate = dateStr;
                 setPrintButtonState(false);
-                setSaveButtonState(false, `ئەم ئۆتۆمبێلە پێشتر تۆمارکراوە لە بەرواری (${dateStr}) - تۆمارکردن ناچالاک کراوە`);
+                setSaveButtonState(false, `ئەم ئۆتۆمبێلە پێشتر تۆمارکراوە لە بەرواری (${dateStr}) - دەستکاریکردن ناچالاک کراوە`);
                 setUpdateBtnState(false);
 
-                showToast(`⚠️ ئەم فۆرمە پێشتر کراوە لە بەرواری (${dateStr}) - تۆمارکردن ناچالاک کرا`, true);
+                showToast(`⚠️ ئەم فۆرمە پێشتر کراوە لە بەرواری (${dateStr}) - دەستکاریکردن ناچالاک کرا`, true);
                 const regAlert = document.getElementById('regAlert');
                 if (regAlert) {
                     regAlert.innerHTML = `
                         <div class="alert-box alert-warning" style="display:flex;align-items:center;justify-content:space-between;gap:8px;padding:4px 10px;border-radius:6px;font-weight:700;font-size:12.5px;background:#fef3c7;border:1.5px solid #f59e0b;color:#92400e;box-shadow:0 1px 3px rgba(0,0,0,0.06);margin-bottom:4px;">
                             <div style="display:flex;align-items:center;gap:6px;">
                                 <span style="font-size:16px;line-height:1;">⛔</span>
-                                <span>ئەم فۆرمە پێشتر کراوە لە بەرواری (${dateStr}) — تەنها فۆڕمی ئەمڕۆ چاپ دەکرێت و دوگمەی تۆمارکردن ناچالاک کرا</span>
+                                <span>ئەم فۆرمە پێشتر کراوە لە بەرواری (${dateStr}) — دەستکاریکردن و ڕاستکردنەوە تەنها بۆ تۆمارەکانی ئەمڕۆ ڕێگەپێدراوە</span>
                             </div>
                             <button type="button" onclick="closeRegAlert()" style="background:transparent;border:none;color:#92400e;font-size:16px;font-weight:900;cursor:pointer;padding:0 4px;border-radius:4px;line-height:1;" title="داخستن">✕</button>
                         </div>
@@ -7512,6 +7512,9 @@ async function dfSaveVehicle() {
         const data = await res.json();
         if (res.ok && data.success) {
             loadedVehicleId = data.id || loadedVehicleId;
+            loadedVehicleIsToday = true;
+            loadedVehicleRegDate = new Date().toISOString().slice(0, 10);
+            setUpdateBtnState(true, true);
             if (data.barcode) {
                 const bEl = document.getElementById('dfBarcode');
                 if (bEl) {
@@ -7708,7 +7711,7 @@ async function dfSearchT1() {
                     <div class="alert-box alert-success" style="display:flex;align-items:center;justify-content:space-between;gap:8px;padding:6px 12px;border-radius:6px;font-weight:700;font-size:13px;background:#ecfdf5;border:1.5px solid #10b981;color:#065f46;box-shadow:0 1px 3px rgba(0,0,0,0.06);margin-bottom:6px;">
                         <div style="display:flex;align-items:center;gap:6px;">
                             <span style="font-size:18px;">✏️</span>
-                            <span>داتای ئۆتۆمبێل (ID: ${record.id}) بۆ ئەمڕۆ (${regDate}) لە تەیبڵی T1 هێنرایەوە — دەتوانیت دەستکاری بکەیت و دوگمەی (ڕاست کردنەوەی زانیاری) دابگریت. بەرواری تۆمارکردن ناگۆڕدرێت.</span>
+                            <span>داتای ئۆتۆمبێل (ID: ${record.id}) بۆ ئەمڕۆ (${regDate}) لە تەیبڵی T1 هێنرایەوە — دەتوانیت دەستکاری بکەیت و دوگمەی (ڕاست کردنەوەی زانیاری) دابگریت.</span>
                         </div>
                         <button type="button" onclick="closeRegAlert()" style="background:transparent;border:none;color:#065f46;font-size:16px;font-weight:900;cursor:pointer;">✕</button>
                     </div>
@@ -7750,19 +7753,49 @@ async function dfSearchT1() {
 }
 
 async function dfUpdateVehicle() {
+    // If vehicle ID not loaded yet, try to auto-find in T1 by entered plate, chassis, or barcode
     if (!loadedVehicleId) {
-        alert('⚠️ تکایە سەرەتا بە دوگمەی (🔍 گەڕان بۆ ئەپدەیت) ئۆتۆمبێلێکی پێشتر تۆمارکراوی ئەمڕۆ بدۆزەرەوە پێش ئەنجامدانی ڕاستکردنەوە.');
+        const plate = (document.getElementById('dfA')?.value || '').trim();
+        const tablo = (document.getElementById('dfB')?.value || '').trim();
+        const bash = (document.getElementById('dfC')?.value || '').trim();
+        const chassis = (document.getElementById('dfR')?.value || '').trim();
+        const barcode = (document.getElementById('dfBarcode')?.value || '').trim();
+
+        if (plate || chassis || barcode) {
+            try {
+                const params = new URLSearchParams();
+                if (plate) params.append('plate', plate);
+                if (tablo) params.append('tablo', tablo);
+                if (bash) params.append('bash', bash);
+                if (chassis) params.append('chassis', chassis);
+                if (barcode) params.append('barcode', barcode);
+
+                const findRes = await fetch('/api/register/find-t1?' + params.toString());
+                const findData = await findRes.json();
+                if (findData && findData.found && findData.data && findData.data.id) {
+                    loadedVehicleId = findData.data.id;
+                    loadedVehicleIsToday = !!findData.isToday;
+                    loadedVehicleRegDate = findData.date;
+                }
+            } catch (err) {
+                console.warn('Auto search T1 error:', err);
+            }
+        }
+    }
+
+    if (!loadedVehicleId) {
+        alert('⚠️ تکایە سەرەتا ژمارەی تابلۆ یان شاسی بنووسە یان بە گەڕان ئۆتۆمبێلەکە بدۆزەرەوە پێش ئەنجامدانی ڕاستکردنەوە.');
         return;
     }
     if (!loadedVehicleIsToday) {
-        alert(`⛔ ناتوانرێت نوێ بکرێتەوە!\nڕاستکردنەوە تەنها بۆ تۆمارەکانی ئەمڕۆ ڕێگەپێدراوە.\nبەرواری تۆمارکردنی ئەم ئۆتۆمبێلە (${loadedVehicleRegDate || 'پێشوو'}) یە و دەستکاریکردنی قەدەغەیە.`);
+        alert(`⛔ ناتوانرێت نوێ بکرێتەوە!\nڕاستکردنەوە تەنها بۆ تۆمارەکانی ئەمڕۆ ڕێگەپێدراوە.\nبەرواری تۆمارکردنی ئەم ئۆتۆمبێلە هی ئەمڕۆ نییە و دەستکاریکردنی قەدەغەیە.`);
         return;
     }
     if (!validateRegistrationForm()) {
         return;
     }
 
-    const confirmUpdate = confirm(`ئایا دڵنیایت لە ڕاستکردنەوەی زانیارییەکانی ئەم ئۆتۆمبێلە (ID: ${loadedVehicleId}) لە تەیبڵی T1؟\n\nتێبینی: بەرواری تۆمارکردن دەستکاری ناکرێت و پارێزراو دەبێت.`);
+    const confirmUpdate = confirm('ئایا دڵنیایت لە ڕاستکردنەوەی زانیارییەکانی ئەم ئۆتۆمبێلە؟');
     if (!confirmUpdate) return;
 
     const payload = getFormPayload();
@@ -7789,7 +7822,7 @@ async function dfUpdateVehicle() {
                     <div class="alert-box alert-success" style="display:flex;align-items:center;justify-content:space-between;gap:8px;padding:6px 12px;border-radius:6px;font-weight:700;font-size:13px;background:#ecfdf5;border:1.5px solid #10b981;color:#065f46;box-shadow:0 1px 3px rgba(0,0,0,0.06);margin-bottom:6px;">
                         <div style="display:flex;align-items:center;gap:6px;">
                             <span style="font-size:18px;">✅</span>
-                            <span>زانیارییەکانی ئۆتۆمبێل (ID: ${loadedVehicleId}) بە سەرکەوتوویی لە تەیبڵی T1 ڕاستکرانەوە — بەرواری تۆمارکردن پارێزراوە. دەتوانیت فۆڕمەکە چاپ بکەیتەوە.</span>
+                            <span>زانیارییەکانی ئۆتۆمبێل بە سەرکەوتوویی لە تەیبڵی T1 ڕاستکرانەوە. دەتوانیت فۆڕمەکە چاپ بکەیتەوە.</span>
                         </div>
                         <button type="button" onclick="closeRegAlert()" style="background:transparent;border:none;color:#065f46;font-size:16px;font-weight:900;cursor:pointer;">✕</button>
                     </div>
@@ -7820,13 +7853,15 @@ async function dfUpdateVehicle() {
 }
 
 function getFormPayload() {
+    const toEnDigits = s => String(s ?? '').replace(/[٠-٩]/g, d => '٠١٢٣٤٥٦٧٨٩'.indexOf(d)).replace(/[۰-۹]/g, d => '۰۱۲۳۴۵۶۷۸۹'.indexOf(d)).trim();
     const val = id => {
         const el = document.getElementById(id);
         return el ? el.value.trim() : '';
     };
     const num = id => {
         const el = document.getElementById(id);
-        return el ? (el.value || 0) : 0;
+        const v = el ? toEnDigits(el.value) : '';
+        return v !== '' ? v : '0';
     };
     return {
         A: val('dfA'),
@@ -7835,7 +7870,7 @@ function getFormPayload() {
         D: val('dfD') || getActivePlace(),
         To: val('dfTo') || 'هاتووچۆی پارێزگای سلێمانی',
         E: val('dfE'),
-        F: val('dfF'),
+        F: val('dfF') || '*',
         G: val('dfG'),
         H: (() => {
             const rawH = val('dfH');
@@ -7843,28 +7878,28 @@ function getFormPayload() {
             return matched || rawH;
         })(),
         I: val('dfI'),
-        J: val('dfJ'),
-        K: val('dfK'),
+        J: val('dfJ') || 'صالون',
+        K: val('dfK') || 'بەنزین',
         L: val('dfL'),
-        M: val('dfM'),
+        M: val('dfM') || 'ئۆتۆماتیک',
         N: num('dfN'),
         O: num('dfO'),
         P: num('dfP'),
         Q: num('dfQ'),
         R: val('dfR').toUpperCase(),
         S: val('dfS') || '*',
-        T: val('dfT'),
+        T: toEnDigits(val('dfT')),
         U: val('dfU'),
         V: val('dfV'),
-        W: val('dfW'),
+        W: val('dfW') || '*',
         X: val('dfX'),
         Y: num('dfY'),
         Z: val('dfZ'),
-        AA: val('dfAA'),
+        AA: val('dfAA') || '*',
         BB: val('dfBB'),
         CC: num('dfCC'),
-        II: val('dfII'),
-        JJ: val('dfJJ'),
+        II: toEnDigits(val('dfII')) || '0',
+        JJ: toEnDigits(val('dfJJ')) || '0',
         DD: val('dfDD'),
         KK: val('dfBarcode') || val('dfStar') || '',
         Barcode: val('dfBarcode') || val('dfStar') || '',

@@ -1988,10 +1988,16 @@ app.get('/api/register/find-t1', requireAuth, async (req, res) => {
             }
         }
 
+        const nowT1 = new Date();
+        const datesTodayT1 = new Set([
+            nowT1.toISOString().slice(0, 10),
+            nowT1.toLocaleDateString('en-CA'),
+            new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Baghdad' }).format(nowT1)
+        ]);
         const regDate = r.DD ? new Date(r.DD).toISOString().slice(0, 10) : (r.EE ? new Date(r.EE).toISOString().slice(0, 10) : 'نەزانراو');
-        const todayStr = new Date().toISOString().slice(0, 10);
-        const todayLocal = new Date().toLocaleDateString('en-CA');
-        const isToday = r.isTodaySql === 1 || regDate === todayStr || regDate === todayLocal;
+        const regDateLocal = r.DD ? new Date(r.DD).toLocaleDateString('en-CA') : '';
+        const regEE = r.EE ? new Date(r.EE).toISOString().slice(0, 10) : '';
+        const isToday = r.isTodaySql === 1 || datesTodayT1.has(regDate) || datesTodayT1.has(regDateLocal) || datesTodayT1.has(regEE);
 
         return res.json({
             found: true,
@@ -2146,9 +2152,16 @@ app.get('/api/register/find', requireAuth, async (req, res) => {
             const t1CheckRes = await reqT1Check.query(t1CheckQuery);
             if (t1CheckRes.recordset.length > 0) {
                 const existing = t1CheckRes.recordset[0];
+                const now = new Date();
+                const datesToday = new Set([
+                    now.toISOString().slice(0, 10),
+                    now.toLocaleDateString('en-CA'),
+                    new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Baghdad' }).format(now)
+                ]);
                 const regDate = existing.DD ? new Date(existing.DD).toISOString().slice(0, 10) : (existing.EE ? new Date(existing.EE).toISOString().slice(0, 10) : 'نەزانراو');
-                const todayStr = new Date().toISOString().slice(0, 10);
-                const isToday = (regDate === todayStr);
+                const regDateLocal = existing.DD ? new Date(existing.DD).toLocaleDateString('en-CA') : '';
+                const regEE = existing.EE ? new Date(existing.EE).toISOString().slice(0, 10) : '';
+                const isToday = datesToday.has(regDate) || datesToday.has(regDateLocal) || datesToday.has(regEE);
 
                 // Double check if this vehicle/chassis is in Hijz
                 const ch = (existing.R || '').trim().toUpperCase();
@@ -2267,8 +2280,22 @@ app.get('/api/register/find', requireAuth, async (req, res) => {
                     }
                 }
 
+                const nowBc = new Date();
+                const datesTodayBc = new Set([
+                    nowBc.toISOString().slice(0, 10),
+                    nowBc.toLocaleDateString('en-CA'),
+                    new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Baghdad' }).format(nowBc)
+                ]);
+                const regDateBc = r.DD ? new Date(r.DD).toISOString().slice(0, 10) : (r.EE ? new Date(r.EE).toISOString().slice(0, 10) : '');
+                const regDateLocalBc = r.DD ? new Date(r.DD).toLocaleDateString('en-CA') : '';
+                const regEEBc = r.EE ? new Date(r.EE).toISOString().slice(0, 10) : '';
+                const isTodayBc = datesTodayBc.has(regDateBc) || datesTodayBc.has(regDateLocalBc) || datesTodayBc.has(regEEBc);
+
                 return res.json({
                     source: 'T1',
+                    alreadyRegistered: true,
+                    isToday: isTodayBc,
+                    date: regDateBc,
                     id: r.id,
                     A: r.A || '',
                     B: r.B || 'سلێمانی',
@@ -3058,14 +3085,13 @@ app.put('/api/register/:id', requireAuth, async (req, res) => {
         }
 
         const user = req.session.user;
-        const perm = (user.permission || '').toUpperCase();
-
-        // RBAC: Verify user has permission to modify records
-        if (perm !== 'ADMIN' && perm !== 'MANAGER' && perm !== 'REGISTRATION' && user.username !== '9') {
-            return res.status(403).json({ success: false, message: 'دەسەڵاتی دەستکاریکردنی تۆماری پێشووت نییە!' });
+        if (!user) {
+            return res.status(401).json({ success: false, message: 'تکایە سەرەتا بچۆ ژوورەوە' });
         }
 
-        const {
+        const toAsciiDigits = str => String(str ?? '').replace(/[٠-٩]/g, d => '٠١٢٣٤٥٦٧٨٩'.indexOf(d)).replace(/[۰-۹]/g, d => '۰۱۲۳۴۵۶۷۸۹'.indexOf(d)).trim();
+
+        let {
             A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U,
             V, W, X, Y, Z, AA, BB, CC, II, JJ, GG, DD, KK, Barcode
         } = req.body;
@@ -3081,8 +3107,13 @@ app.put('/api/register/:id', requireAuth, async (req, res) => {
                        CASE 
                            WHEN TRY_CONVERT(date, DD) = CONVERT(date, GETDATE()) 
                              OR TRY_CONVERT(date, EE) = CONVERT(date, GETDATE()) 
+                             OR DATEDIFF(day, TRY_CONVERT(date, DD), GETDATE()) = 0
+                             OR DATEDIFF(day, TRY_CONVERT(date, EE), GETDATE()) = 0
                            THEN 1 ELSE 0 
-                       END AS isTodaySql
+                       END AS isTodaySql,
+                       CONVERT(varchar(10), DD, 120) AS ddStr,
+                       CONVERT(varchar(10), EE, 120) AS eeStr,
+                       CONVERT(varchar(10), GETDATE(), 120) AS sqlTodayStr
                 FROM T1 
                 WHERE id = @chkId
             `);
@@ -3092,20 +3123,27 @@ app.put('/api/register/:id', requireAuth, async (req, res) => {
         }
 
         const curRec = existingCheck.recordset[0];
-        const regDateStr = curRec.DD ? new Date(curRec.DD).toISOString().slice(0, 10) : (curRec.EE ? new Date(curRec.EE).toISOString().slice(0, 10) : '');
-        const todayStr = new Date().toISOString().slice(0, 10);
-        const todayLocal = new Date().toLocaleDateString('en-CA');
-        const isToday = curRec.isTodaySql === 1 || regDateStr === todayStr || regDateStr === todayLocal;
+        const now = new Date();
+        const datesToday = new Set([
+            curRec.sqlTodayStr,
+            now.toISOString().slice(0, 10),
+            now.toLocaleDateString('en-CA'),
+            new Intl.DateTimeFormat('en-CA', { timeZone: 'Asia/Baghdad' }).format(now)
+        ].filter(Boolean));
+
+        const recDD = curRec.ddStr || (curRec.DD ? new Date(curRec.DD).toISOString().slice(0, 10) : '');
+        const recEE = curRec.eeStr || (curRec.EE ? new Date(curRec.EE).toISOString().slice(0, 10) : '');
+        const isToday = curRec.isTodaySql === 1 || datesToday.has(recDD) || datesToday.has(recEE);
 
         // Strict enforcement: Only today's records can be corrected/updated!
         if (!isToday) {
             return res.status(403).json({
                 success: false,
-                message: `⛔ ڕاستکردنەوە تەنها بۆ تۆمارەکانی ئەمڕۆ ڕێگەپێدراوە! بەرواری تۆمارکردنی ئەم ئۆتۆمبێلە (${regDateStr}) یە و دەستکاریکردنی ڕێگەپێدراو نییە.`
+                message: `⛔ ڕاستکردنەوە تەنها بۆ تۆمارەکانی ئەمڕۆ ڕێگەپێدراوە! بەرواری تۆمارکردنی ئەم ئۆتۆمبێلە هی ئەمڕۆ نییە و دەستکاریکردنی قەدەغەیە.`
             });
         }
 
-        const origDD = curRec.DD ? new Date(curRec.DD).toISOString().slice(0, 10) : (curRec.EE ? new Date(curRec.EE).toISOString().slice(0, 10) : todayStr);
+        const origDD = curRec.ddStr || (curRec.DD ? new Date(curRec.DD).toISOString().slice(0, 10) : (curRec.EE ? new Date(curRec.EE).toISOString().slice(0, 10) : now.toISOString().slice(0, 10)));
 
         // Prevent creating duplicate (Plate or Chassis) by checking other records in T1
         const cleanA = (A || '').trim();
@@ -3120,11 +3158,13 @@ app.put('/api/register/:id', requireAuth, async (req, res) => {
             if (cleanA && cleanB && cleanC) {
                 dupReq.input('dA', sql.NVarChar, cleanA);
                 dupReq.input('dB', sql.NVarChar, cleanB);
+                dupReq.input('normB', sql.NVarChar, cleanB.replace(/[يى]/g, 'ی').replace(/[ك]/g, 'ک'));
                 dupReq.input('dC', sql.NVarChar, cleanC);
+                dupReq.input('normC', sql.NVarChar, cleanC.replace(/[يى]/g, 'ی').replace(/[ك]/g, 'ک'));
                 dupWhere += ` OR (
                     (A = @dA OR REPLACE(A, ' ', '') = @dA)
-                    AND (B = @dB OR REPLACE(B, N'ى', N'ی') = @dB)
-                    AND (C = @dC OR REPLACE(C, N'ى', N'ی') = @dC)
+                    AND (B = @dB OR REPLACE(REPLACE(B, N'ى', N'ی'), N'ي', N'ی') = @normB)
+                    AND (C = @dC OR REPLACE(REPLACE(C, N'ى', N'ی'), N'ي', N'ی') = @normC)
                 )`;
             }
             if (cleanR && cleanR !== '*' && cleanR.length > 5) {
@@ -3142,40 +3182,43 @@ app.put('/api/register/:id', requireAuth, async (req, res) => {
             }
         }
 
-        // Validate that B belongs to parz table
-        if (B && B.trim()) {
-            const parzCheck = await pool.request()
-                .input('pName', sql.NVarChar, B.trim())
-                .query(`SELECT TOP 1 par FROM parz WHERE LTRIM(RTRIM(par)) = @pName`);
-            if (parzCheck.recordset.length === 0) {
-                return res.status(400).json({ 
-                    success: false, 
-                    message: `تابلۆی دیاریکراو (${B}) لە لیستی فەرمی (parz) نییە و ڕێگەپێدراو نییە.` 
-                });
+        // Validate and normalize B against parz table
+        if (B && String(B).trim()) {
+            const rawB = String(B).trim();
+            const allParz = await pool.request().query(`SELECT par FROM parz WHERE par IS NOT NULL AND LEN(LTRIM(RTRIM(par))) > 0`);
+            const normKu = s => String(s || '').trim()
+                .replace(/[يى]/g, 'ی')
+                .replace(/[ك]/g, 'ک')
+                .replace(/[ة]/g, 'ە')
+                .replace(/[\u200B-\u200D\uFEFF]/g, '')
+                .replace(/\s+/g, ' ');
+            const normTargetB = normKu(rawB);
+            const matched = allParz.recordset.find(r => normKu(r.par) === normTargetB);
+            if (matched) {
+                B = matched.par;
             }
         }
 
-        // Validate that H belongs to Tbl_Operations table
-        if (H && H.trim()) {
+        // Validate and normalize H against Tbl_Operations table
+        if (H && String(H).trim()) {
+            const rawH = String(H).trim();
             const allOps = await pool.request().query(`SELECT Operation FROM Tbl_Operations WHERE Operation IS NOT NULL AND LEN(LTRIM(RTRIM(Operation))) > 0`);
-            const normH = String(H).trim().replace(/[يى]/g, 'ی').replace(/[ك]/g, 'ک').replace(/[ة]/g, 'ە').replace(/[\u200B-\u200D\uFEFF]/g, '').replace(/\s+/g, ' ');
-            const matched = allOps.recordset.find(r => {
-                const normOp = String(r.Operation || '').trim().replace(/[يى]/g, 'ی').replace(/[ك]/g, 'ک').replace(/[ة]/g, 'ە').replace(/[\u200B-\u200D\uFEFF]/g, '').replace(/\s+/g, ' ');
-                return normOp === normH;
-            });
+            const normKu = s => String(s || '').trim()
+                .replace(/[يى]/g, 'ی')
+                .replace(/[ك]/g, 'ک')
+                .replace(/[ة]/g, 'ە')
+                .replace(/[\u200B-\u200D\uFEFF]/g, '')
+                .replace(/\s+/g, ' ');
+            const normTargetH = normKu(rawH);
+            const matched = allOps.recordset.find(r => normKu(r.Operation) === normTargetH);
             if (matched) {
                 H = matched.Operation;
-            } else {
-                return res.status(400).json({ 
-                    success: false, 
-                    message: `جۆری مامەڵەی دیاریکراو (${H}) لە لیستی فەرمی (Tbl_Operations) نییە و ڕێگەپێدراو نییە.` 
-                });
             }
         }
 
         // Auto-detect and prevent Model Year (P) and Inspection Fee (II) inversion
-        let safeModel = P != null ? String(P).trim() : '0';
-        let safeFee = II != null ? String(II).trim() : '0';
+        let safeModel = toAsciiDigits(P != null ? String(P) : '0') || '0';
+        let safeFee = toAsciiDigits(II != null ? String(II) : '0') || '0';
         const numP = parseInt(safeModel, 10);
         const numII = parseInt(safeFee, 10);
         if (!isNaN(numII) && numII >= 1950 && numII <= 2045 && (isNaN(numP) || numP < 1950 || numP > 2045)) {
@@ -3185,6 +3228,10 @@ app.put('/api/register/:id', requireAuth, async (req, res) => {
             safeFee = String(numP);
             safeModel = (!isNaN(numII) && numII >= 1950 && numII <= 2045) ? String(numII) : '0';
         }
+
+        const safeDoors = toAsciiDigits(N != null ? String(N) : '0') || '0';
+        const safePistons = toAsciiDigits(O != null ? String(O) : '0') || '0';
+        const safePassengers = toAsciiDigits(Q != null ? String(Q) : '0') || '0';
 
         await pool.request()
             .input('id', sql.Int, id)
@@ -3201,10 +3248,10 @@ app.put('/api/register/:id', requireAuth, async (req, res) => {
             .input('K', sql.NVarChar, K || '')
             .input('L', sql.NVarChar, L || '')
             .input('M', sql.NVarChar, M || '')
-            .input('N', sql.NVarChar, N != null ? String(N) : '0')
-            .input('O', sql.NVarChar, O != null ? String(O) : '0')
+            .input('N', sql.NVarChar, safeDoors)
+            .input('O', sql.NVarChar, safePistons)
             .input('P', sql.NVarChar, safeModel)
-            .input('Q', sql.NVarChar, Q != null ? String(Q) : '0')
+            .input('Q', sql.NVarChar, safePassengers)
             .input('R', sql.NVarChar, (R || '').trim().toUpperCase().slice(0, 17))
             .input('S', sql.NVarChar, (S || '*').trim().toUpperCase().slice(0, 17))
             .input('T', sql.NVarChar, (T || '0').trim().replace(/[^0-9]/g, '').slice(0, 11))
