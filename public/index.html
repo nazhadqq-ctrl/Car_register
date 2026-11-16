@@ -7958,7 +7958,14 @@ function escapeHtml(str) {
         .replace(/'/g, '&#039;');
 }
 
+let dfIsPrintingInspection = false;
 async function dfPrintInspection() {
+    if (dfIsPrintingInspection) {
+        console.warn('Print already in progress, debounced.');
+        return;
+    }
+    dfIsPrintingInspection = true;
+    setTimeout(() => { dfIsPrintingInspection = false; }, 2500);
     const pForm = getFormPayload();
     const plate = (pForm.A || '').trim();
     const tablo = (pForm.B || '').trim();
@@ -8047,42 +8054,28 @@ async function dfPrintInspection() {
             <style>
                 @page {
                     size: A4 landscape;
-                    margin: 4mm 6mm 4mm 6mm !important;
+                    margin: 0;
                 }
                 @media print {
                     html, body {
                         width: 100% !important;
-                        height: auto !important;
-                        max-height: 100% !important;
+                        height: 100% !important;
+                        max-height: 100vh !important;
                         margin: 0 !important;
                         padding: 0 !important;
-                        overflow: visible !important;
-                        box-sizing: border-box !important;
-                        page-break-inside: avoid !important;
-                        break-inside: avoid !important;
-                        page-break-after: avoid !important;
-                        break-after: avoid !important;
+                        overflow: hidden !important;
                         -webkit-print-color-adjust: exact !important;
                         print-color-adjust: exact !important;
                     }
                     .rdlc-container {
-                        width: 100% !important;
-                        height: auto !important;
-                        max-height: none !important;
-                        margin: 0 !important;
+                        width: 285mm !important;
+                        max-width: 285mm !important;
+                        margin: 2mm auto 0 auto !important;
                         padding: 0 !important;
-                        overflow: visible !important;
                         box-sizing: border-box !important;
                         page-break-inside: avoid !important;
                         break-inside: avoid !important;
-                        page-break-after: avoid !important;
-                        break-after: avoid !important;
-                    }
-                    .rdlc-footer-section {
-                        page-break-inside: avoid !important;
-                        break-inside: avoid !important;
-                        page-break-after: avoid !important;
-                        break-after: avoid !important;
+                        zoom: 0.95;
                     }
                     .no-print { display: none !important; }
                 }
@@ -8092,33 +8085,33 @@ async function dfPrintInspection() {
                     padding: 0;
                     font-family: 'Speda', 'Segoe UI', Tahoma, Arial, sans-serif;
                 }
-                body {
+                html, body {
                     background: #fff;
                     color: #000;
                     direction: ltr;
                     padding: 0;
+                    margin: 0;
                     width: 100%;
-                    max-width: 1080px;
-                    margin: 0 auto;
-                    font-size: 12px;
+                    height: 100%;
+                    font-size: 11.5px;
                     box-sizing: border-box;
+                    overflow: hidden;
                 }
                 .rdlc-container {
-                    width: 100%;
-                    height: auto;
-                    max-height: none;
+                    width: 285mm;
+                    max-width: 285mm;
+                    margin: 2mm auto 0 auto;
                     display: block;
                     box-sizing: border-box;
                     page-break-inside: avoid;
                     break-inside: avoid;
+                    zoom: 0.95;
                 }
                 .rdlc-footer-section {
-                    margin-top: 4px;
+                    margin-top: 3px;
                     width: 100%;
                     page-break-inside: avoid;
                     break-inside: avoid;
-                    page-break-after: avoid;
-                    break-after: avoid;
                 }
 
                 /* 1. TOP HEADER ROW */
@@ -8126,14 +8119,14 @@ async function dfPrintInspection() {
                     display: flex;
                     align-items: stretch;
                     justify-content: space-between;
-                    margin-bottom: 4px;
+                    margin-bottom: 3px;
                 }
                 .rdlc-datetime-box {
                     border: none;
-                    width: 190px;
+                    width: 180px;
                     display: flex;
                     flex-direction: column;
-                    font-size: 13px;
+                    font-size: 11.5px;
                     font-weight: 800;
                     background: transparent;
                     justify-content: center;
@@ -8142,31 +8135,31 @@ async function dfPrintInspection() {
                     display: flex;
                     justify-content: space-between;
                     align-items: center;
-                    padding: 2px 6px;
+                    padding: 1px 4px;
                     border-bottom: 1.5px solid #000;
                 }
 
                 .rdlc-title-center {
                     flex: 1;
-                    margin: 0 16px;
+                    margin: 0 12px;
                     display: flex;
                     flex-direction: column;
                     align-items: center;
                 }
                 .rdlc-title-box {
                     border: 2px solid #000;
-                    padding: 3px 36px;
-                    font-size: 23px;
+                    padding: 2px 28px;
+                    font-size: 20px;
                     font-weight: 900;
                     letter-spacing: 0.5px;
                     background: #fff;
                     width: fit-content;
                 }
                 .rdlc-to-box {
-                    margin-top: 4px;
+                    margin-top: 2px;
                     border: 1.5px solid #000;
-                    padding: 2px 18px;
-                    font-size: 15px;
+                    padding: 1px 14px;
+                    font-size: 13.5px;
                     font-weight: 800;
                     width: 100%;
                     text-align: center;
@@ -8176,11 +8169,11 @@ async function dfPrintInspection() {
 
                 .rdlc-code-box {
                     border: 2px solid #000;
-                    width: 180px;
+                    width: 170px;
                     display: flex;
                     align-items: center;
                     justify-content: center;
-                    font-size: 24px;
+                    font-size: 20px;
                     font-weight: 900;
                     font-family: Arial, sans-serif;
                     letter-spacing: 1px;
@@ -8192,24 +8185,24 @@ async function dfPrintInspection() {
                     display: flex;
                     align-items: center;
                     justify-content: space-between;
-                    margin-bottom: 4px;
+                    margin-bottom: 3px;
                 }
                 .rdlc-barcode-container {
                     border: 1.5px solid #000;
-                    padding: 2px 12px;
+                    padding: 1px 8px;
                     display: flex;
                     align-items: center;
                     justify-content: center;
-                    gap: 10px;
-                    width: 320px;
-                    height: 40px;
+                    gap: 8px;
+                    width: 290px;
+                    height: 34px;
                     background: #fff;
                 }
                 .rdlc-place-box {
                     display: flex;
                     align-items: center;
-                    gap: 8px;
-                    font-size: 13px;
+                    gap: 6px;
+                    font-size: 12px;
                     font-weight: 800;
                 }
 
@@ -8218,26 +8211,26 @@ async function dfPrintInspection() {
                     display: flex;
                     align-items: center;
                     justify-content: center;
-                    gap: 30px;
-                    margin-top: 2px;
-                    margin-bottom: 4px;
+                    gap: 24px;
+                    margin-top: 1px;
+                    margin-bottom: 3px;
                 }
                 .rdlc-fee-item {
                     display: inline-flex;
                     border: 1.5px solid #000;
-                    font-size: 13px;
+                    font-size: 12px;
                     background: #fff;
                 }
                 .rdlc-fee-val {
-                    padding: 2px 24px;
+                    padding: 1px 20px;
                     font-weight: 900;
                     text-align: center;
-                    min-width: 85px;
+                    min-width: 75px;
                     background: #fff;
                 }
                 .rdlc-fee-label {
                     background: #fff;
-                    padding: 2px 14px;
+                    padding: 1px 10px;
                     font-weight: 800;
                     border-left: 1.5px solid #000;
                 }
@@ -8251,11 +8244,11 @@ async function dfPrintInspection() {
                 }
                 .rdlc-table td, .rdlc-table th {
                     border: 1.5px solid #000;
-                    padding: 2px 4.5px;
-                    font-size: 11.5px;
+                    padding: 2px 4px;
+                    font-size: 11px;
                     text-align: center;
                     vertical-align: middle;
-                    line-height: 1.2;
+                    line-height: 1.15;
                 }
                 .rdlc-th {
                     background: #e2e8f0;
@@ -8270,23 +8263,20 @@ async function dfPrintInspection() {
                 }
                 .rdlc-mono {
                     font-family: 'Consolas', 'Courier New', monospace !important;
-                    letter-spacing: 1.5px;
+                    letter-spacing: 1.2px;
                     font-weight: 900;
                     direction: ltr;
-                    font-variant-numeric: tabular-nums lining-nums;
                     vertical-align: middle;
                 }
                 .rdlc-plate-val {
                     font-family: 'Consolas', 'Segoe UI', Arial, sans-serif !important;
                     font-weight: 900 !important;
-                    font-size: 16.5px !important;
-                    letter-spacing: 2px !important;
-                    font-variant-numeric: tabular-nums lining-nums !important;
-                    font-feature-settings: "zero" 1, "tnum" 1, "lnum" 1 !important;
+                    font-size: 15.5px !important;
+                    letter-spacing: 1.8px !important;
                     direction: ltr !important;
                     text-align: center !important;
                     vertical-align: middle !important;
-                    line-height: 1.15 !important;
+                    line-height: 1.1 !important;
                 }
 
                 /* 5. SIGNATURES ROW (FIT A4 SINGLE PAGE) */
@@ -8294,21 +8284,21 @@ async function dfPrintInspection() {
                     display: flex;
                     justify-content: space-around;
                     align-items: center;
-                    padding: 0 40px;
-                    margin-top: 3px;
-                    margin-bottom: 4px;
+                    padding: 0 35px;
+                    margin-top: 2px;
+                    margin-bottom: 3px;
                     page-break-inside: avoid;
                     break-inside: avoid;
                 }
                 .rdlc-sig-box {
                     border: 1px dashed #64748b;
-                    width: 195px;
-                    height: 28px;
+                    width: 180px;
+                    height: 25px;
                     display: flex;
                     align-items: center;
                     justify-content: center;
                     font-weight: 800;
-                    font-size: 12.5px;
+                    font-size: 11.5px;
                     background: #fff;
                 }
 
@@ -8318,23 +8308,23 @@ async function dfPrintInspection() {
                     display: flex;
                     align-items: center;
                     justify-content: space-between;
-                    padding-top: 3px;
-                    margin-bottom: 3px;
+                    padding-top: 2px;
+                    margin-bottom: 2px;
                     page-break-inside: avoid;
                     break-inside: avoid;
                 }
                 .rdlc-verify-sub {
                     display: flex;
                     align-items: center;
-                    gap: 8px;
+                    gap: 6px;
                 }
                 .rdlc-border-box {
                     border: 1px dashed #64748b;
-                    padding: 1px 12px;
+                    padding: 1px 10px;
                     font-weight: 800;
-                    font-size: 12px;
+                    font-size: 11px;
                     display: inline-block;
-                    min-width: 40px;
+                    min-width: 35px;
                     text-align: center;
                     background: #fff;
                 }
@@ -8342,20 +8332,20 @@ async function dfPrintInspection() {
                 /* 7. CITIZEN NOTICE BOX */
                 .rdlc-notice-box {
                     border: 1.5px dotted #000;
-                    padding: 2px 8px;
+                    padding: 1px 6px;
                     display: flex;
                     align-items: center;
                     justify-content: space-between;
-                    gap: 12px;
-                    font-size: 10.5px;
-                    line-height: 1.25;
+                    gap: 8px;
+                    font-size: 9.5px;
+                    line-height: 1.15;
                     background: #fff;
                     page-break-inside: avoid;
                     break-inside: avoid;
                 }
                 .rdlc-notice-label {
                     font-weight: 900;
-                    font-size: 12.5px;
+                    font-size: 11.5px;
                     white-space: nowrap;
                 }
                 .rdlc-notice-text {
@@ -8579,10 +8569,7 @@ async function dfPrintInspection() {
                         <div class="rdlc-notice-label">/ هاوڵاتی بەڕێز</div>
                     </div>
                 </div>
-            </div>
-
-        </body>
-        </html>
+            </div></body></html>
     `;
 
     // ─── SILENT & DIRECT PRINTING VIA HIDDEN IFRAME ────────────────────────
@@ -9256,7 +9243,11 @@ function renderSingleGomrgDocument(d) {
     `;
 }
 
+let gomrgIsPrinting = false;
 function gomrgPrintForm(customData) {
+    if (gomrgIsPrinting) return;
+    gomrgIsPrinting = true;
+    setTimeout(() => { gomrgIsPrinting = false; }, 2500);
     const getVal = id => document.getElementById(id)?.value?.trim() || '';
 
     const d = customData || {
@@ -9310,10 +9301,34 @@ function gomrgPrintForm(customData) {
             }
             @page {
                 size: A4 portrait;
-                margin: 8mm 12mm 8mm 12mm;
+                margin: 0;
+            }
+            @media print {
+                html, body {
+                    width: 100% !important;
+                    height: 100% !important;
+                    max-height: 100vh !important;
+                    margin: 0 !important;
+                    padding: 0 !important;
+                    overflow: hidden !important;
+                    -webkit-print-color-adjust: exact !important;
+                    print-color-adjust: exact !important;
+                }
+                .page-container {
+                    width: 190mm !important;
+                    max-width: 190mm !important;
+                    margin: 3mm auto 0 auto !important;
+                    padding: 0 !important;
+                    box-sizing: border-box !important;
+                    page-break-inside: avoid !important;
+                    break-inside: avoid !important;
+                    zoom: 0.94;
+                }
             }
             * {
                 box-sizing: border-box;
+                margin: 0;
+                padding: 0;
             }
             html, body {
                 margin: 0;
@@ -9322,21 +9337,18 @@ function gomrgPrintForm(customData) {
                 font-family: 'Speda', 'Speda-Bold', Arial, sans-serif !important;
                 -webkit-print-color-adjust: exact !important;
                 print-color-adjust: exact !important;
-                page-break-inside: avoid !important;
-                break-inside: avoid !important;
-                page-break-after: avoid !important;
-                break-after: avoid !important;
+                overflow: hidden;
             }
             .page-container {
-                width: 100%;
-                min-height: auto;
+                width: 190mm;
+                max-width: 190mm;
+                margin: 3mm auto 0 auto;
                 display: flex;
                 flex-direction: column;
                 justify-content: flex-start;
-                page-break-inside: avoid !important;
-                break-inside: avoid !important;
-                page-break-after: avoid !important;
-                break-after: avoid !important;
+                page-break-inside: avoid;
+                break-inside: avoid;
+                zoom: 0.94;
             }
             .page-break {
                 display: none !important;
@@ -9357,28 +9369,23 @@ function gomrgPrintForm(customData) {
             }
             </style>
     </head>
-    <body>
-        <!-- SINGLE A4 PAGE -->
-        <div class="page-container">
-            ${singleDoc}
-        </div>
-    </body>
-    </html>
+    <body><div class="page-container">${singleDoc}</div></body></html>
     `;
 
     // Print via hidden iframe
     let printFrame = document.getElementById('rdlcPrintFrame');
-    if (!printFrame) {
-        printFrame = document.createElement('iframe');
-        printFrame.id = 'rdlcPrintFrame';
-        printFrame.style.position = 'fixed';
-        printFrame.style.top = '-9999px';
-        printFrame.style.left = '-9999px';
-        printFrame.style.width = '0px';
-        printFrame.style.height = '0px';
-        printFrame.style.border = 'none';
-        document.body.appendChild(printFrame);
+    if (printFrame) {
+        printFrame.remove();
     }
+    printFrame = document.createElement('iframe');
+    printFrame.id = 'rdlcPrintFrame';
+    printFrame.style.position = 'fixed';
+    printFrame.style.top = '-9999px';
+    printFrame.style.left = '-9999px';
+    printFrame.style.width = '0px';
+    printFrame.style.height = '0px';
+    printFrame.style.border = 'none';
+    document.body.appendChild(printFrame);
 
     const frameDoc = printFrame.contentWindow.document;
     frameDoc.open();
