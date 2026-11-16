@@ -1,6 +1,6 @@
 /* ═══════════════════════════════════════════════════════════════
-   🚦 CENTRAL DATABASE & GITHUB AUTO-UPDATER FOR TRAFFICCHECK
-   نوێکردنەوەی بنەڕەتی سیستەم لە ڕێگەی داتابەیسی ناوەندی (SQL Server) و گیت هاب
+   🚦 GITHUB & CENTRAL DATABASE AUTO-UPDATER FOR TRAFFICCHECK
+   نوێکردنەوەی خۆکاری سیستەم لە ڕێگەی گیت هاب (سەرەکی) و داتابەیسی ناوەندی
    ═══════════════════════════════════════════════════════════════ */
 
 const fs = require('fs');
@@ -12,10 +12,6 @@ const REPO_OWNER = 'nazhadqq-ctrl';
 const REPO_NAME = 'Car_register';
 const BRANCH = 'main';
 const BASE_RAW_URL = `https://raw.githubusercontent.com/${REPO_OWNER}/${REPO_NAME}/${BRANCH}`;
-
-// ئەگەر ڕیپۆسیتۆرییەکە تایبەت (Private) بێت لە گیت هاب، دەتوانرێت Token لێرە دابنرێت
-// ئەگەر ڕیپۆسیتۆرییەکە Public بێت، بەبێ Token ڕاستەوخۆ کار دەکات
-const GITHUB_TOKEN = process.env.GITHUB_TOKEN || '';
 
 const FILES_TO_UPDATE = [
   'version.json',
@@ -41,9 +37,6 @@ function fetchUrl(url, timeoutMs = 12000) {
       'Cache-Control': 'no-cache, no-store, must-revalidate',
       'Pragma': 'no-cache'
     };
-    if (GITHUB_TOKEN) {
-      headers['Authorization'] = `token ${GITHUB_TOKEN}`;
-    }
 
     const req = https.get(url, { headers }, (res) => {
       if (res.statusCode === 301 || res.statusCode === 302 || res.statusCode === 307) {
@@ -90,10 +83,76 @@ async function checkForUpdates(force = false) {
   const localVer = getLocalVersion();
   const localBuild = parseInt(localVer.build, 10) || 0;
 
+  console.log(`🔍 وەشانی ناوخۆیی ئێستا: v${localVer.version} (Build: ${localBuild})`);
+
   // ═══════════════════════════════════════════════════════════════
-  // METHOD 1: DIRECT UPDATE FROM CENTRAL SQL DATABASE (PRIMARY)
-  // ئەپدەیتی ڕاستەوخۆ لە تەیبڵی Tbl_System_Updates لە داتابەیسی ناوەندی
-  // ئەم ڕێگەیە پێویستی بە گیت هاب یان ئینتەرنێتی دەرەکی نییە
+  // METHOD 1: GITHUB RAW DOWNLOAD (PRIMARY)
+  // ئەپدەیتی ڕاستەوخۆ لە ڕێپۆسیتۆری فەرمی GitHub (سەرەکی)
+  // ═══════════════════════════════════════════════════════════════
+  let gitHubHasUpdate = false;
+  let remoteGitHubVer = null;
+
+  try {
+    const verUrl = `${BASE_RAW_URL}/version.json?t=${Date.now()}`;
+    const verData = await fetchUrl(verUrl, 7000);
+    remoteGitHubVer = JSON.parse(verData.toString('utf8'));
+    const gitHubBuild = parseInt(remoteGitHubVer.build, 10) || 0;
+
+    console.log(`🌐 وەشانی بەردەست لە GitHub: v${remoteGitHubVer.version} (Build: ${gitHubBuild})`);
+
+    if (gitHubBuild > localBuild || force) {
+      gitHubHasUpdate = true;
+    }
+  } catch (ghErr) {
+    console.warn('⚠️ ناتوانرێت پەیوەندی بە GitHub بکرێت یان ئینتەرنێت نەبەستراوە:', ghErr.message);
+  }
+
+  if (gitHubHasUpdate && remoteGitHubVer) {
+    console.log(`🚀 [GitHub] نوێکاری بەردەستە: v${remoteGitHubVer.version} (Build: ${remoteGitHubVer.build}) -> داگرتنی فایلەکان لە GitHub...`);
+
+    const updatedFiles = [];
+    const errors = [];
+
+    for (const relPath of FILES_TO_UPDATE) {
+      try {
+        const fileUrl = `${BASE_RAW_URL}/${relPath}?t=${Date.now()}`;
+        const content = await fetchUrl(fileUrl, 12000);
+
+        const localPath = path.join(__dirname, relPath);
+        const dir = path.dirname(localPath);
+        if (!fs.existsSync(dir)) {
+          fs.mkdirSync(dir, { recursive: true });
+        }
+
+        fs.writeFileSync(localPath, content);
+        updatedFiles.push(relPath);
+      } catch (err) {
+        if (!err.message.includes('HTTP 404')) {
+          errors.push(`${relPath}: ${err.message}`);
+        }
+      }
+    }
+
+    try {
+      fs.writeFileSync(path.join(__dirname, 'version.json'), JSON.stringify(remoteGitHubVer, null, 2), 'utf8');
+    } catch (e) {}
+
+    return {
+      success: errors.length === 0,
+      hasUpdate: true,
+      source: 'github',
+      previousVersion: localVer.version,
+      newVersion: remoteGitHubVer.version,
+      newBuild: remoteGitHubVer.build,
+      updatedFiles,
+      errors: errors.length > 0 ? errors : undefined,
+      message: `سیستەمەکە بە سەرکەوتوویی لە GitHub نوێکرایەوە بۆ وەشانی (${remoteGitHubVer.version})!`
+    };
+  }
+
+  // ═══════════════════════════════════════════════════════════════
+  // METHOD 2: CENTRAL SQL DATABASE (FALLBACK)
+  // ئەگەر ئینتەرنێت نەبوو، لە داتابەیسی ناوەندی (SQL Server) تاقی دەکاتەوە
   // ═══════════════════════════════════════════════════════════════
   try {
     let db;
@@ -122,7 +181,7 @@ async function checkForUpdates(force = false) {
         }
 
         if (remoteBuild > localBuild || force) {
-          console.log(`🚀 [Auto-Updater] New database version available: v${remoteVersion} (Build ${remoteBuild}) [Local: Build ${localBuild}, force=${force}]`);
+          console.log(`🚀 [Database] وەشانی نوێ لە داتابەیس بەردەستە: v${remoteVersion} (Build ${remoteBuild})`);
 
           const allFilesResult = await pool.request()
             .query('SELECT filename, content, version, build FROM Tbl_System_Updates');
@@ -152,7 +211,6 @@ async function checkForUpdates(force = false) {
             }
           }
 
-          // Ensure local version.json is updated
           try {
             fs.writeFileSync(path.join(__dirname, 'version.json'), JSON.stringify(remoteVerObj, null, 2), 'utf8');
           } catch (e) {}
@@ -166,19 +224,17 @@ async function checkForUpdates(force = false) {
             newBuild: remoteBuild,
             updatedFiles,
             errors: errors.length > 0 ? errors : undefined,
-            message: `سیستەمەکە بە سەرکەوتوویی لە ڕێگەی داتابەیسی ناوەندییەوە نوێکرایەوە بۆ وەشانی (${remoteVersion})!`
+            message: `سیستەمەکە لە ڕێگەی داتابەیسی ناوەندییەوە نوێکرایەوە بۆ وەشانی (${remoteVersion})!`
           };
-        } else {
-          console.log(`ℹ️ [Auto-Updater] Database version (Build ${remoteBuild}) is equal or older than local (Build ${localBuild}). Checking GitHub fallback...`);
         }
       }
     }
   } catch (dbErr) {
-    console.warn('⚠️ [Auto-Updater] Database check skipped or failed:', dbErr.message);
+    console.warn('⚠️ [Auto-Updater] Database fallback check failed:', dbErr.message);
   }
 
   // ═══════════════════════════════════════════════════════════════
-  // METHOD 2: CHECK VIA LOCAL GIT (FALLBACK FOR DEVELOPER PC)
+  // METHOD 3: LOCAL GIT (FALLBACK FOR DEVELOPER PC)
   // ═══════════════════════════════════════════════════════════════
   const isGitRepo = fs.existsSync(path.join(__dirname, '.git'));
   if (isGitRepo) {
@@ -197,102 +253,35 @@ async function checkForUpdates(force = false) {
           previousVersion: localVer.version,
           newVersion: updatedVer.version || localVer.version,
           updatedFiles: ['Git pull (سەرجەم فایلە نوێکراوەکان)'],
-          message: `سیستەمەکە بە سەرکەوتوویی لە گیتەوە نوێکرایەوە بۆ وەشانی (${updatedVer.version || localVer.version})!`
+          message: `سیستەمەکە لە گیتەوە نوێکرایەوە بۆ وەشانی (${updatedVer.version || localVer.version})!`
         };
       }
-    } catch (gitErr) {
-      console.warn('⚠️ Git pull failed:', gitErr.error || gitErr);
-    }
-  }
-
-  // ═══════════════════════════════════════════════════════════════
-  // METHOD 3: DIRECT HTTP DOWNLOAD FROM GITHUB
-  // ═══════════════════════════════════════════════════════════════
-  let remoteVer = null;
-  let hasUpdate = false;
-
-  try {
-    const verData = await fetchUrl(`${BASE_RAW_URL}/version.json?t=${Date.now()}`, 6000);
-    remoteVer = JSON.parse(verData.toString('utf8'));
-    if (remoteVer && remoteVer.build && remoteVer.build > localBuild) {
-      hasUpdate = true;
-    }
-  } catch (err) {
-    console.warn('⚠️ [Auto-Updater] GitHub check note:', err.message);
-    if (force) {
-      hasUpdate = true;
-      remoteVer = { version: localVer.version, build: localBuild + 1 };
-    }
-  }
-
-  if (force) {
-    hasUpdate = true;
-    if (!remoteVer) remoteVer = localVer;
-  }
-
-  if (!hasUpdate) {
-    return {
-      success: true,
-      hasUpdate: false,
-      source: 'none',
-      currentVersion: localVer.version,
-      latestVersion: remoteVer ? remoteVer.version : localVer.version,
-      message: 'سیستەمەکەت نوێترین وەشانە و هیچ نوێکارییەکی نوێ بەردەست نییە.'
-    };
-  }
-
-  const updatedFiles = [];
-  const errors = [];
-
-  for (const relPath of FILES_TO_UPDATE) {
-    try {
-      const fileUrl = `${BASE_RAW_URL}/${relPath}?t=${Date.now()}`;
-      const content = await fetchUrl(fileUrl, 10000);
-
-      const localPath = path.join(__dirname, relPath);
-      const dir = path.dirname(localPath);
-      if (!fs.existsSync(dir)) {
-        fs.mkdirSync(dir, { recursive: true });
-      }
-
-      fs.writeFileSync(localPath, content);
-      updatedFiles.push(relPath);
-    } catch (err) {
-      if (!err.message.includes('HTTP 404')) {
-        errors.push(`${relPath}: ${err.message}`);
-      }
-    }
-  }
-
-  if (remoteVer) {
-    try {
-      fs.writeFileSync(path.join(__dirname, 'version.json'), JSON.stringify(remoteVer, null, 2), 'utf8');
-    } catch (e) {}
+    } catch (gitErr) {}
   }
 
   return {
-    success: errors.length === 0,
-    hasUpdate: true,
-    source: 'github',
-    previousVersion: localVer.version,
-    newVersion: remoteVer ? remoteVer.version : localVer.version,
-    updatedFiles,
-    errors: errors.length > 0 ? errors : undefined,
-    message: `سیستەمەکە بە سەرکەوتوویی لە گیت هابەوە نوێکرایەوە بۆ وەشانی (${remoteVer ? remoteVer.version : localVer.version})!`
+    success: true,
+    hasUpdate: false,
+    source: 'none',
+    currentVersion: localVer.version,
+    latestVersion: remoteGitHubVer ? remoteGitHubVer.version : localVer.version,
+    message: 'سیستەمەکەت نوێترین وەشانە و هیچ نوێکارییەکی نوێ بەردەست نییە.'
   };
 }
 
 if (require.main === module) {
   const isForce = process.argv.includes('--force') || process.argv.includes('-f');
   console.log('═══════════════════════════════════════════════════════════════');
-  console.log('   🚦 دەستەی هاتووچۆی سلێمانی - پشکنین و نوێکردنەوەی خۆکار');
+  console.log('   🚦 دەستەی هاتووچۆی سلێمانی - پشکنین و نوێکردنەوە لە GitHub');
   console.log('═══════════════════════════════════════════════════════════════\n');
-  console.log(`🔍 پشکنینی نوێکارییەکان... (force=${isForce})`);
 
   checkForUpdates(isForce)
     .then(res => {
       console.log('\n--------------------------------------------------');
       console.log(res.message);
+      if (res.source) {
+        console.log(`🌐 سەرچاوەی ئەپدەیت: [${res.source.toUpperCase()}]`);
+      }
       if (res.updatedFiles && res.updatedFiles.length > 0) {
         console.log('📁 فایلە نوێکراوەکان:');
         res.updatedFiles.forEach(f => console.log('  [+] ' + f));
