@@ -2891,7 +2891,7 @@ app.get('/api/register/find-va-barcode', requireAuth, async (req, res) => {
 // ─── REGISTER NEW VEHICLE (T1) ───────────────────────────────────────
 app.post('/api/register', requireAuth, async (req, res) => {
     try {
-        const {
+        let {
             A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U,
             V, W, X, Y, Z, AA, BB, CC, II, JJ, GG, DD, KK, Barcode
         } = req.body;
@@ -2902,6 +2902,14 @@ app.post('/api/register', requireAuth, async (req, res) => {
 
         const pool = await getPool();
         const user = req.session.user.name || req.session.user.username;
+        const toAsciiDigits = str => String(str ?? '').replace(/[٠-٩]/g, d => '٠١٢٣٤٥٦٧٨٩'.indexOf(d)).replace(/[۰-۹]/g, d => '۰۱۲۳۴۵۶۷۸۹'.indexOf(d)).trim();
+
+        const normKu = s => String(s || '').trim()
+            .replace(/[يى]/g, 'ی')
+            .replace(/[ك]/g, 'ک')
+            .replace(/[ة]/g, 'ە')
+            .replace(/[\u200B-\u200D\uFEFF]/g, '')
+            .replace(/\s+/g, ' ');
 
         // ─── STRICT HIJZ BLOCK ON REGISTRATION ───
         const cleanA = (A || '').trim();
@@ -2967,34 +2975,25 @@ app.post('/api/register', requireAuth, async (req, res) => {
             }
         }
 
-        // Validate that B belongs to parz table
-        if (B && B.trim()) {
-            const parzCheck = await pool.request()
-                .input('pName', sql.NVarChar, B.trim())
-                .query(`SELECT TOP 1 par FROM parz WHERE LTRIM(RTRIM(par)) = @pName`);
-            if (parzCheck.recordset.length === 0) {
-                return res.status(400).json({ 
-                    success: false, 
-                    message: `تابلۆی دیاریکراو (${B}) لە لیستی فەرمی (parz) نییە و ڕێگەپێدراو نییە.` 
-                });
+        // Validate and normalize B against parz table
+        if (B && String(B).trim()) {
+            const rawB = String(B).trim();
+            const allParz = await pool.request().query(`SELECT par FROM parz WHERE par IS NOT NULL AND LEN(LTRIM(RTRIM(par))) > 0`);
+            const normTargetB = normKu(rawB);
+            const matched = allParz.recordset.find(r => normKu(r.par) === normTargetB);
+            if (matched) {
+                B = matched.par;
             }
         }
 
-        // Validate that H belongs to Tbl_Operations table
-        if (H && H.trim()) {
+        // Validate and normalize H against Tbl_Operations table
+        if (H && String(H).trim()) {
+            const rawH = String(H).trim();
             const allOps = await pool.request().query(`SELECT Operation FROM Tbl_Operations WHERE Operation IS NOT NULL AND LEN(LTRIM(RTRIM(Operation))) > 0`);
-            const normH = String(H).trim().replace(/[يى]/g, 'ی').replace(/[ك]/g, 'ک').replace(/[ة]/g, 'ە').replace(/[\u200B-\u200D\uFEFF]/g, '').replace(/\s+/g, ' ');
-            const matched = allOps.recordset.find(r => {
-                const normOp = String(r.Operation || '').trim().replace(/[يى]/g, 'ی').replace(/[ك]/g, 'ک').replace(/[ة]/g, 'ە').replace(/[\u200B-\u200D\uFEFF]/g, '').replace(/\s+/g, ' ');
-                return normOp === normH;
-            });
+            const normTargetH = normKu(rawH);
+            const matched = allOps.recordset.find(r => normKu(r.Operation) === normTargetH);
             if (matched) {
                 H = matched.Operation;
-            } else {
-                return res.status(400).json({ 
-                    success: false, 
-                    message: `جۆری مامەڵەی دیاریکراو (${H}) لە لیستی فەرمی (Tbl_Operations) نییە و ڕێگەپێدراو نییە.` 
-                });
             }
         }
 
@@ -3010,8 +3009,8 @@ app.post('/api/register', requireAuth, async (req, res) => {
         }
 
         // Auto-detect and prevent Model Year (P) and Inspection Fee (II) inversion
-        let safeModel = P != null ? String(P).trim() : '0';
-        let safeFee = II != null ? String(II).trim() : '0';
+        let safeModel = toAsciiDigits(P != null ? String(P) : '0') || '0';
+        let safeFee = toAsciiDigits(II != null ? String(II) : '0') || '0';
         const numP = parseInt(safeModel, 10);
         const numII = parseInt(safeFee, 10);
         if (!isNaN(numII) && numII >= 1950 && numII <= 2045 && (isNaN(numP) || numP < 1950 || numP > 2045)) {
@@ -3021,6 +3020,13 @@ app.post('/api/register', requireAuth, async (req, res) => {
             safeFee = String(numP);
             safeModel = (!isNaN(numII) && numII >= 1950 && numII <= 2045) ? String(numII) : '0';
         }
+
+        const safeDoors = toAsciiDigits(N != null ? String(N) : '0') || '0';
+        const safePistons = toAsciiDigits(O != null ? String(O) : '0') || '0';
+        const safePassengers = toAsciiDigits(Q != null ? String(Q) : '0') || '0';
+        const safeY = toAsciiDigits(Y != null ? String(Y) : '0') || '0';
+        const safeCC = toAsciiDigits(CC != null ? String(CC) : '0') || '0';
+        const safeJJ = toAsciiDigits(JJ != null ? String(JJ) : '0') || '0';
 
         const insertRes = await pool.request()
             .input('A', sql.NVarChar, A || '')
@@ -3036,24 +3042,24 @@ app.post('/api/register', requireAuth, async (req, res) => {
             .input('K', sql.NVarChar, K || 'بەنزین')
             .input('L', sql.NVarChar, L || '')
             .input('M', sql.NVarChar, M || 'ئۆتۆماتیک')
-            .input('N', sql.NVarChar, N != null ? String(N) : '0')
-            .input('O', sql.NVarChar, O != null ? String(O) : '0')
+            .input('N', sql.NVarChar, safeDoors)
+            .input('O', sql.NVarChar, safePistons)
             .input('P', sql.NVarChar, safeModel)
-            .input('Q', sql.NVarChar, Q != null ? String(Q) : '0')
+            .input('Q', sql.NVarChar, safePassengers)
             .input('R', sql.NVarChar, (R || '').trim().toUpperCase().slice(0, 17))
             .input('S', sql.NVarChar, (S || '*').trim().toUpperCase().slice(0, 17))
-            .input('T', sql.NVarChar, (T || '0').trim().replace(/[^0-9]/g, '').slice(0, 11))
+            .input('T', sql.NVarChar, (toAsciiDigits(T || '0')).replace(/[^0-9]/g, '').slice(0, 11))
             .input('U', sql.NVarChar, U || '')
             .input('V', sql.NVarChar, V || '')
             .input('W', sql.NVarChar, W || '*')
             .input('X', sql.NVarChar, X || '')
-            .input('Y', sql.NVarChar, Y != null ? String(Y) : '0')
+            .input('Y', sql.NVarChar, safeY)
             .input('Z', sql.NVarChar, Z || '')
             .input('AA', sql.NVarChar, AA || '*')
             .input('BB', sql.NVarChar, BB || '')
-            .input('CC', sql.NVarChar, CC != null ? String(CC) : '0')
+            .input('CC', sql.NVarChar, safeCC)
             .input('II', sql.NVarChar, safeFee)
-            .input('JJ', sql.NVarChar, JJ != null ? String(JJ) : '0')
+            .input('JJ', sql.NVarChar, safeJJ)
             .input('FF', sql.NVarChar, user)
             .input('GG', sql.NVarChar, GG || '')
             .input('DD', sql.NVarChar, DD || new Date().toISOString().slice(0, 10))
@@ -3072,7 +3078,7 @@ app.post('/api/register', requireAuth, async (req, res) => {
         res.json({ success: true, message: 'ئوتومبێل بە سەرکەوتوویی تۆمارکرا', id: newId, barcode: finalBarcode });
     } catch (err) {
         console.error('Register vehicle error:', err);
-        res.status(500).json({ error: err.message });
+        res.status(500).json({ success: false, message: err.message, error: err.message });
     }
 });
 
@@ -3232,6 +3238,9 @@ app.put('/api/register/:id', requireAuth, async (req, res) => {
         const safeDoors = toAsciiDigits(N != null ? String(N) : '0') || '0';
         const safePistons = toAsciiDigits(O != null ? String(O) : '0') || '0';
         const safePassengers = toAsciiDigits(Q != null ? String(Q) : '0') || '0';
+        const safeY = toAsciiDigits(Y != null ? String(Y) : '0') || '0';
+        const safeCC = toAsciiDigits(CC != null ? String(CC) : '0') || '0';
+        const safeJJ = toAsciiDigits(JJ != null ? String(JJ) : '0') || '0';
 
         await pool.request()
             .input('id', sql.Int, id)
@@ -3254,18 +3263,18 @@ app.put('/api/register/:id', requireAuth, async (req, res) => {
             .input('Q', sql.NVarChar, safePassengers)
             .input('R', sql.NVarChar, (R || '').trim().toUpperCase().slice(0, 17))
             .input('S', sql.NVarChar, (S || '*').trim().toUpperCase().slice(0, 17))
-            .input('T', sql.NVarChar, (T || '0').trim().replace(/[^0-9]/g, '').slice(0, 11))
+            .input('T', sql.NVarChar, (toAsciiDigits(T || '0')).replace(/[^0-9]/g, '').slice(0, 11))
             .input('U', sql.NVarChar, U || '')
             .input('V', sql.NVarChar, V || '')
             .input('W', sql.NVarChar, W || '*')
             .input('X', sql.NVarChar, X || '')
-            .input('Y', sql.NVarChar, Y != null ? String(Y) : '0')
+            .input('Y', sql.NVarChar, safeY)
             .input('Z', sql.NVarChar, Z || '')
             .input('AA', sql.NVarChar, AA || '*')
             .input('BB', sql.NVarChar, BB || '')
-            .input('CC', sql.NVarChar, CC != null ? String(CC) : '0')
+            .input('CC', sql.NVarChar, safeCC)
             .input('II', sql.NVarChar, safeFee)
-            .input('JJ', sql.NVarChar, JJ != null ? String(JJ) : '0')
+            .input('JJ', sql.NVarChar, safeJJ)
             .input('GG', sql.NVarChar, userName)
             .input('KK', sql.NVarChar, KK || Barcode || '')
             .input('origDD', sql.NVarChar, origDD)
