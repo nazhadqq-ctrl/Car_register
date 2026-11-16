@@ -15,11 +15,14 @@ public class TrafficCheckApp {
             string url = "http://localhost:3000";
 
             if (!IsServerRunning(url)) {
+                // پاککردنەوەی هەر پرۆسێسێکی کۆن لەسەر پۆڕتی 3000
+                KillPortProcess(3000);
+
                 string nodeExe = FindNodeExecutable(appDir);
-                if (string.IsNullOrEmpty(nodeExe)) {
+                if (string.IsNullOrEmpty(nodeExe) || (!File.Exists(nodeExe) && nodeExe != "node")) {
                     MessageBox.Show(
-                        "تکایە دڵنیابە لە دابەزاندنی Node.js لەسەر ئەم کۆمپیوتەرە بۆ کارپێکردنی سیستم.\n\nPlease install Node.js to run this application.",
-                        "Traffic Inspection System",
+                        "فایلی node.exe لە فۆڵدەری بەرنامە نەدۆزرایەوە.\nتکایە دڵنیابە لە دروستی دابەزاندنی بەرنامە.\n\nNode runtime not found.",
+                        "سیستەمی پشکنینی هاتووچۆ",
                         MessageBoxButtons.OK,
                         MessageBoxIcon.Error
                     );
@@ -33,16 +36,36 @@ public class TrafficCheckApp {
                 psi.WindowStyle = ProcessWindowStyle.Hidden;
                 psi.CreateNoWindow = true;
                 psi.UseShellExecute = false;
-                Process.Start(psi);
 
-                for (int i = 0; i < 20; i++) {
-                    Thread.Sleep(500);
-                    if (IsServerRunning(url)) break;
+                Process nodeProcess = Process.Start(psi);
+
+                bool serverReady = false;
+                for (int i = 0; i < 25; i++) {
+                    Thread.Sleep(400);
+                    if (IsServerRunning(url)) {
+                        serverReady = true;
+                        break;
+                    }
+                    if (nodeProcess != null && nodeProcess.HasExited) {
+                        break;
+                    }
+                }
+
+                if (!serverReady) {
+                    MessageBox.Show(
+                        "ئاگاداری: سێرڤەری ناوخۆیی سیستەم لە کاتی دیاریکراودا وەڵامی نەدایەوە.\nهەوڵی کردنەوەی پەڕەکە دەدرێت...",
+                        "سیستەمی پشکنینی هاتووچۆ",
+                        MessageBoxButtons.OK,
+                        MessageBoxIcon.Warning
+                    );
                 }
             }
 
             string browser = FindBrowserExecutable();
-            string kioskDir = Path.Combine(appDir, "KioskProfile");
+            
+            // بەکارهێنانی LocalAppData بۆ ئەوەی لە هەموو جۆرە یوزەرێکی ویندۆز بەبێ کێشەی Permission کار بکات
+            string localAppData = Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData);
+            string kioskDir = Path.Combine(localAppData, "TrafficCheck", "KioskProfile");
             if (!Directory.Exists(kioskDir)) {
                 try { Directory.CreateDirectory(kioskDir); } catch {}
             }
@@ -64,6 +87,18 @@ public class TrafficCheckApp {
         } catch (Exception ex) {
             MessageBox.Show("کێشەیەک ڕوویدا لە کاتی کردنەوەی بەرنامە:\n" + ex.Message, "هەڵە", MessageBoxButtons.OK, MessageBoxIcon.Error);
         }
+    }
+
+    private static void KillPortProcess(int port) {
+        try {
+            ProcessStartInfo psi = new ProcessStartInfo("cmd.exe", string.Format("/c for /f \"tokens=5\" %a in ('netstat -aon ^| findstr :{0}') do taskkill /F /PID %a >nul 2>&1", port));
+            psi.CreateNoWindow = true;
+            psi.UseShellExecute = false;
+            psi.WindowStyle = ProcessWindowStyle.Hidden;
+            using (Process p = Process.Start(psi)) {
+                p.WaitForExit(2000);
+            }
+        } catch {}
     }
 
     private static bool IsServerRunning(string url) {
@@ -130,4 +165,3 @@ public class TrafficCheckApp {
         return string.Empty;
     }
 }
-

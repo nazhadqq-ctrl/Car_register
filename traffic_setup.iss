@@ -21,7 +21,7 @@ DisableProgramGroupPage=yes
 OutputDir=C:\Users\Nazha\Desktop\TrafficCheck_Setup_Output
 OutputBaseFilename=Setup_TrafficCheck_Standalone
 SetupIconFile={#SourceDir}\app.ico
-Compression=lzma2/max
+Compression=lzma2/normal
 SolidCompression=yes
 WizardStyle=modern
 PrivilegesRequired=admin
@@ -33,6 +33,10 @@ UninstallDisplayIcon={app}\{#MyAppExeName}
 
 [Languages]
 Name: "en"; MessagesFile: "compiler:Default.isl"
+
+[Dirs]
+Name: "{app}"; Permissions: users-full
+Name: "{app}\public"; Permissions: users-full
 
 [Files]
 ; Main Executable and Core Scripts
@@ -58,9 +62,7 @@ Source: "{#SourceDir}\node_modules\*"; DestDir: "{app}\node_modules"; Flags: ign
 
 [Icons]
 Name: "{autoprograms}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; IconFilename: "{app}\app.ico"; WorkingDir: "{app}"
-Name: "{autodesktop}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; IconFilename: "{app}\app.ico"; WorkingDir: "{app}"
 Name: "{commondesktop}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; IconFilename: "{app}\app.ico"; WorkingDir: "{app}"
-Name: "{userdesktop}\{#MyAppName}"; Filename: "{app}\{#MyAppExeName}"; IconFilename: "{app}\app.ico"; WorkingDir: "{app}"
 
 [Run]
 Filename: "{app}\{#MyAppExeName}"; Description: "دەستپێکردنی بەرنامە (Launch {#MyAppTitle})"; Flags: nowait postinstall skipifsilent
@@ -73,20 +75,16 @@ var
 begin
   if CurStep = ssPostInstall then
   begin
-    SourceLnk := ExpandConstant('{autodesktop}\{#MyAppName}.lnk');
-    if not FileExists(SourceLnk) then
-      SourceLnk := ExpandConstant('{commondesktop}\{#MyAppName}.lnk');
-    if not FileExists(SourceLnk) then
-      SourceLnk := ExpandConstant('{userdesktop}\{#MyAppName}.lnk');
+    SourceLnk := ExpandConstant('{commondesktop}\{#MyAppName}.lnk');
 
     // Check OneDrive Desktop
-    OneDriveDesktop := ExpandConstant('{userdocs}\..\Desktop');
+    OneDriveDesktop := ExpandConstant('{%USERPROFILE}\OneDrive\Desktop');
     if not DirExists(OneDriveDesktop) then
-      OneDriveDesktop := ExpandConstant('{%USERPROFILE}\OneDrive\Desktop');
+      OneDriveDesktop := ExpandConstant('{userdocs}\..\Desktop');
 
     if DirExists(OneDriveDesktop) and FileExists(SourceLnk) then
     begin
-      FileCopy(SourceLnk, OneDriveDesktop + '\{#MyAppName}.lnk', False);
+      CopyFile(SourceLnk, OneDriveDesktop + '\{#MyAppName}.lnk', False);
     end;
   end;
 end;

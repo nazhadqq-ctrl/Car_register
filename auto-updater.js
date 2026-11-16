@@ -1,6 +1,6 @@
 /* ═══════════════════════════════════════════════════════════════
    🚦 CENTRAL DATABASE & GITHUB AUTO-UPDATER FOR TRAFFICCHECK
-   نوێکردنەوەی بنەڕەتی سیستەم لە ڕێگەی داتابەیسی ناوەندی (SQL Server)
+   نوێکردنەوەی بنەڕەتی سیستەم لە ڕێگەی داتابەیسی ناوەندی (SQL Server) و گیت هاب
    ═══════════════════════════════════════════════════════════════ */
 
 const fs = require('fs');
@@ -13,6 +13,10 @@ const REPO_NAME = 'Car_register';
 const BRANCH = 'main';
 const BASE_RAW_URL = `https://raw.githubusercontent.com/${REPO_OWNER}/${REPO_NAME}/${BRANCH}`;
 
+// ئەگەر ڕیپۆسیتۆرییەکە تایبەت (Private) بێت لە گیت هاب، دەتوانرێت Token لێرە دابنرێت
+// ئەگەر ڕیپۆسیتۆرییەکە Public بێت، بەبێ Token ڕاستەوخۆ کار دەکات
+const GITHUB_TOKEN = process.env.GITHUB_TOKEN || '';
+
 const FILES_TO_UPDATE = [
   'version.json',
   'auto-updater.js',
@@ -24,19 +28,25 @@ const FILES_TO_UPDATE = [
   'Start_Silent_Print_Edge.bat',
   'public/index.html',
   'public/login.html',
-  'public/preview_gomrg.html'
+  'public/preview_gomrg.html',
+  'public/profile-avatar.jpg',
+  'public/traffic-it-logo.jpg',
+  'public/app-icon.png'
 ];
 
-function fetchUrl(url, timeoutMs = 10000) {
+function fetchUrl(url, timeoutMs = 12000) {
   return new Promise((resolve, reject) => {
-    const req = https.get(url, {
-      headers: {
-        'User-Agent': 'TrafficCheck-AutoUpdater-Desktop',
-        'Cache-Control': 'no-cache, no-store, must-revalidate',
-        'Pragma': 'no-cache'
-      }
-    }, (res) => {
-      if (res.statusCode === 301 || res.statusCode === 302) {
+    const headers = {
+      'User-Agent': 'TrafficCheck-AutoUpdater-Desktop',
+      'Cache-Control': 'no-cache, no-store, must-revalidate',
+      'Pragma': 'no-cache'
+    };
+    if (GITHUB_TOKEN) {
+      headers['Authorization'] = `token ${GITHUB_TOKEN}`;
+    }
+
+    const req = https.get(url, { headers }, (res) => {
+      if (res.statusCode === 301 || res.statusCode === 302 || res.statusCode === 307) {
         return fetchUrl(res.headers.location, timeoutMs).then(resolve).catch(reject);
       }
       if (res.statusCode !== 200) {
@@ -159,14 +169,7 @@ async function checkForUpdates(force = false) {
             message: `سیستەمەکە بە سەرکەوتوویی لە ڕێگەی داتابەیسی ناوەندییەوە نوێکرایەوە بۆ وەشانی (${remoteVersion})!`
           };
         } else {
-          return {
-            success: true,
-            hasUpdate: false,
-            source: 'database',
-            currentVersion: localVer.version,
-            latestVersion: remoteVersion,
-            message: 'سیستەمەکەت نوێترین وەشانە و هیچ نوێکارییەکی نوێ بەردەست نییە.'
-          };
+          console.log(`ℹ️ [Auto-Updater] Database version (Build ${remoteBuild}) is equal or older than local (Build ${localBuild}). Checking GitHub fallback...`);
         }
       }
     }
@@ -203,30 +206,22 @@ async function checkForUpdates(force = false) {
   }
 
   // ═══════════════════════════════════════════════════════════════
-  // METHOD 3: DIRECT HTTP DOWNLOAD (LEGACY FALLBACK)
+  // METHOD 3: DIRECT HTTP DOWNLOAD FROM GITHUB
   // ═══════════════════════════════════════════════════════════════
   let remoteVer = null;
   let hasUpdate = false;
 
   try {
-    const verData = await fetchUrl(`${BASE_RAW_URL}/version.json?t=${Date.now()}`, 5000);
+    const verData = await fetchUrl(`${BASE_RAW_URL}/version.json?t=${Date.now()}`, 6000);
     remoteVer = JSON.parse(verData.toString('utf8'));
     if (remoteVer && remoteVer.build && remoteVer.build > localBuild) {
       hasUpdate = true;
     }
   } catch (err) {
+    console.warn('⚠️ [Auto-Updater] GitHub check note:', err.message);
     if (force) {
       hasUpdate = true;
       remoteVer = { version: localVer.version, build: localBuild + 1 };
-    } else {
-      return {
-        success: true,
-        hasUpdate: false,
-        source: 'none',
-        currentVersion: localVer.version,
-        latestVersion: localVer.version,
-        message: 'سیستەمەکەت نوێترین وەشانە.'
-      };
     }
   }
 
@@ -278,12 +273,12 @@ async function checkForUpdates(force = false) {
   return {
     success: errors.length === 0,
     hasUpdate: true,
-    source: 'http',
+    source: 'github',
     previousVersion: localVer.version,
     newVersion: remoteVer ? remoteVer.version : localVer.version,
     updatedFiles,
     errors: errors.length > 0 ? errors : undefined,
-    message: `سیستەمەکە بە سەرکەوتوویی نوێکرایەوە بۆ وەشانی (${remoteVer ? remoteVer.version : localVer.version})!`
+    message: `سیستەمەکە بە سەرکەوتوویی لە گیت هابەوە نوێکرایەوە بۆ وەشانی (${remoteVer ? remoteVer.version : localVer.version})!`
   };
 }
 
