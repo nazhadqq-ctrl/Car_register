@@ -3701,14 +3701,22 @@
                 <!-- ROW 2 (Barad 1, Barad 2, Transaction Type) -->
                 <div class="df-row">
                     <span class="df-label">بەڕادی هاتووچۆ</span>
-                    <input type="text" id="dfE" list="baradList" class="df-input c4-kurd" style="width:260px;" placeholder="">
+                    <div class="df-combobox" id="dfEWrapper" style="width:260px;">
+                        <input type="text" id="dfE" class="df-input c4-kurd df-combo-input" autocomplete="off" placeholder="ناوی بەڕاد هەڵبژێرە...">
+                        <button type="button" class="df-combo-btn" id="dfEBtn" tabindex="-1" title="بینینی لیستی بەڕادەکان">▼</button>
+                        <div class="df-combo-menu" id="dfEMenu" style="min-width:100%; max-width:340px;"></div>
+                    </div>
                     
                     <span class="df-label">* بەڕادی هاتووچۆ</span>
-                    <input type="text" id="dfF" list="baradList" class="df-input c4-kurd" style="width:260px;" value="*">
+                    <div class="df-combobox" id="dfFWrapper" style="width:260px;">
+                        <input type="text" id="dfF" class="df-input c4-kurd df-combo-input" autocomplete="off" value="" placeholder="*">
+                        <button type="button" class="df-combo-btn" id="dfFBtn" tabindex="-1" title="بینینی لیستی بەڕادەکان">▼</button>
+                        <div class="df-combo-menu" id="dfFMenu" style="min-width:100%; max-width:340px;"></div>
+                    </div>
                     
                     <span class="df-label">جۆری مامەڵە</span>
                     <div class="df-combobox" id="dfHWrapper" style="flex:1; min-width:240px;">
-                        <input type="text" id="dfH" class="df-input c4-kurd df-combo-input" autocomplete="off" value="تۆماری یه‌كه‌م جار" placeholder="جۆری مامەڵە هەڵبژێرە..." title="تەنها لە لیستی فەرمی (Tbl_Operations) قبوڵ دەکرێت">
+                        <input type="text" id="dfH" class="df-input c4-kurd df-combo-input" autocomplete="off" value="" placeholder="جۆری مامەڵە هەڵبژێرە یان بنووسە..." title="دەتوانیت لە لیستەکە هەڵیبژێریت یان خۆت بینووسیت">
                         <button type="button" class="df-combo-btn" id="dfHBtn" tabindex="-1" title="بینینی هەموو جۆرەکانی مامەڵە">▼</button>
                         <div class="df-combo-menu" id="dfHMenu" style="min-width:100%; max-width:420px;"></div>
                     </div>
@@ -6108,13 +6116,20 @@ let OPERATIONS_ITEMS = [
 ];
 let activeOpIndex = -1;
 let openOpMenu = null;
-let lastValidOperation = 'تۆماری یه‌كه‌م جار';
+let lastValidOperation = '';
 
 function setOperationValue(val) {
     const input = document.getElementById('dfH');
     if (!input) return;
-    if (val && OPERATIONS_ITEMS.length > 0) {
-        const found = OPERATIONS_ITEMS.find(p => normKu(p) === normKu(val));
+    const trimmed = (val !== null && val !== undefined) ? String(val).trim() : '';
+    if (!trimmed) {
+        input.value = '';
+        lastValidOperation = '';
+        input.dispatchEvent(new Event('change'));
+        return;
+    }
+    if (OPERATIONS_ITEMS.length > 0) {
+        const found = OPERATIONS_ITEMS.find(p => normKu(p) === normKu(trimmed));
         if (found) {
             input.value = found;
             lastValidOperation = found;
@@ -6122,8 +6137,8 @@ function setOperationValue(val) {
             return;
         }
     }
-    input.value = val || (OPERATIONS_ITEMS[0] || 'تۆماری یه‌كه‌م جار');
-    lastValidOperation = input.value;
+    input.value = trimmed;
+    lastValidOperation = trimmed;
     input.dispatchEvent(new Event('change'));
 }
 
@@ -6163,7 +6178,7 @@ function initOperationCombobox(items) {
         }
 
         if (matches.length === 0) {
-            menu.innerHTML = `<div class="df-combo-empty">⚠️ هیچ جۆرە مامەڵەیەک بەم پیتانە لە (Tbl_Operations) نەدۆزرایەوە</div>`;
+            menu.innerHTML = `<div class="df-combo-empty">✍️ دەتوانیت ئەم جۆرە مامەڵەیە بە دەستی خۆت بینووسیت</div>`;
             activeOpIndex = -1;
         } else {
             menu.innerHTML = matches.map((item, idx) => {
@@ -6174,7 +6189,7 @@ function initOperationCombobox(items) {
                 }
                 return `<div class="df-combo-item" data-value="${item}" data-index="${idx}">${textHtml}</div>`;
             }).join('');
-            activeOpIndex = matches.length > 0 ? 0 : -1;
+            activeOpIndex = -1;
             updateActiveItem();
         }
         menu.style.display = 'block';
@@ -6220,36 +6235,23 @@ function initOperationCombobox(items) {
     function validateAndEnforce() {
         const currentVal = input.value.trim();
         if (!currentVal) {
-            input.value = lastValidOperation || (OPERATIONS_ITEMS[0] || 'تۆماری یه‌كه‌م جار');
+            input.value = '';
+            lastValidOperation = '';
+            input.classList.remove('df-invalid-shake');
             input.dispatchEvent(new Event('change'));
             return;
         }
 
-        // Exact match
+        // Normalize exact match if it exists in Tbl_Operations, otherwise accept custom typed value freely
         const exactMatch = OPERATIONS_ITEMS.find(p => normKu(p) === normKu(currentVal));
         if (exactMatch) {
             input.value = exactMatch;
             lastValidOperation = exactMatch;
-            input.classList.remove('df-invalid-shake');
-            input.dispatchEvent(new Event('change'));
-            return;
+        } else {
+            input.value = currentVal;
+            lastValidOperation = currentVal;
         }
-
-        // Single unique prefix match
-        const prefixMatches = OPERATIONS_ITEMS.filter(p => normKu(p).startsWith(normKu(currentVal)));
-        if (prefixMatches.length === 1) {
-            input.value = prefixMatches[0];
-            lastValidOperation = prefixMatches[0];
-            input.classList.remove('df-invalid-shake');
-            input.dispatchEvent(new Event('change'));
-            return;
-        }
-
-        // Strict enforcement: cannot be outside Tbl_Operations!
-        showToast(`⚠️ جۆری مامەڵەی "${currentVal}" لە لیستی فەرمی (Tbl_Operations) نییە!`, true);
-        input.classList.add('df-invalid-shake');
-        setTimeout(() => input.classList.remove('df-invalid-shake'), 600);
-        input.value = lastValidOperation || (OPERATIONS_ITEMS[0] || 'تۆماری یه‌كه‌م جار');
+        input.classList.remove('df-invalid-shake');
         input.dispatchEvent(new Event('change'));
     }
 
@@ -6310,7 +6312,10 @@ function initOperationCombobox(items) {
             } else if (e.key === 'Tab') {
                 if (activeOpIndex >= 0 && items[activeOpIndex]) {
                     const val = items[activeOpIndex].getAttribute('data-value');
-                    selectOpItem(val);
+                    input.value = val;
+                    lastValidOperation = val;
+                    input.dispatchEvent(new Event('change'));
+                    hideMenu();
                 } else {
                     validateAndEnforce();
                     hideMenu();
@@ -6342,6 +6347,173 @@ function initOperationCombobox(items) {
             hideMenu();
         }
     });
+}
+
+// ─── BARAD 1 (#dfE) & BARAD 2 (#dfF) SEARCHABLE COMBOBOXES (FROM TABLE Barad) ─────
+let BARADS_ITEMS = [];
+
+function initSingleBaradCombobox(inputId, btnId, menuId, wrapperId, nextFocusId) {
+    const input = document.getElementById(inputId);
+    const btn = document.getElementById(btnId);
+    const menu = document.getElementById(menuId);
+    if (!input || !menu) return;
+    if (input._baradInit) return;
+    input._baradInit = true;
+
+    let activeIdx = -1;
+
+    function updateActive() {
+        const items = menu.querySelectorAll('.df-combo-item');
+        items.forEach((it, idx) => {
+            if (idx === activeIdx) {
+                it.classList.add('active');
+                it.scrollIntoView({ block: 'nearest' });
+            } else {
+                it.classList.remove('active');
+            }
+        });
+    }
+
+    function hideMenu() {
+        menu.style.display = 'none';
+        activeIdx = -1;
+    }
+
+    function renderMenu(filterText = '', showAll = false) {
+        const cleaned = (filterText || '').trim() === '*' ? '' : filterText;
+        const query = normKu(cleaned);
+        let matches = [];
+        if (showAll || !query) {
+            matches = BARADS_ITEMS;
+        } else {
+            const startsWith = [];
+            const contains = [];
+            BARADS_ITEMS.forEach(item => {
+                const n = normKu(item);
+                if (n.startsWith(query)) startsWith.push(item);
+                else if (n.includes(query)) contains.push(item);
+            });
+            matches = [...startsWith, ...contains];
+        }
+
+        if (matches.length === 0) {
+            menu.innerHTML = `<div class="df-combo-empty">هیچ ناوێکی بەڕاد لە لیستی (Barad) نەدۆزرایەوە</div>`;
+            activeIdx = -1;
+        } else {
+            menu.innerHTML = matches.map((item, idx) => {
+                let textHtml = escapeHtml(item);
+                if (query) {
+                    const regex = new RegExp(`(${query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
+                    textHtml = escapeHtml(item).replace(regex, '<mark>$1</mark>');
+                }
+                return `<div class="df-combo-item" data-value="${escapeHtml(item)}" data-index="${idx}">${textHtml}</div>`;
+            }).join('');
+            activeIdx = -1;
+            updateActive();
+        }
+        menu.style.display = 'block';
+    }
+
+    function selectItem(val) {
+        input.value = val;
+        hideMenu();
+        input.dispatchEvent(new Event('change'));
+        if (nextFocusId) {
+            setTimeout(() => {
+                const nextEl = document.getElementById(nextFocusId);
+                if (nextEl) {
+                    nextEl.focus();
+                    if (nextEl.select) nextEl.select();
+                }
+            }, 60);
+        }
+    }
+
+    input.addEventListener('input', () => {
+        renderMenu(input.value, false);
+    });
+
+    input.addEventListener('focus', () => {
+        if (input.value.trim() === '*') input.value = '';
+        renderMenu(input.value, true);
+    });
+
+    if (btn) {
+        btn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            if (menu.style.display === 'block') {
+                hideMenu();
+            } else {
+                renderMenu('', true);
+                input.focus();
+            }
+        });
+    }
+
+    menu.addEventListener('mousedown', (e) => {
+        const target = e.target.closest('.df-combo-item');
+        if (target) {
+            selectItem(target.getAttribute('data-value'));
+        }
+    });
+
+    input.addEventListener('keydown', (e) => {
+        if (menu.style.display === 'block') {
+            const items = menu.querySelectorAll('.df-combo-item');
+            if (e.key === 'ArrowDown') {
+                e.preventDefault();
+                if (items.length > 0) {
+                    activeIdx = (activeIdx + 1) % items.length;
+                    updateActive();
+                }
+            } else if (e.key === 'ArrowUp') {
+                e.preventDefault();
+                if (items.length > 0) {
+                    activeIdx = (activeIdx - 1 + items.length) % items.length;
+                    updateActive();
+                }
+            } else if (e.key === 'Enter') {
+                e.preventDefault();
+                if (activeIdx >= 0 && items[activeIdx]) {
+                    selectItem(items[activeIdx].getAttribute('data-value'));
+                } else {
+                    hideMenu();
+                    if (nextFocusId) {
+                        const nextEl = document.getElementById(nextFocusId);
+                        if (nextEl) nextEl.focus();
+                    }
+                }
+            } else if (e.key === 'Tab') {
+                if (activeIdx >= 0 && items[activeIdx]) {
+                    input.value = items[activeIdx].getAttribute('data-value');
+                    input.dispatchEvent(new Event('change'));
+                }
+                hideMenu();
+            } else if (e.key === 'Escape') {
+                hideMenu();
+            }
+        } else if (e.key === 'ArrowDown' || e.key === 'ArrowUp') {
+            renderMenu(input.value, true);
+        }
+    });
+
+    input.addEventListener('blur', () => {
+        setTimeout(() => { hideMenu(); }, 220);
+    });
+
+    document.addEventListener('click', (e) => {
+        if (!e.target.closest('#' + wrapperId)) {
+            hideMenu();
+        }
+    });
+}
+
+function initBaradComboboxes(items) {
+    if (Array.isArray(items) && items.length > 0) {
+        BARADS_ITEMS = items;
+    }
+    initSingleBaradCombobox('dfE', 'dfEBtn', 'dfEMenu', 'dfEWrapper', 'dfF');
+    initSingleBaradCombobox('dfF', 'dfFBtn', 'dfFMenu', 'dfFWrapper', 'dfH');
 }
 
 // ─── HIJZ RED ALERT CONTROLLERS ────────────────────────────────────
@@ -6408,6 +6580,7 @@ async function loadLookups() {
         initBashCombobox(); // Initialize immediately with default options
         initFeeCombobox();  // Initialize fee combobox with standard Kurdistan fees
         initOperationCombobox(); // Initialize immediately with default operations from Tbl_Operations
+        initBaradComboboxes(); // Initialize Barad 1 (#dfE) & Barad 2 (#dfF) comboboxes
 
         const [colors, tabloList, staff, barads, bashList, operationsList] = await Promise.all([
             fetch('/api/colors').then(r=>r.json()).catch(()=>[]),
@@ -6467,6 +6640,9 @@ async function loadLookups() {
         const baradList = document.getElementById('baradList');
         if (baradList && Array.isArray(barads)) {
             baradList.innerHTML = barads.map(b => `<option value="${b}">`).join('');
+        }
+        if (Array.isArray(barads) && barads.length > 0) {
+            initBaradComboboxes(barads);
         }
     } catch(e) {
         console.error('Lookups error:', e);
@@ -6704,10 +6880,21 @@ function openRegisterModal() {
         if (typeof initOperationCombobox === 'function') {
             initOperationCombobox();
         }
+        if (typeof initBaradComboboxes === 'function') {
+            initBaradComboboxes();
+        }
         // Ensure operations from Tbl_Operations are loaded
         fetch('/api/operations').then(r => r.json()).then(ops => {
             if (Array.isArray(ops) && ops.length > 0) initOperationCombobox(ops);
         }).catch(e => console.warn('Operations fetch warning:', e));
+        // Ensure Barad 1 & Barad 2 lists from Barad table are loaded
+        fetch('/api/barads').then(r => r.json()).then(barads => {
+            if (Array.isArray(barads) && barads.length > 0) {
+                initBaradComboboxes(barads);
+                const baradList = document.getElementById('baradList');
+                if (baradList) baradList.innerHTML = barads.map(b => `<option value="${b}">`).join('');
+            }
+        }).catch(e => console.warn('Barads fetch warning:', e));
         const regAlert = document.getElementById('regAlert');
         if (regAlert) regAlert.innerHTML = '';
         if (currentUser) {
@@ -6776,9 +6963,9 @@ function dfResetNew() {
     // Keep dfE (بەڕادی هاتووچۆ) intact - never clear on reset
     const curBarad = document.getElementById('dfE') ? document.getElementById('dfE').value : '';
     if (curBarad) setVal('dfE', curBarad);
-    setVal('dfF', '*');
-    setVal('dfH', 'تۆماری یه‌كه‌م جار');
-    if (typeof setOperationValue === 'function') setOperationValue('تۆماری یه‌كه‌م جار');
+    setVal('dfF', '');
+    setVal('dfH', '');
+    if (typeof setOperationValue === 'function') setOperationValue('');
     setVal('dfG', '');
     setVal('dfI', '');
     setVal('dfJ', 'صالون');
@@ -6963,10 +7150,11 @@ async function onBarcodeVAChange() {
             const curB = document.getElementById('dfE') ? document.getElementById('dfE').value : '';
             if (curB) set('dfE', curB);
         }
-        set('dfF', d.F || '*');
+        set('dfF', (d.F && String(d.F).trim() !== '*') ? d.F : '');
         set('dfG', d.G || '');
-        set('dfH', d.H || 'تۆماری یه‌كه‌م جار');
-        if (typeof setOperationValue === 'function') setOperationValue(d.H || 'تۆماری یه‌كه‌م جار');
+        const vaOpVal = (d.source === 'T1') ? (d.H || '') : '';
+        set('dfH', vaOpVal);
+        if (typeof setOperationValue === 'function') setOperationValue(vaOpVal);
         set('dfI', d.I || '');
         set('dfJ', d.J || 'صالون');
         set('dfK', d.K || 'بەنزین');
@@ -7101,10 +7289,11 @@ function populateRegistrationFields(r, fallbackPlate = '', fallbackTablo = '', f
         const curB = document.getElementById('dfE') ? document.getElementById('dfE').value : '';
         if (curB) set('dfE', curB);
     }
-    set('dfF', r.F || '*');
+    set('dfF', (r.F && String(r.F).trim() !== '*') ? r.F : '');
     set('dfG', r.G || '');
-    set('dfH', r.H || 'تۆماری یه‌كه‌م جار');
-    if (typeof setOperationValue === 'function') setOperationValue(r.H || 'تۆماری یه‌كه‌م جار');
+    const regOpVal = (r.source === 'T1') ? (r.H || '') : '';
+    set('dfH', regOpVal);
+    if (typeof setOperationValue === 'function') setOperationValue(regOpVal);
     set('dfI', r.I || '');
     set('dfJ', r.J || 'صالون');
     set('dfK', r.K || 'بەنزین');
@@ -7368,7 +7557,7 @@ function validateRegistrationForm() {
         { 
             id: 'dfH', 
             name: 'جۆری مامەڵە', 
-            isInvalid: v => !v || v.trim() === '' || (OPERATIONS_ITEMS.length > 0 && !OPERATIONS_ITEMS.some(op => normKu(op) === normKu(v))) 
+            isInvalid: v => !v || v.trim() === ''
         },
         { id: 'dfI', name: 'جۆری ئوتومبێل', isInvalid: v => !v || v.trim() === '' },
         { id: 'dfL', name: 'ڕەنگ', isInvalid: v => !v || v.trim() === '' || v.includes('--') },
@@ -7383,9 +7572,6 @@ function validateRegistrationForm() {
 
         if (f.isInvalid(val)) {
             let msg = `ناکرێت ئەم خانەیە ( ${f.name} ) پڕ نەکرێتەوە`;
-            if (f.id === 'dfH' && val && OPERATIONS_ITEMS.length > 0 && !OPERATIONS_ITEMS.some(op => normKu(op) === normKu(val))) {
-                msg = `جۆری مامەڵەی دیاریکراو ( ${val} ) لە لیستی فەرمی (Tbl_Operations) نییە و قبوڵ ناکرێت`;
-            }
             showToast(`⛔ ${msg}`, true);
             const regAlert = document.getElementById('regAlert');
             if (regAlert) {
@@ -8109,7 +8295,7 @@ async function dfPrintInspection() {
                         break-inside: avoid !important;
                     }
                     .rdlc-footer-section {
-                        margin-top: 2.5cm !important;
+                        margin-top: 4.5cm !important;
                         page-break-inside: avoid !important;
                         break-inside: avoid !important;
                     }
@@ -8143,7 +8329,7 @@ async function dfPrintInspection() {
                     break-inside: avoid;
                 }
                 .rdlc-footer-section {
-                    margin-top: 2.5cm;
+                    margin-top: 4.5cm;
                     width: 100%;
                     page-break-inside: avoid;
                     break-inside: avoid;
@@ -8465,7 +8651,7 @@ async function dfPrintInspection() {
 
                     <!-- Row 1: جۆری مامەڵە (6 cols value + 1 col header = 7) -->
                     <tr>
-                        <td colspan="6" class="rdlc-val" style="font-size:14.5px;">${escapeHtml(p.H || 'تۆماری یەکەم جار')}</td>
+                        <td colspan="6" class="rdlc-val" style="font-size:14.5px;">${escapeHtml(p.H || '')}</td>
                         <td class="rdlc-th">جۆری مامەڵە</td>
                     </tr>
 

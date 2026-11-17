@@ -2015,7 +2015,7 @@ app.get('/api/register/find-t1', requireAuth, async (req, res) => {
                 E: r.E || '',
                 F: r.F || '*',
                 G: (r.G || '').trim(),
-                H: (r.H || '').trim() || 'تۆماری یەکەم جار',
+                H: (r.H || '').trim(),
                 I: (r.I || '').trim(),
                 J: (r.J || '').trim() || 'صالون',
                 K: (r.K || '').trim() || 'بەنزین',
@@ -2202,7 +2202,7 @@ app.get('/api/register/find', requireAuth, async (req, res) => {
                         E: existing.E || '',
                         F: existing.F || '*',
                         G: (existing.G || '').trim(),
-                        H: (existing.H || '').trim() || 'تۆماری یەکەم جار',
+                        H: (existing.H || '').trim(),
                         I: (existing.I || '').trim(),
                         J: (existing.J || '').trim() || 'صالون',
                         K: (existing.K || '').trim() || 'بەنزین',
@@ -2304,7 +2304,7 @@ app.get('/api/register/find', requireAuth, async (req, res) => {
                     E: r.E || '',
                     F: r.F || '*',
                     G: (r.G || '').trim(),
-                    H: (r.H || '').trim() || 'تۆماری یەکەم جار',
+                    H: (r.H || '').trim(),
                     I: (r.I || '').trim(),
                     J: (r.J || '').trim() || 'صالون',
                     K: (r.K || '').trim() || 'بەنزین',
@@ -2447,7 +2447,7 @@ app.get('/api/register/find', requireAuth, async (req, res) => {
                         E: '',
                         F: '*',
                         G: (r.Name_ || '').trim(),
-                        H: 'تۆماری یەکەم جار',
+                        H: '',
                         I: (r.car_type || '').trim(),
                         J: (r.Car_group || '').trim() || 'صالون',
                         K: (r.Feull || '').trim() || 'بەنزین',
@@ -2610,7 +2610,7 @@ app.get('/api/register/find', requireAuth, async (req, res) => {
                     E: '',
                     F: '*',
                     G: (r.Name_ || '').trim(),
-                    H: 'تۆماری یەکەم جار',
+                    H: '',
                     I: (r.car_type || '').trim(),
                     J: (r.Car_group || '').trim() || 'صالون',
                     K: (r.Feull || '').trim() || 'بەنزین',
@@ -2713,7 +2713,7 @@ app.get('/api/register/find', requireAuth, async (req, res) => {
                     E: '',
                     F: '*',
                     G: (r.Name_ || '').trim(),
-                    H: 'تۆماری یەکەم جار',
+                    H: '',
                     I: (r.car_type || '').trim(),
                     J: (r.Car_group || '').trim() || 'صالون',
                     K: (r.Feull || '').trim() || 'بەنزین',
@@ -2862,7 +2862,7 @@ app.get('/api/register/find-va-barcode', requireAuth, async (req, res) => {
             E: '',
             F: '*',
             G: (row.Name_ || '').trim(),
-            H: 'تۆماری یەکەم جار',
+            H: '',
             I: (row.car_type || '').trim(),
             J: (row.Car_group || '').trim() || 'صالون',
             K: (row.Feull || '').trim() || 'بەنزین',
@@ -2901,7 +2901,7 @@ app.get('/api/register/find-va-barcode', requireAuth, async (req, res) => {
             E: row.E || '',
             F: row.F || '*',
             G: (row.G || '').trim(),
-            H: row.H || 'تۆماری یەکەم جار',
+            H: (row.H || '').trim(),
             I: (row.I || '').trim(),
             J: (row.J || '').trim() || 'صالون',
             K: (row.K || '').trim() || 'بەنزین',
@@ -3253,7 +3253,7 @@ app.post('/api/register', requireAuth, async (req, res) => {
             .input('E', sql.NVarChar, E || '')
             .input('F', sql.NVarChar, F || '*')
             .input('G', sql.NVarChar, G || '')
-            .input('H', sql.NVarChar, H || 'تۆماری یەکەم جار')
+            .input('H', sql.NVarChar, H || '')
             .input('I', sql.NVarChar, I || '')
             .input('J', sql.NVarChar, J || '')
             .input('K', sql.NVarChar, K || 'بەنزین')

@@ -75,9 +75,9 @@ public class TrafficCheckApp {
             } else {
                 ProcessStartInfo bPsi = new ProcessStartInfo();
                 bPsi.FileName = browser;
-                // Running with an isolated profile guarantees --kiosk-printing works even when Edge/Chrome is already open!
+                // Running with an isolated profile + --kiosk-printing guarantees direct silent printing without print dialog!
                 bPsi.Arguments = string.Format(
-                    "--user-data-dir=\"{0}\" --kiosk-printing --app=http://localhost:3000/login.html --window-size=1460,860",
+                    "--user-data-dir=\"{0}\" --kiosk-printing --no-first-run --no-default-browser-check --disable-background-mode --app=http://localhost:3000/login.html --window-size=1460,860",
                     kioskDir
                 );
                 bPsi.WorkingDirectory = appDir;
