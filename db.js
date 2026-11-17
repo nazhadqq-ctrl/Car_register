@@ -4,10 +4,10 @@ const { loadDotEnv } = require('./security');
 // Load local .env secrets if present (takes priority over fallback defaults)
 loadDotEnv();
 
-// Server 1 - Primary Central Database
+// Server 1 - Primary Central Database (Least-Privilege SQL Login: NA)
 const config190 = {
-    user: process.env.DB190_USER || 'sa',
-    password: process.env.DB190_PASSWORD || 'Nazhad@5759',
+    user: process.env.DB190_USER || 'NA',
+    password: process.env.DB190_PASSWORD || 'Na2652014Va',
     server: process.env.DB190_HOST || '62.201.232.190',
     port: parseInt(process.env.DB190_PORT || '1433', 10),
     database: process.env.DB190_NAME || 'Car_Registraion',
