@@ -8,6 +8,7 @@
 const fs = require('fs');
 const path = require('path');
 const sql = require('mssql');
+const { verifyAll } = require('./verify-syntax');
 
 const config = {
     user: 'sa',
@@ -36,10 +37,17 @@ const FILES_TO_PUBLISH = [
     'public/app-icon.png',
     'Update_TrafficCheck.bat',
     'Start_Silent_Print_Chrome.bat',
-    'Start_Silent_Print_Edge.bat'
+    'Start_Silent_Print_Edge.bat',
+    'verify-syntax.js'
 ];
 
 async function publish() {
+    const syntaxCheck = verifyAll(false);
+    if (!syntaxCheck.ok) {
+        console.error('❌ بڵاوکردنەوە ڕاگیرا! تکایە هەڵەی سینتاکس لە فایلەکاندا چاک بکە پێش بڵاوکردنەوە.');
+        process.exit(1);
+    }
+
     console.log('═══════════════════════════════════════════════════════════════');
     console.log('   بڵاوکردنەوەی وەشانی نوێی سیستەم بۆ ناو داتابەیس (SQL Server)');
     console.log('═══════════════════════════════════════════════════════════════\n');

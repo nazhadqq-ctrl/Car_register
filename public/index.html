@@ -7284,20 +7284,6 @@ async function dfSearchCar() {
                 return;
             }
         }
-                if (regAlert) {
-                    regAlert.innerHTML = `
-                        <div class="alert-box alert-warning" style="display:flex;align-items:center;justify-content:space-between;gap:8px;padding:4px 10px;border-radius:6px;font-weight:700;font-size:12.5px;background:#fef3c7;border:1.5px solid #f59e0b;color:#92400e;box-shadow:0 1px 3px rgba(0,0,0,0.06);margin-bottom:4px;">
-                            <div style="display:flex;align-items:center;gap:6px;">
-                                <span style="font-size:16px;line-height:1;">⛔</span>
-                                <span>ئەم فۆرمە پێشتر کراوە لە بەرواری (${dateStr}) — دەستکاریکردن و ڕاستکردنەوە تەنها بۆ تۆمارەکانی ئەمڕۆ ڕێگەپێدراوە</span>
-                            </div>
-                            <button type="button" onclick="closeRegAlert()" style="background:transparent;border:none;color:#92400e;font-size:16px;font-weight:900;cursor:pointer;padding:0 4px;border-radius:4px;line-height:1;" title="داخستن">✕</button>
-                        </div>
-                    `;
-                }
-                return;
-            }
-        }
 
         if (!r) {
             // Keep entered plate/tablo/bash so officer does not lose typed data

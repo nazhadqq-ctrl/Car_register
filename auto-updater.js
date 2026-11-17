@@ -6,7 +6,24 @@
 const fs = require('fs');
 const path = require('path');
 const https = require('https');
+const vm = require('vm');
 const { exec } = require('child_process');
+
+function validateDownloadedContent(relPath, rawBufOrStr) {
+  const isTextCode = /\.(js|html)$/i.test(relPath);
+  if (!isTextCode) return;
+  const text = Buffer.isBuffer(rawBufOrStr) ? rawBufOrStr.toString('utf8') : String(rawBufOrStr || '');
+  if (relPath.endsWith('.js')) {
+    new vm.Script(text, { filename: relPath });
+  } else if (relPath.endsWith('.html')) {
+    const scriptRegex = /<script([^>]*)>([\s\S]*?)<\/script>/gi;
+    let match;
+    while ((match = scriptRegex.exec(text)) !== null) {
+      if (/\bsrc\s*=/i.test(match[1] || '')) continue;
+      new vm.Script(match[2] || '', { filename: relPath });
+    }
+  }
+}
 
 const REPO_OWNER = 'nazhadqq-ctrl';
 const REPO_NAME = 'Car_register';
@@ -27,7 +44,8 @@ const FILES_TO_UPDATE = [
   'public/preview_gomrg.html',
   'public/profile-avatar.jpg',
   'public/traffic-it-logo.jpg',
-  'public/app-icon.png'
+  'public/app-icon.png',
+  'verify-syntax.js'
 ];
 
 function fetchUrl(url, timeoutMs = 12000) {
@@ -118,6 +136,9 @@ async function checkForUpdates(force = false) {
         const fileUrl = `${BASE_RAW_URL}/${relPath}?t=${Date.now()}`;
         const content = await fetchUrl(fileUrl, 12000);
 
+        // پشکنینی سینتاکسی فایل پێش نووسینەوەی بۆ ئەوەی فایلی تێکچوو بەرنامەکە نەوەستێنێت
+        validateDownloadedContent(relPath, content);
+
         const localPath = path.join(__dirname, relPath);
         const dir = path.dirname(localPath);
         if (!fs.existsSync(dir)) {
@@ -202,6 +223,8 @@ async function checkForUpdates(force = false) {
               if (fileRow.content && fileRow.content.startsWith('BASE64:')) {
                 fs.writeFileSync(targetPath, Buffer.from(fileRow.content.slice(7), 'base64'));
               } else {
+                // پشکنینی سینتاکسی فایل پێش نووسینەوەی بۆ ئەوەی فایلی تێکچوو بەرنامەکە نەوەستێنێت
+                validateDownloadedContent(relPath, fileRow.content);
                 fs.writeFileSync(targetPath, fileRow.content, 'utf8');
               }
               updatedFiles.push(relPath);
