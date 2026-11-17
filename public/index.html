@@ -3649,7 +3649,7 @@
                     <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
                         <span style="font-size:18px; line-height:1;">📷</span>
                         <label for="dfBarcodeVA" style="font-size:13px; font-weight:800; cursor:pointer; white-space:nowrap;">گەڕان بە پێی بارکۆد ڕیدەر:</label>
-                        <input type="text" id="dfBarcodeVA" class="df-input auto-en-upper" placeholder="بارکۆد لێرە لێبدە..." autocomplete="off" lang="en" dir="ltr" autocapitalize="characters" spellcheck="false" style="width:280px; height:32px; font-size:15.5px; font-weight:800; text-align:center; outline:none; direction:ltr !important; font-family:'JetBrains Mono', Consolas, monospace !important; text-transform:uppercase;" oninput="this.value = sanitizeEnglishBarcode(this.value);" onchange="onBarcodeVAChange()" onkeydown="if(event.key==='Enter'){event.preventDefault();event.stopPropagation();onBarcodeVAChange();}">
+                        <input type="text" id="dfBarcodeVA" class="df-input auto-en-upper" placeholder="بارکۆد لێرە لێبدە..." autocomplete="off" lang="en" dir="ltr" autocapitalize="characters" spellcheck="false" style="width:280px; height:32px; font-size:15.5px; font-weight:800; text-align:center; outline:none; direction:ltr !important; font-family:'JetBrains Mono', Consolas, monospace !important; text-transform:uppercase;" oninput="onBarcodeVAInput(this.value)" onpaste="setTimeout(onBarcodeVAChange, 60)" onchange="onBarcodeVAChange()" onkeydown="if(event.key==='Enter'||event.keyCode===13||event.key==='Tab'){event.preventDefault();event.stopPropagation();onBarcodeVAChange();}">
                         <button type="button" onclick="onBarcodeVAChange()" class="df-btn-search" style="height:32px; padding:0 18px; font-size:13px;">
                             <span>🔍 گەڕان بە بارکۆد</span>
                         </button>
@@ -6867,6 +6867,19 @@ function sanitizeEnglishBarcode(str) {
     return s.trim().toUpperCase();
 }
 
+let _vaBarcodeDebounce = null;
+function onBarcodeVAInput(rawVal) {
+    const sanitized = sanitizeEnglishBarcode(rawVal);
+    const input = document.getElementById('dfBarcodeVA');
+    if (input && input.value !== sanitized) input.value = sanitized;
+    clearTimeout(_vaBarcodeDebounce);
+    if (sanitized && sanitized.length >= 6) {
+        _vaBarcodeDebounce = setTimeout(() => {
+            onBarcodeVAChange();
+        }, 220);
+    }
+}
+
 // ─── VOID / EVENT: BARCODE SCANNER LOOKUP IN TAQEGA.DBO.VA ─────────
 async function onBarcodeVAChange() {
     const input = document.getElementById('dfBarcodeVA');
@@ -7044,10 +7057,14 @@ async function onBarcodeVAChange() {
 
 function populateRegistrationFields(r, fallbackPlate = '', fallbackTablo = '', fallbackBash = '') {
     if (!r) return;
-    if (r.source === 'T1' || r.id) {
-        loadedVehicleId = r.id;
+    if (r.source === 'T1') {
+        loadedVehicleId = r.t1Id || r.id;
     } else {
         loadedVehicleId = null;
+    }
+    const vaInput = document.getElementById('dfBarcodeVA');
+    if (vaInput && (r.Barcod || r.KK)) {
+        vaInput.value = sanitizeEnglishBarcode(r.Barcod || r.KK);
     }
     const set = (id, v) => {
         const el = document.getElementById(id);
@@ -7155,12 +7172,20 @@ async function dfSearchCar() {
     const tablo = document.getElementById('dfB').value.trim();
     const bash = document.getElementById('dfC').value.trim();
     const chassis = document.getElementById('dfR').value.trim();
+    const vaInput = document.getElementById('dfBarcodeVA');
+    const bcVal = vaInput ? sanitizeEnglishBarcode(vaInput.value) : '';
 
     // Reset alert message on each new search
     closeRegAlert();
 
+    // If plate and chassis are empty but barcode box has a value, search barcode!
+    if (!plate && !chassis && bcVal) {
+        onBarcodeVAChange();
+        return;
+    }
+
     if (!plate && !chassis) {
-        showToast('⚠️ تکایە ژمارەی ئوتومبێل یان شاسی بنووسە بۆ گەڕان', true);
+        showToast('⚠️ تکایە ژمارەی ئوتومبێل یان شاسی یان بارکۆد بنووسە بۆ گەڕان', true);
         return;
     }
     try {
@@ -7169,6 +7194,10 @@ async function dfSearchCar() {
         if (tablo) params.append('tablo', tablo);
         if (bash) params.append('bash', bash);
         if (chassis) params.append('chassis', chassis);
+        if (bcVal) params.append('barcode', bcVal);
+        else if (plate && (plate.length >= 6 || /[A-Za-z]/.test(plate))) {
+            params.append('barcode', sanitizeEnglishBarcode(plate));
+        }
 
         const res = await fetch('/api/register/find?' + params.toString());
         const r = await res.json();
@@ -7201,14 +7230,14 @@ async function dfSearchCar() {
         clearHijzAlert();
 
         // ─── CHECK ALREADY REGISTERED IN T1 ───
-        if (r && (r.alreadyRegistered || r.source === 'T1' || r.id)) {
+        if (r && (r.alreadyRegistered || r.source === 'T1')) {
             const dateStr = r.date || (r.DD ? String(r.DD).slice(0, 10) : 'نەزانراو');
             const isToday = !!r.isToday || (r.DD && new Date(r.DD).toDateString() === new Date().toDateString());
 
             if (isToday) {
                 // Vehicle was already registered TODAY: load complete record, enable print, disable save, enable update
                 populateRegistrationFields(r, plate, tablo, bash);
-                loadedVehicleId = r.id || null;
+                loadedVehicleId = r.t1Id || (r.source === 'T1' ? r.id : null);
                 loadedVehicleIsToday = true;
                 loadedVehicleRegDate = dateStr;
                 setPrintButtonState(true);
@@ -7232,7 +7261,7 @@ async function dfSearchCar() {
             } else {
                 // Vehicle was registered on an earlier date:
                 // Keep typed inputs (dfA, dfB, dfC) intact - do NOT wipe!
-                loadedVehicleId = r.id || null;
+                loadedVehicleId = r.t1Id || (r.source === 'T1' ? r.id : null);
                 loadedVehicleIsToday = false;
                 loadedVehicleRegDate = dateStr;
                 setPrintButtonState(false);
@@ -7241,6 +7270,20 @@ async function dfSearchCar() {
 
                 showToast(`⚠️ ئەم فۆرمە پێشتر کراوە لە بەرواری (${dateStr}) - دەستکاریکردن ناچالاک کرا`, true);
                 const regAlert = document.getElementById('regAlert');
+                if (regAlert) {
+                    regAlert.innerHTML = `
+                        <div class="alert-box alert-warning" style="display:flex;align-items:center;justify-content:space-between;gap:8px;padding:4px 10px;border-radius:6px;font-weight:700;font-size:12.5px;background:#fef3c7;border:1.5px solid #f59e0b;color:#92400e;box-shadow:0 1px 3px rgba(0,0,0,0.06);margin-bottom:4px;">
+                            <div style="display:flex;align-items:center;gap:6px;">
+                                <span style="font-size:16px;line-height:1;">⛔</span>
+                                <span>ئەم فۆرمە پێشتر کراوە لە بەرواری (${dateStr}) — دەستکاریکردن و ڕاستکردنەوە تەنها بۆ تۆمارەکانی ئەمڕۆ ڕێگەپێدراوە</span>
+                            </div>
+                            <button type="button" onclick="closeRegAlert()" style="background:transparent;border:none;color:#92400e;font-size:16px;font-weight:900;cursor:pointer;padding:0 4px;border-radius:4px;line-height:1;" title="داخستن">✕</button>
+                        </div>
+                    `;
+                }
+                return;
+            }
+        }
                 if (regAlert) {
                     regAlert.innerHTML = `
                         <div class="alert-box alert-warning" style="display:flex;align-items:center;justify-content:space-between;gap:8px;padding:4px 10px;border-radius:6px;font-weight:700;font-size:12.5px;background:#fef3c7;border:1.5px solid #f59e0b;color:#92400e;box-shadow:0 1px 3px rgba(0,0,0,0.06);margin-bottom:4px;">
@@ -7294,6 +7337,9 @@ async function dfSearchCar() {
 
         if (r.source === 'Taqega') {
             setSaveButtonState(true);
+            setPrintButtonState(false);
+            setUpdateBtnState(false);
+            loadedVehicleId = null;
         } else {
             setSaveButtonState(false, 'ئەم ئۆتۆمبێلە پێشتر لە T1 تۆمارکراوە (دووبارەیە)');
         }

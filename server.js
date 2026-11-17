@@ -2333,6 +2333,151 @@ app.get('/api/register/find', requireAuth, async (req, res) => {
                     Barcod: r.KK || cleanBarcode,
                     resulat: ''
                 });
+            } else {
+                // Fallback: Query [Taqega].[dbo].[VA] by barcode
+                const vaBcReq = pool.request()
+                    .input('bc', sql.NVarChar, cleanBarcode)
+                    .input('bcClean', cleanBarcode.replace(/\s+/g, '').toUpperCase())
+                    .input('bcLike', '%' + cleanBarcode.replace(/\s+/g, '').toUpperCase() + '%');
+                const vaBcRes = await vaBcReq.query(`
+                    SELECT TOP 1 * FROM [Taqega].[dbo].[VA]
+                    WHERE (
+                        Barcod = @bc
+                        OR REPLACE(Barcod, ' ', '') = @bcClean
+                        OR UPPER(LTRIM(RTRIM(Barcod))) = @bcClean
+                        OR NN = @bc
+                        OR REPLACE(NN, ' ', '') = @bcClean
+                        OR UPPER(LTRIM(RTRIM(NN))) = @bcClean
+                        OR auto_no = @bc
+                        OR shassy = @bc
+                        OR Barcod LIKE @bcLike
+                        OR NN LIKE @bcLike
+                    )
+                    ORDER BY id DESC
+                `);
+                if (vaBcRes.recordset.length > 0) {
+                    const r = vaBcRes.recordset[0];
+                    const foundChassis = (r.shassy || '').trim().toUpperCase();
+
+                    // Check if found vehicle's chassis is in Hijz
+                    if (foundChassis) {
+                        const hCheck = await pool.request().input('vch', sql.NVarChar, foundChassis).query(`SELECT TOP 1 * FROM Hijz WHERE Reg_Name = @vch`);
+                        if (hCheck.recordset.length > 0) {
+                            const h = hCheck.recordset[0];
+                            return res.json({
+                                isHijz: true,
+                                message: 'ئەم ئوتومبێلە کاری بۆ ناکرێت لەبەر ئەوەی نیشانەی گلدانەوەی لەسەرە و پەیوەندی بکەن بە سەرپەرشتیاری هۆبەی پشکنین',
+                                hijz: {
+                                    idd: h.idd,
+                                    plate: h.Auto_No,
+                                    tablo: h.Place_,
+                                    bash: h.Car_Plet,
+                                    chassis: h.Reg_Name,
+                                    date: h.Date_Releasing,
+                                    note: h.car_Note,
+                                    officer: h.B,
+                                    user: h.UUser
+                                }
+                            });
+                        }
+                    }
+
+                    // Check if already registered in T1
+                    let isAlreadyInT1Bc = false;
+                    let dupT1Bc = null;
+                    const chkPlateBc = (r.auto_no || '').trim();
+                    const chkTabloBc = (r.plet ? r.plet.replace(/ى/g, 'ی') : 'سلێمانی').trim();
+                    const chkBashBc = (r.bash || 'تایبەت').trim();
+                    const chkBarcodeBc = (r.Barcod || r.NN || cleanBarcode || '').trim().toUpperCase();
+
+                    const chkReqBc = pool.request();
+                    let chkQueryBc = `SELECT TOP 1 id, A, B, C, R, DD, EE, FF, KK FROM T1 WHERE 1=0 `;
+                    let hasChkCondBc = false;
+
+                    if (chkPlateBc && chkTabloBc && chkBashBc) {
+                        hasChkCondBc = true;
+                        chkReqBc.input('chkPlate', sql.NVarChar, chkPlateBc);
+                        chkReqBc.input('chkTablo', sql.NVarChar, chkTabloBc);
+                        const normChkTabloBc = chkTabloBc.replace(/ى/g, 'ی').replace(/ك/g, 'ک');
+                        chkReqBc.input('normChkTablo', sql.NVarChar, normChkTabloBc);
+                        chkReqBc.input('chkBash', sql.NVarChar, chkBashBc);
+                        const normChkBashBc = chkBashBc.replace(/ى/g, 'ی').replace(/ك/g, 'ک');
+                        chkReqBc.input('normChkBash', sql.NVarChar, normChkBashBc);
+
+                        chkQueryBc += ` OR (
+                            (A = @chkPlate OR REPLACE(A, ' ', '') = @chkPlate)
+                            AND (B = @chkTablo OR REPLACE(REPLACE(B, N'ى', N'ی'), N'ك', N'ک') = @normChkTablo)
+                            AND (C = @chkBash OR REPLACE(REPLACE(C, N'ى', N'ی'), N'ك', N'ک') = @normChkBash)
+                        )`;
+                    }
+
+                    if (foundChassis && foundChassis !== '*') {
+                        hasChkCondBc = true;
+                        chkReqBc.input('chkChassis', sql.NVarChar, foundChassis);
+                        chkQueryBc += ` OR (UPPER(LTRIM(RTRIM(R))) = @chkChassis OR UPPER(REPLACE(R, ' ', '')) = @chkChassis)`;
+                    }
+
+                    if (chkBarcodeBc && chkBarcodeBc !== '*') {
+                        hasChkCondBc = true;
+                        chkReqBc.input('chkBarcode', sql.NVarChar, chkBarcodeBc);
+                        chkQueryBc += ` OR (UPPER(LTRIM(RTRIM(KK))) = @chkBarcode)`;
+                    }
+
+                    if (hasChkCondBc) {
+                        chkQueryBc += ` ORDER BY id DESC`;
+                        const chkResBc = await chkReqBc.query(chkQueryBc);
+                        if (chkResBc.recordset.length > 0) {
+                            isAlreadyInT1Bc = true;
+                            dupT1Bc = chkResBc.recordset[0];
+                        }
+                    }
+
+                    return res.json({
+                        source: 'Taqega',
+                        id: r.id,
+                        alreadyRegistered: isAlreadyInT1Bc,
+                        t1Id: dupT1Bc ? dupT1Bc.id : null,
+                        date: dupT1Bc ? (dupT1Bc.DD ? new Date(dupT1Bc.DD).toISOString().slice(0, 10) : (dupT1Bc.EE ? new Date(dupT1Bc.EE).toISOString().slice(0, 10) : 'نەزانراو')) : undefined,
+                        user: dupT1Bc ? dupT1Bc.FF : undefined,
+                        isToday: dupT1Bc ? (dupT1Bc.DD && new Date(dupT1Bc.DD).toDateString() === new Date().toDateString()) : false,
+                        A: r.auto_no || '',
+                        B: r.plet ? r.plet.replace(/ى/g, 'ی') : 'سلێمانی',
+                        C: r.bash || 'تایبەت',
+                        D: r.CC || '',
+                        E: '',
+                        F: '*',
+                        G: (r.Name_ || '').trim(),
+                        H: 'تۆماری یەکەم جار',
+                        I: (r.car_type || '').trim(),
+                        J: (r.Car_group || '').trim() || 'صالون',
+                        K: (r.Feull || '').trim() || 'بەنزین',
+                        L: (r.color || '').trim(),
+                        M: (r.Gear || '').trim() === 'عادی' ? 'عادی' : 'ئۆتۆماتیک',
+                        N: 4,
+                        O: r.celender || 0,
+                        P: r.Model || 0,
+                        Q: 5,
+                        R: foundChassis,
+                        S: 0,
+                        T: (r.mobile || '').trim() || 0,
+                        U: '',
+                        V: '',
+                        W: '*',
+                        X: '',
+                        Y: 0,
+                        Z: '',
+                        AA: '*',
+                        BB: '',
+                        CC: 0,
+                        II: 0,
+                        JJ: 0,
+                        DD: r.Date_ ? new Date(r.Date_).toISOString().slice(0, 10) : new Date().toISOString().slice(0, 10),
+                        resulat: r.resulat || '',
+                        Psulla: r.Psulla || '',
+                        Barcod: r.Barcod || r.NN || cleanBarcode,
+                        KK: r.Barcod || r.NN || cleanBarcode
+                    });
+                }
             }
         }
 
@@ -2342,21 +2487,32 @@ app.get('/api/register/find', requireAuth, async (req, res) => {
             const reqVa = pool.request().input('plate', sql.NVarChar, cleanPlate);
             let vaQuery = `
                 SELECT TOP 1 * FROM [Taqega].[dbo].[VA]
-                WHERE (auto_no = @plate OR REPLACE(auto_no, ' ', '') = @plate)
+                WHERE (
+                    auto_no = @plate 
+                    OR REPLACE(auto_no, ' ', '') = @plate
+                    OR Barcod = @plate
+                    OR REPLACE(Barcod, ' ', '') = @plate
+                    OR UPPER(LTRIM(RTRIM(Barcod))) = @plate
+                    OR NN = @plate
+                    OR REPLACE(NN, ' ', '') = @plate
+                    OR UPPER(LTRIM(RTRIM(NN))) = @plate
+                    OR shassy = @plate
+                    OR REPLACE(shassy, ' ', '') = @plate
+                )
             `;
 
             if (cleanTablo) {
                 reqVa.input('tablo', sql.NVarChar, cleanTablo);
                 const normTablo = cleanTablo.replace(/ى/g, 'ی').replace(/ك/g, 'ک');
                 reqVa.input('normTablo', sql.NVarChar, normTablo);
-                vaQuery += ` AND (plet = @tablo OR REPLACE(plet, N'ى', N'ی') = @normTablo) `;
+                vaQuery += ` AND (plet = @tablo OR REPLACE(plet, N'ى', N'ی') = @normTablo OR Barcod = @plate OR UPPER(LTRIM(RTRIM(Barcod))) = @plate OR NN = @plate) `;
             }
 
             if (cleanBash) {
                 reqVa.input('bash', sql.NVarChar, cleanBash);
                 const normBash = cleanBash.replace(/ى/g, 'ی').replace(/ك/g, 'ک');
                 reqVa.input('normBash', sql.NVarChar, normBash);
-                vaQuery += ` AND (bash = @bash OR REPLACE(bash, N'ى', N'ی') = @normBash) `;
+                vaQuery += ` AND (bash = @bash OR REPLACE(bash, N'ى', N'ی') = @normBash OR Barcod = @plate OR UPPER(LTRIM(RTRIM(Barcod))) = @plate OR NN = @plate) `;
             }
 
             vaQuery += ` ORDER BY id DESC `;
@@ -2389,9 +2545,64 @@ app.get('/api/register/find', requireAuth, async (req, res) => {
                     }
                 }
 
+                // Check if already registered in T1
+                let isAlreadyInT1 = false;
+                let dupT1 = null;
+                const chkPlate = (r.auto_no || cleanPlate || '').trim();
+                const chkTablo = (r.plet ? r.plet.replace(/ى/g, 'ی') : (cleanTablo || 'سلێمانی')).trim();
+                const chkBash = (r.bash || (cleanBash || 'تایبەت')).trim();
+                const chkBarcode = (r.Barcod || r.NN || cleanBarcode || '').trim().toUpperCase();
+
+                const chkReq = pool.request();
+                let chkQuery = `SELECT TOP 1 id, A, B, C, R, DD, EE, FF, KK FROM T1 WHERE 1=0 `;
+                let hasChkCond = false;
+
+                if (chkPlate && chkTablo && chkBash) {
+                    hasChkCond = true;
+                    chkReq.input('chkPlate', sql.NVarChar, chkPlate);
+                    chkReq.input('chkTablo', sql.NVarChar, chkTablo);
+                    const normChkTablo = chkTablo.replace(/ى/g, 'ی').replace(/ك/g, 'ک');
+                    chkReq.input('normChkTablo', sql.NVarChar, normChkTablo);
+                    chkReq.input('chkBash', sql.NVarChar, chkBash);
+                    const normChkBash = chkBash.replace(/ى/g, 'ی').replace(/ك/g, 'ک');
+                    chkReq.input('normChkBash', sql.NVarChar, normChkBash);
+
+                    chkQuery += ` OR (
+                        (A = @chkPlate OR REPLACE(A, ' ', '') = @chkPlate)
+                        AND (B = @chkTablo OR REPLACE(REPLACE(B, N'ى', N'ی'), N'ك', N'ک') = @normChkTablo)
+                        AND (C = @chkBash OR REPLACE(REPLACE(C, N'ى', N'ی'), N'ك', N'ک') = @normChkBash)
+                    )`;
+                }
+
+                if (foundChassis && foundChassis !== '*') {
+                    hasChkCond = true;
+                    chkReq.input('chkChassis', sql.NVarChar, foundChassis);
+                    chkQuery += ` OR (UPPER(LTRIM(RTRIM(R))) = @chkChassis OR UPPER(REPLACE(R, ' ', '')) = @chkChassis)`;
+                }
+
+                if (chkBarcode && chkBarcode !== '*') {
+                    hasChkCond = true;
+                    chkReq.input('chkBarcode', sql.NVarChar, chkBarcode);
+                    chkQuery += ` OR (UPPER(LTRIM(RTRIM(KK))) = @chkBarcode)`;
+                }
+
+                if (hasChkCond) {
+                    chkQuery += ` ORDER BY id DESC`;
+                    const chkRes = await chkReq.query(chkQuery);
+                    if (chkRes.recordset.length > 0) {
+                        isAlreadyInT1 = true;
+                        dupT1 = chkRes.recordset[0];
+                    }
+                }
+
                 return res.json({
                     source: 'Taqega',
                     id: r.id,
+                    alreadyRegistered: isAlreadyInT1,
+                    t1Id: dupT1 ? dupT1.id : null,
+                    date: dupT1 ? (dupT1.DD ? new Date(dupT1.DD).toISOString().slice(0, 10) : (dupT1.EE ? new Date(dupT1.EE).toISOString().slice(0, 10) : 'نەزانراو')) : undefined,
+                    user: dupT1 ? dupT1.FF : undefined,
+                    isToday: dupT1 ? (dupT1.DD && new Date(dupT1.DD).toDateString() === new Date().toDateString()) : false,
                     A: r.auto_no || cleanPlate,
                     B: r.plet ? r.plet.replace(/ى/g, 'ی') : (cleanTablo || 'سلێمانی'),
                     C: r.bash || (cleanBash || 'تایبەت'),
@@ -2425,7 +2636,9 @@ app.get('/api/register/find', requireAuth, async (req, res) => {
                     JJ: 0,
                     DD: r.Date_ ? new Date(r.Date_).toISOString().slice(0, 10) : new Date().toISOString().slice(0, 10),
                     resulat: r.resulat || '',
-                    Psulla: r.Psulla || ''
+                    Psulla: r.Psulla || '',
+                    Barcod: r.Barcod || r.NN || cleanBarcode || '',
+                    KK: r.Barcod || r.NN || cleanBarcode || ''
                 });
             }
 
@@ -2525,7 +2738,9 @@ app.get('/api/register/find', requireAuth, async (req, res) => {
                     II: 0, // اجور كشف نابێت لە تەیبڵی ڤی ئەی بهێنرێتەوە
                     JJ: 0,
                     DD: r.Date_ ? new Date(r.Date_).toISOString().slice(0, 10) : new Date().toISOString().slice(0, 10),
-                    resulat: r.resulat || ''
+                    resulat: r.resulat || '',
+                    Barcod: r.Barcod || r.NN || '',
+                    KK: r.Barcod || r.NN || ''
                 });
             }
 
@@ -2570,9 +2785,11 @@ app.get('/api/register/find-va-barcode', requireAuth, async (req, res) => {
                 Barcod = @bc
                 OR REPLACE(Barcod, ' ', '') = @bcClean
                 OR UPPER(Barcod) = @bcClean
+                OR UPPER(LTRIM(RTRIM(Barcod))) = @bcClean
                 OR NN = @bc
                 OR REPLACE(NN, ' ', '') = @bcClean
                 OR UPPER(NN) = @bcClean
+                OR UPPER(LTRIM(RTRIM(NN))) = @bcClean
                 OR CAST(Psulla AS nvarchar(50)) = @bc
                 OR auto_no = @bc
                 OR REPLACE(auto_no, ' ', '') = @bcClean
