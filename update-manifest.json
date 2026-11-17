@@ -1,0 +1,21 @@
+{
+  "version": "1.8.0",
+  "build": 180,
+  "generatedAt": "2026-11-17T19:18:23.940Z",
+  "files": {
+    "version.json": "4cad3bdb003e02346c60c67167f61120a8ed7390de329b11ad640ff0714b1a4e",
+    "security.js": "8765788b8bc619adf58331a40c3b0260adcdc4670701176b721387520d9b5601",
+    "server.js": "bcc8ef323d5e61e8d0778b80a786370fbc73d23b40b64a00ab7f9f7e45c6b7f5",
+    "auto-updater.js": "999314db6e239ddb7d53f914794aae38682c802610924b194a3303ec25caeaed",
+    "package.json": "f52f88f833f9300d2873db2afb6e57ac59d81c63b4ad198761a7390296eb3f9d",
+    "public/index.html": "9975fcdc86f2bc97471ef0aff8ecfddd779cdb4980ca5d7ed690277a79e35fcc",
+    "public/login.html": "41d610f4e80e035d4bd4d49278bb643d5bf0c4cb9f1289997367b5d548b69562",
+    "public/profile-avatar.jpg": "dba7a4321bd779a8b43380208ba613f50863b7e86585615ea1132255b1e60a0b",
+    "public/traffic-it-logo.jpg": "7692bbde9a6e19bdc0524b2bc7bf42e84492a0c5106ce61ef6ea22b965e4ccc1",
+    "public/app-icon.png": "ec23beaa84710e269134d29e75f339cb72ac8f4a344b9811905332687b776910",
+    "Update_TrafficCheck.bat": "7b134fc897a25df310f5b4bbb475c1b2600e2f9f9ade11dcceb820a9a6b083e5",
+    "Start_Silent_Print_Chrome.bat": "4e18d2b02046ffcd39cff585252740848310907e27a31d8d3162a112dedbc293",
+    "Start_Silent_Print_Edge.bat": "0c2922e08ab8b19e00d6e018018e4a8bb3ea6bb9f1155b0bb129ef76bc4a88b2",
+    "verify-syntax.js": "1f83868c3e558a66c2d27ef45c37ce322557c3c99209bb21e6b441f62a773739"
+  }
+}

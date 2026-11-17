@@ -91,7 +91,12 @@ public class TrafficCheckApp {
 
     private static void KillPortProcess(int port) {
         try {
-            ProcessStartInfo psi = new ProcessStartInfo("cmd.exe", string.Format("/c for /f \"tokens=5\" %a in ('netstat -aon ^| findstr :{0}') do taskkill /F /PID %a >nul 2>&1", port));
+            // Security: use full System32 cmd.exe path and target ONLY LISTENING sockets on exact :port (never :30000 or PID 0)
+            string cmdExe = Path.Combine(Environment.SystemDirectory, "cmd.exe");
+            ProcessStartInfo psi = new ProcessStartInfo(
+                cmdExe,
+                string.Format("/c for /f \"tokens=5\" %a in ('netstat -ano ^| findstr /R \":{0} .*LISTENING\"') do if not \"%a\"==\"0\" taskkill /F /PID %a >nul 2>&1", port)
+            );
             psi.CreateNoWindow = true;
             psi.UseShellExecute = false;
             psi.WindowStyle = ProcessWindowStyle.Hidden;
@@ -126,7 +131,7 @@ public class TrafficCheckApp {
 
         try {
             Process p = new Process();
-            p.StartInfo.FileName = "where.exe";
+            p.StartInfo.FileName = Path.Combine(Environment.SystemDirectory, "where.exe");
             p.StartInfo.Arguments = "node";
             p.StartInfo.UseShellExecute = false;
             p.StartInfo.RedirectStandardOutput = true;

@@ -1,15 +1,19 @@
 const sql = require('mssql');
+const { loadDotEnv } = require('./security');
 
-// Server 1 (62.201.232.190) - Primary Central Database
+// Load local .env secrets if present (takes priority over fallback defaults)
+loadDotEnv();
+
+// Server 1 - Primary Central Database
 const config190 = {
-    user: 'sa',
-    password: 'Nazhad@5759',
-    server: '62.201.232.190',
-    port: 1433,
-    database: 'Car_Registraion',
+    user: process.env.DB190_USER || 'sa',
+    password: process.env.DB190_PASSWORD || 'Nazhad@5759',
+    server: process.env.DB190_HOST || '62.201.232.190',
+    port: parseInt(process.env.DB190_PORT || '1433', 10),
+    database: process.env.DB190_NAME || 'Car_Registraion',
     options: {
-        encrypt: false,
-        trustServerCertificate: true,
+        encrypt: String(process.env.DB190_ENCRYPT || 'false').toLowerCase() === 'true',
+        trustServerCertificate: String(process.env.DB190_TRUST_CERT || 'true').toLowerCase() === 'true',
         connectTimeout: 15000,
         requestTimeout: 30000
     },
@@ -20,16 +24,16 @@ const config190 = {
     }
 };
 
-// Server 2 (62.201.232.90) - Secondary / Traffic Headquarters Database
+// Server 2 - Secondary / Traffic Headquarters Database
 const config90 = {
-    user: 'sa',
-    password: 'Nazhad',
-    server: '62.201.232.90',
-    port: 1433,
-    database: 'Car_Registraion',
+    user: process.env.DB90_USER || 'sa',
+    password: process.env.DB90_PASSWORD || 'Nazhad',
+    server: process.env.DB90_HOST || '62.201.232.90',
+    port: parseInt(process.env.DB90_PORT || '1433', 10),
+    database: process.env.DB90_NAME || 'Car_Registraion',
     options: {
-        encrypt: false,
-        trustServerCertificate: true,
+        encrypt: String(process.env.DB90_ENCRYPT || 'false').toLowerCase() === 'true',
+        trustServerCertificate: String(process.env.DB90_TRUST_CERT || 'true').toLowerCase() === 'true',
         connectTimeout: 4000,
         requestTimeout: 10000
     },

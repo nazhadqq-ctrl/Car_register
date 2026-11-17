@@ -7,13 +7,28 @@ const fs = require('fs');
 const path = require('path');
 const https = require('https');
 const vm = require('vm');
+const crypto = require('crypto');
 const { exec } = require('child_process');
 
+const ALLOWED_GITHUB_HOSTS = new Set([
+  'raw.githubusercontent.com',
+  'objects.githubusercontent.com'
+]);
+
+const ALLOWED_BINARY_EXT = /\.(jpg|jpeg|png|gif|ico)$/i;
+
+function sha256(bufOrStr) {
+  const buf = Buffer.isBuffer(bufOrStr) ? bufOrStr : Buffer.from(String(bufOrStr || ''), 'utf8');
+  return crypto.createHash('sha256').update(buf).digest('hex');
+}
+
 function validateDownloadedContent(relPath, rawBufOrStr) {
-  const isTextCode = /\.(js|html)$/i.test(relPath);
+  const isTextCode = /\.(js|html|json)$/i.test(relPath);
   if (!isTextCode) return;
   const text = Buffer.isBuffer(rawBufOrStr) ? rawBufOrStr.toString('utf8') : String(rawBufOrStr || '');
-  if (relPath.endsWith('.js')) {
+  if (relPath.endsWith('.json')) {
+    JSON.parse(text);
+  } else if (relPath.endsWith('.js')) {
     new vm.Script(text, { filename: relPath });
   } else if (relPath.endsWith('.html')) {
     const scriptRegex = /<script([^>]*)>([\s\S]*?)<\/script>/gi;
@@ -30,41 +45,90 @@ const REPO_NAME = 'Car_register';
 const BRANCH = 'main';
 const BASE_RAW_URL = `https://raw.githubusercontent.com/${REPO_OWNER}/${REPO_NAME}/${BRANCH}`;
 
+// Security: strictly allowlisted files only (db.js and preview_gomrg.html are NEVER overwritten by auto-updater)
 const FILES_TO_UPDATE = [
   'version.json',
+  'security.js',
   'auto-updater.js',
   'server.js',
-  'db.js',
   'package.json',
   'Update_TrafficCheck.bat',
   'Start_Silent_Print_Chrome.bat',
   'Start_Silent_Print_Edge.bat',
   'public/index.html',
   'public/login.html',
-  'public/preview_gomrg.html',
   'public/profile-avatar.jpg',
   'public/traffic-it-logo.jpg',
   'public/app-icon.png',
   'verify-syntax.js'
 ];
 
-function fetchUrl(url, timeoutMs = 12000) {
+const ALLOWED_UPDATE_FILES = new Set(FILES_TO_UPDATE);
+
+function safeResolveAppPath(rawRelPath) {
+  const relPath = String(rawRelPath || '').trim().replace(/\\/g, '/');
+  if (!ALLOWED_UPDATE_FILES.has(relPath)) {
+    throw new Error(`Blocked unauthorized update path: ${relPath}`);
+  }
+  const rootDir = path.resolve(__dirname);
+  const targetPath = path.resolve(rootDir, relPath);
+  if (targetPath !== rootDir && !targetPath.startsWith(rootDir + path.sep)) {
+    throw new Error(`Blocked path traversal attempt: ${relPath}`);
+  }
+  return { relPath, targetPath };
+}
+
+function atomicWrite(targetPath, data) {
+  const dir = path.dirname(targetPath);
+  if (!fs.existsSync(dir)) {
+    fs.mkdirSync(dir, { recursive: true });
+  }
+  const tmpPath = `${targetPath}.upd.${process.pid}.${Date.now()}`;
+  fs.writeFileSync(tmpPath, data);
+  fs.renameSync(tmpPath, targetPath);
+}
+
+function fetchUrl(url, timeoutMs = 12000, redirects = 0) {
   return new Promise((resolve, reject) => {
+    if (redirects > 3) {
+      return reject(new Error('Too many HTTP redirects (blocked)'));
+    }
+    let parsed;
+    try {
+      parsed = new URL(url);
+    } catch (e) {
+      return reject(new Error('Invalid update URL'));
+    }
+    if (parsed.protocol !== 'https:' || !ALLOWED_GITHUB_HOSTS.has(parsed.hostname.toLowerCase())) {
+      return reject(new Error(`Blocked untrusted update host: ${parsed.hostname}`));
+    }
+
     const headers = {
       'User-Agent': 'TrafficCheck-AutoUpdater-Desktop',
       'Cache-Control': 'no-cache, no-store, must-revalidate',
       'Pragma': 'no-cache'
     };
 
-    const req = https.get(url, { headers }, (res) => {
-      if (res.statusCode === 301 || res.statusCode === 302 || res.statusCode === 307) {
-        return fetchUrl(res.headers.location, timeoutMs).then(resolve).catch(reject);
+    const req = https.get(parsed.toString(), { headers }, (res) => {
+      if (res.statusCode === 301 || res.statusCode === 302 || res.statusCode === 307 || res.statusCode === 308) {
+        if (!res.headers.location) return reject(new Error('Redirect without Location header'));
+        const nextUrl = new URL(res.headers.location, parsed).toString();
+        return fetchUrl(nextUrl, timeoutMs, redirects + 1).then(resolve).catch(reject);
       }
       if (res.statusCode !== 200) {
-        return reject(new Error(`HTTP ${res.statusCode} from ${url}`));
+        return reject(new Error(`HTTP ${res.statusCode} from ${parsed.hostname}`));
       }
       const chunks = [];
-      res.on('data', chunk => chunks.push(chunk));
+      let totalBytes = 0;
+      const MAX_FILE_BYTES = 15 * 1024 * 1024; // 15 MB safety ceiling
+      res.on('data', chunk => {
+        totalBytes += chunk.length;
+        if (totalBytes > MAX_FILE_BYTES) {
+          req.destroy();
+          return reject(new Error('Update file exceeded maximum allowed size'));
+        }
+        chunks.push(chunk);
+      });
       res.on('end', () => resolve(Buffer.concat(chunks)));
     });
 
@@ -126,48 +190,74 @@ async function checkForUpdates(force = false) {
   }
 
   if (gitHubHasUpdate && remoteGitHubVer) {
-    console.log(`🚀 [GitHub] نوێکاری بەردەستە: v${remoteGitHubVer.version} (Build: ${remoteGitHubVer.build}) -> داگرتنی فایلەکان لە GitHub...`);
+    console.log(`🚀 [GitHub] نوێکاری بەردەستە: v${remoteGitHubVer.version} (Build: ${remoteGitHubVer.build}) -> داگرتن و پشکنینی ئەمنی فایلەکان...`);
 
-    const updatedFiles = [];
+    // Try loading SHA-256 manifest if published for this build
+    let manifestHashes = null;
+    try {
+      const mBuf = await fetchUrl(`${BASE_RAW_URL}/update-manifest.json?t=${Date.now()}`, 7000);
+      const mObj = JSON.parse(mBuf.toString('utf8'));
+      if (mObj && mObj.files && parseInt(mObj.build, 10) === parseInt(remoteGitHubVer.build, 10)) {
+        manifestHashes = mObj.files;
+      }
+    } catch (e) {}
+
+    const staged = [];
     const errors = [];
 
-    for (const relPath of FILES_TO_UPDATE) {
+    for (const rawRel of FILES_TO_UPDATE) {
       try {
+        const { relPath, targetPath } = safeResolveAppPath(rawRel);
         const fileUrl = `${BASE_RAW_URL}/${relPath}?t=${Date.now()}`;
         const content = await fetchUrl(fileUrl, 12000);
 
-        // پشکنینی سینتاکسی فایل پێش نووسینەوەی بۆ ئەوەی فایلی تێکچوو بەرنامەکە نەوەستێنێت
-        validateDownloadedContent(relPath, content);
-
-        const localPath = path.join(__dirname, relPath);
-        const dir = path.dirname(localPath);
-        if (!fs.existsSync(dir)) {
-          fs.mkdirSync(dir, { recursive: true });
+        if (manifestHashes && manifestHashes[relPath]) {
+          const actualHash = sha256(content);
+          if (actualHash !== manifestHashes[relPath]) {
+            throw new Error(`SHA-256 mismatch for ${relPath}`);
+          }
         }
 
-        fs.writeFileSync(localPath, content);
-        updatedFiles.push(relPath);
+        // پشکنینی سینتاکسی فایل پێش نووسینەوەی بۆ ئەوەی فایلی تێکچوو بەرنامەکە نەوەستێنێت
+        validateDownloadedContent(relPath, content);
+        staged.push({ relPath, targetPath, content });
       } catch (err) {
-        if (!err.message.includes('HTTP 404')) {
-          errors.push(`${relPath}: ${err.message}`);
+        if (!String(err.message || '').includes('HTTP 404')) {
+          errors.push(`${rawRel}: ${err.message}`);
         }
       }
     }
 
+    // Abort entire update if any integrity or syntax error occurred
+    if (errors.length > 0) {
+      return {
+        success: false,
+        hasUpdate: false,
+        source: 'github',
+        errors,
+        message: 'نوێکردنەوە ڕاگیرا بەهۆی نەبوونی هاوتایی ئەمنی یان هەڵەی فایلەکان!'
+      };
+    }
+
+    const updatedFiles = [];
+    for (const item of staged) {
+      atomicWrite(item.targetPath, item.content);
+      updatedFiles.push(item.relPath);
+    }
+
     try {
-      fs.writeFileSync(path.join(__dirname, 'version.json'), JSON.stringify(remoteGitHubVer, null, 2), 'utf8');
+      atomicWrite(path.join(__dirname, 'version.json'), Buffer.from(JSON.stringify(remoteGitHubVer, null, 2), 'utf8'));
     } catch (e) {}
 
     return {
-      success: errors.length === 0,
+      success: true,
       hasUpdate: true,
       source: 'github',
       previousVersion: localVer.version,
       newVersion: remoteGitHubVer.version,
       newBuild: remoteGitHubVer.build,
       updatedFiles,
-      errors: errors.length > 0 ? errors : undefined,
-      message: `سیستەمەکە بە سەرکەوتوویی لە GitHub نوێکرایەوە بۆ وەشانی (${remoteGitHubVer.version})!`
+      message: `سیستەمەکە بە سەرکەوتوویی و پارێزراوی لە GitHub نوێکرایەوە بۆ وەشانی (${remoteGitHubVer.version})!`
     };
   }
 
@@ -207,47 +297,86 @@ async function checkForUpdates(force = false) {
           const allFilesResult = await pool.request()
             .query('SELECT filename, content, version, build FROM Tbl_System_Updates');
 
-          const updatedFiles = [];
+          // Extract SHA-256 manifest from DB if present for this build
+          let dbManifestHashes = null;
+          const manifestRow = allFilesResult.recordset.find(r => String(r.filename || '').trim() === 'update-manifest.json');
+          if (manifestRow && manifestRow.content) {
+            try {
+              const mObj = JSON.parse(manifestRow.content);
+              if (mObj && mObj.files && parseInt(mObj.build, 10) === remoteBuild) {
+                dbManifestHashes = mObj.files;
+              }
+            } catch (e) {}
+          }
+
+          const stagedDb = [];
           const errors = [];
 
           for (const fileRow of allFilesResult.recordset) {
+            const rawName = String(fileRow.filename || '').trim().replace(/\\/g, '/');
+            if (rawName === 'update-manifest.json') continue;
+            // Security: strictly skip unauthorized files (e.g. db.js, preview_gomrg.html, or any traversal path)
+            if (!ALLOWED_UPDATE_FILES.has(rawName)) {
+              continue;
+            }
             try {
-              const relPath = fileRow.filename.trim().replace(/\\/g, '/');
-              const targetPath = path.join(__dirname, relPath);
-              const targetDir = path.dirname(targetPath);
-
-              if (!fs.existsSync(targetDir)) {
-                fs.mkdirSync(targetDir, { recursive: true });
-              }
+              const { relPath, targetPath } = safeResolveAppPath(rawName);
+              let buf;
 
               if (fileRow.content && fileRow.content.startsWith('BASE64:')) {
-                fs.writeFileSync(targetPath, Buffer.from(fileRow.content.slice(7), 'base64'));
+                if (!ALLOWED_BINARY_EXT.test(relPath)) {
+                  throw new Error(`Blocked BASE64 payload for non-binary file: ${relPath}`);
+                }
+                buf = Buffer.from(fileRow.content.slice(7), 'base64');
               } else {
-                // پشکنینی سینتاکسی فایل پێش نووسینەوەی بۆ ئەوەی فایلی تێکچوو بەرنامەکە نەوەستێنێت
-                validateDownloadedContent(relPath, fileRow.content);
-                fs.writeFileSync(targetPath, fileRow.content, 'utf8');
+                const textContent = String(fileRow.content || '');
+                validateDownloadedContent(relPath, textContent);
+                buf = Buffer.from(textContent, 'utf8');
               }
-              updatedFiles.push(relPath);
+
+              if (dbManifestHashes && dbManifestHashes[relPath]) {
+                const actualHash = sha256(buf);
+                if (actualHash !== dbManifestHashes[relPath]) {
+                  throw new Error(`SHA-256 mismatch for ${relPath}`);
+                }
+              }
+
+              stagedDb.push({ relPath, targetPath, buf });
             } catch (fErr) {
-              console.error(`❌ Error writing ${fileRow.filename}:`, fErr.message);
+              console.error(`❌ Error verifying ${fileRow.filename}:`, fErr.message);
               errors.push(`${fileRow.filename}: ${fErr.message}`);
             }
           }
 
+          if (errors.length > 0) {
+            return {
+              success: false,
+              hasUpdate: false,
+              source: 'database',
+              errors,
+              message: 'نوێکردنەوە لە داتابەیس ڕاگیرا بەهۆی هەڵەی پشکنینی ئەمنی!'
+            };
+          }
+
+          const updatedFiles = [];
+          for (const item of stagedDb) {
+            atomicWrite(item.targetPath, item.buf);
+            updatedFiles.push(item.relPath);
+          }
+
           try {
-            fs.writeFileSync(path.join(__dirname, 'version.json'), JSON.stringify(remoteVerObj, null, 2), 'utf8');
+            atomicWrite(path.join(__dirname, 'version.json'), Buffer.from(JSON.stringify(remoteVerObj, null, 2), 'utf8'));
           } catch (e) {}
 
           return {
-            success: errors.length === 0,
+            success: true,
             hasUpdate: true,
             source: 'database',
             previousVersion: localVer.version,
             newVersion: remoteVersion,
             newBuild: remoteBuild,
             updatedFiles,
-            errors: errors.length > 0 ? errors : undefined,
-            message: `سیستەمەکە لە ڕێگەی داتابەیسی ناوەندییەوە نوێکرایەوە بۆ وەشانی (${remoteVersion})!`
+            message: `سیستەمەکە بە پارێزراوی لە ڕێگەی داتابەیسی ناوەندییەوە نوێکرایەوە بۆ وەشانی (${remoteVersion})!`
           };
         }
       }

@@ -7,31 +7,28 @@
 
 const fs = require('fs');
 const path = require('path');
-const sql = require('mssql');
+const { sql, config190 } = require('./db');
 const { verifyAll } = require('./verify-syntax');
+const { sha256Buffer } = require('./security');
 
 const config = {
-    user: 'sa',
-    password: 'Nazhad@5759',
-    server: '62.201.232.190',
-    database: 'Car_Registraion',
+    ...config190,
     options: {
-        encrypt: false,
-        trustServerCertificate: true,
+        ...config190.options,
         connectTimeout: 20000,
         requestTimeout: 60000
     }
 };
 
+// Security: db.js and public/preview_gomrg.html are NEVER distributed via auto-update!
 const FILES_TO_PUBLISH = [
     'version.json',
+    'security.js',
     'server.js',
-    'db.js',
     'auto-updater.js',
     'package.json',
     'public/index.html',
     'public/login.html',
-    'public/preview_gomrg.html',
     'public/profile-avatar.jpg',
     'public/traffic-it-logo.jpg',
     'public/app-icon.png',
@@ -66,7 +63,7 @@ async function publish() {
     console.log(`👤 گەشەپێدەر: ${versionData.developer || 'نەژاد قادر'}`);
     console.log(`📝 تێبینی: ${versionData.description || '-'}\n`);
 
-    console.log('⏳ پەیوەندیکردن بە داتابەیسی ناوەندی (62.201.232.190)...');
+    console.log('⏳ پەیوەندیکردن بە داتابەیسی ناوەندی...');
     let pool;
     try {
         pool = await sql.connect(config);
@@ -76,7 +73,15 @@ async function publish() {
         process.exit(1);
     }
 
-    let successCount = 0;
+    // Build SHA-256 integrity manifest for all published files
+    const manifest = {
+        version,
+        build,
+        generatedAt: new Date().toISOString(),
+        files: {}
+    };
+
+    const prepared = [];
     for (const relFile of FILES_TO_PUBLISH) {
         const fullPath = path.join(__dirname, relFile);
         if (!fs.existsSync(fullPath)) {
@@ -87,19 +92,37 @@ async function publish() {
         const isBinary = /\.(jpg|jpeg|png|gif|ico|ttf|woff|woff2|eot|pdf)$/i.test(relFile);
         let content;
         let sizeKb;
+        let hash;
         if (isBinary) {
             const buf = fs.readFileSync(fullPath);
+            hash = sha256Buffer(buf);
             content = 'BASE64:' + buf.toString('base64');
             sizeKb = (buf.length / 1024).toFixed(1);
         } else {
-            content = fs.readFileSync(fullPath, 'utf8');
-            sizeKb = (Buffer.byteLength(content, 'utf8') / 1024).toFixed(1);
+            const buf = fs.readFileSync(fullPath);
+            hash = sha256Buffer(buf);
+            content = buf.toString('utf8');
+            sizeKb = (buf.length / 1024).toFixed(1);
         }
+        manifest.files[relFile] = hash;
+        prepared.push({ relFile, content, sizeKb });
+    }
 
+    // Save local update-manifest.json and also publish it to SQL Server
+    const manifestJson = JSON.stringify(manifest, null, 2);
+    fs.writeFileSync(path.join(__dirname, 'update-manifest.json'), manifestJson, 'utf8');
+    prepared.push({
+        relFile: 'update-manifest.json',
+        content: manifestJson,
+        sizeKb: (Buffer.byteLength(manifestJson, 'utf8') / 1024).toFixed(1)
+    });
+
+    let successCount = 0;
+    for (const item of prepared) {
         try {
             await pool.request()
-                .input('filename', sql.NVarChar, relFile)
-                .input('content', sql.NVarChar, content)
+                .input('filename', sql.NVarChar, item.relFile)
+                .input('content', sql.NVarChar, item.content)
                 .input('version', sql.NVarChar, version)
                 .input('build', sql.Int, build)
                 .query(`
@@ -113,14 +136,14 @@ async function publish() {
                         VALUES (@filename, @content, @version, @build, GETDATE());
                 `);
 
-            console.log(`  [OK] ${relFile.padEnd(30)} (${sizeKb} KB) -> بڵاوکرایەوە`);
+            console.log(`  [OK] ${item.relFile.padEnd(30)} (${item.sizeKb} KB) -> بڵاوکرایەوە`);
             successCount++;
         } catch (err) {
-            console.error(`  [!] هەڵە لە بڵاوکردنەوەی ${relFile}:`, err.message);
+            console.error(`  [!] هەڵە لە بڵاوکردنەوەی ${item.relFile}:`, err.message);
         }
     }
 
-    console.log(`\n🎉 سەرکەوتوو بوو: (${successCount} لە کۆی ${FILES_TO_PUBLISH.length}) فایل لە داتابەیس پاشەکەوت کران.`);
+    console.log(`\n🎉 سەرکەوتوو بوو: (${successCount} لە کۆی ${prepared.length}) فایل (لەگەڵ SHA-256 manifest) لە داتابەیس پاشەکەوت کران.`);
     console.log(`✨ ئێستا هەموو کۆمپیوتەرەکانی یوزەرەکان دەتوانن ڕاستەوخۆ بەبێ پێویستی بە گیت هاب و سێتەپ ئەم نوێکارییە وەربگرن.`);
     process.exit(0);
 }

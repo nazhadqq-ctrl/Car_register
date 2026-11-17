@@ -421,9 +421,9 @@ public class SetupWizardForm : Form {
 
                 UpdateStatus("کۆپیکردنی فایلە سەرەکییەکان...", 30);
                 string[] filesToCopy = new string[] {
-                    "server.js", "db.js", "package.json", "TrafficCheck.exe", "app.ico",
+                    "server.js", "security.js", "db.js", "package.json", "TrafficCheck.exe", "app.ico",
                     "Start_Silent_Print_Edge.bat", "Start_Silent_Print_Chrome.bat",
-                    "auto-updater.js", "Update_TrafficCheck.bat", "version.json", "node.exe"
+                    "auto-updater.js", "Update_TrafficCheck.bat", "version.json", "verify-syntax.js", "update-manifest.json", "node.exe"
                 };
 
                 foreach (string f in filesToCopy) {

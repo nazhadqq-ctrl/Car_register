@@ -8,6 +8,7 @@ const path = require('path');
 const vm = require('vm');
 
 const JS_FILES = [
+    'security.js',
     'server.js',
     'db.js',
     'auto-updater.js',

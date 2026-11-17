@@ -1,6 +1,12 @@
 node_modules/
 .env
 *.log
+*.jsonl
 .DS_Store
 scratch/
 node.exe
+pending_hijz_90.json
+KioskProfile/
+.tc_data/
+*.pem
+*.key

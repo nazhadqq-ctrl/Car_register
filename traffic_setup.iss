@@ -3,7 +3,7 @@
 
 #define MyAppName "TrafficCheck"
 #define MyAppTitle "سیستەمی پشکنینی هاتووچۆ"
-#define MyAppVersion "1.7.2"
+#define MyAppVersion "1.8.0"
 #define MyAppPublisher "Traffic Police Directorate - Sulaymaniyah"
 #define MyAppExeName "TrafficCheck.exe"
 #define SourceDir "C:\Users\Nazha\Desktop\TrafficCheck_Setup"
@@ -42,6 +42,8 @@ Name: "{app}\public"; Permissions: users-full
 ; Main Executable and Core Scripts
 Source: "{#SourceDir}\TrafficCheck.exe"; DestDir: "{app}"; Flags: ignoreversion
 Source: "{#SourceDir}\server.js"; DestDir: "{app}"; Flags: ignoreversion
+Source: "{#SourceDir}\security.js"; DestDir: "{app}"; Flags: ignoreversion
+Source: "{#SourceDir}\verify-syntax.js"; DestDir: "{app}"; Flags: ignoreversion
 Source: "{#SourceDir}\auto-updater.js"; DestDir: "{app}"; Flags: ignoreversion
 Source: "{#SourceDir}\Update_TrafficCheck.bat"; DestDir: "{app}"; Flags: ignoreversion
 Source: "{#SourceDir}\db.js"; DestDir: "{app}"; Flags: ignoreversion

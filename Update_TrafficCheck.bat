@@ -16,8 +16,8 @@ if not exist "%TARGET_DIR%" (
 
 cd /d "%TARGET_DIR%"
 
-echo [1/4] وەستاندنی سێرڤەری کۆن...
-taskkill /F /IM node.exe /T >nul 2>&1
+echo [1/4] وەستاندنی سێرڤەری کۆن (تەنها پرۆسێسی پۆڕتی 3000 و TrafficCheck)...
+for /f "tokens=5" %%a in ('netstat -ano ^| findstr /R ":3000 .*LISTENING"') do if not "%%a"=="0" taskkill /F /PID %%a >nul 2>&1
 taskkill /F /IM TrafficCheck.exe /T >nul 2>&1
 timeout /t 2 /nobreak >nul
 

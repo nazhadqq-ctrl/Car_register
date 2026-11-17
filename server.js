@@ -3,27 +3,85 @@ const session = require('express-session');
 const path = require('path');
 const https = require('https');
 const fs = require('fs');
+const crypto = require('crypto');
+const vm = require('vm');
 const { getPool, getPool90, sql } = require('./db');
+const {
+    loadDotEnv,
+    getSecurityDataDir,
+    auditLog,
+    isManagerUser,
+    requireManager,
+    securityHeadersMiddleware,
+    createHostGuard,
+    createCsrfGuard,
+    createRateLimiter,
+    escapeLike,
+    generateSessionSecret,
+    sendSafeError,
+    atomicWriteFileSync
+} = require('./security');
+
+loadDotEnv();
 
 const app = express();
-const PORT = process.env.PORT || 3000;
+const PORT = parseInt(process.env.PORT || '3000', 10);
+const HOST = process.env.HOST || '127.0.0.1';
 
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+// ─── CYBERSECURITY HARDENING LAYER ──────────────────────────────────────
+app.disable('x-powered-by');
+app.use(securityHeadersMiddleware);
+app.use(createHostGuard(PORT));
+app.use(createCsrfGuard(PORT));
+
+app.use(express.json({ limit: '100kb' }));
+app.use(express.urlencoded({ extended: true, limit: '100kb' }));
 app.use(session({
-    secret: 'TrafficCheck_Secret_2024',
+    name: 'tc.sid',
+    secret: generateSessionSecret(),
     resave: false,
     saveUninitialized: false,
-    cookie: { maxAge: 8 * 60 * 60 * 1000 } // 8 hours
+    cookie: {
+        httpOnly: true,
+        sameSite: 'strict',
+        maxAge: 8 * 60 * 60 * 1000 // 8 hours
+    }
 }));
+
+// Rate limiters (Brute-force & API flood protection)
+const loginFailureTracker = createRateLimiter({
+    windowMs: 15 * 60 * 1000,
+    maxRequests: 10,
+    keyFn: (req) => `${req.ip}:${String(req.body?.username || '').trim().toLowerCase()}`,
+    message: 'هەوڵی هەڵەی چوونەژوورەوە زۆر بووە، تکایە ١٥ خولەک دواتر هەوڵبدەرەوە',
+    eventName: 'LOGIN_LOCKOUT'
+});
+
+const apiFloodLimiter = createRateLimiter({
+    windowMs: 60 * 1000,
+    maxRequests: 300,
+    keyFn: (req) => req.ip || 'local',
+    message: 'داواکاری زۆر خێرا کراوە، تکایە چرکەیەک چاوەڕێ بکە',
+    eventName: 'API_FLOOD_BLOCKED'
+});
+
+const usersListLimiter = createRateLimiter({
+    windowMs: 15 * 60 * 1000,
+    maxRequests: 60,
+    keyFn: (req) => req.ip || 'local',
+    message: 'داواکاری زۆر کراوە، تکایە دواتر هەوڵبدەرەوە',
+    eventName: 'USERS_ENUM_THROTTLED'
+});
+
+app.use('/api/', apiFloodLimiter.middleware);
 
 // Route / to login.html by default
 app.get('/', (req, res) => {
     res.redirect('/login.html');
 });
 
-// Protect /index.html: if not logged in, redirect to login.html
-app.get('/index.html', (req, res, next) => {
+// Protect /index.html & /preview_gomrg.html: if not logged in, redirect to login.html
+app.get(['/index.html', '/preview_gomrg.html'], (req, res, next) => {
     if (!req.session || !req.session.user) {
         return res.redirect('/login.html');
     }
@@ -39,25 +97,43 @@ function requireAuth(req, res, next) {
     res.status(401).json({ success: false, message: 'غیرمجاز' });
 }
 
-// ─── LOGIN API ───────────────────────────────────────────────────────
+// ─── LOGIN API (HARDENED WITH BRUTE-FORCE PROTECTION & SESSION REGEN) ─
 app.post('/api/login', async (req, res) => {
     try {
-        const { username, password } = req.body;
-        if (!username || !password) {
-            return res.json({ success: false, message: 'ناوی یوزەر و پاسۆرد داواکراوە' });
+        const rawUser = req.body?.username;
+        const rawPass = req.body?.password;
+        if (typeof rawUser !== 'string' || typeof rawPass !== 'string' || !rawUser.trim() || !rawPass.trim()) {
+            return res.status(400).json({ success: false, message: 'ناوی یوزەر و پاسۆرد داواکراوە' });
         }
+
+        const cleanUser = rawUser.trim().slice(0, 100);
+        const cleanPass = rawPass.trim().slice(0, 128);
+        const lockKey = `${req.ip}:${cleanUser.toLowerCase()}`;
+        const lockState = loginFailureTracker.isBlocked(lockKey);
+        if (lockState.blocked) {
+            auditLog('LOGIN_BLOCKED_RATE_LIMIT', { username: cleanUser, ip: req.ip });
+            res.setHeader('Retry-After', String(lockState.retrySec));
+            return res.status(429).json({
+                success: false,
+                message: `هەوڵی هەڵەی چوونەژوورەوە زۆر بووە، تکایە پاش ${Math.ceil(lockState.retrySec / 60)} خولەک هەوڵبدەرەوە`
+            });
+        }
+
         const pool = await getPool();
         const result = await pool.request()
-            .input('uid', sql.NVarChar, username.trim())
-            .input('pwd', sql.NVarChar, password.trim())
-            .query(`SELECT * FROM Tbl_User WHERE User_id = @uid AND Password = @pwd AND AA = 'Yes'`);
+            .input('uid', sql.NVarChar, cleanUser)
+            .input('pwd', sql.NVarChar, cleanPass)
+            .query(`SELECT id, User_id, User_Name, Permission, Place_ FROM Tbl_User WHERE User_id = @uid AND Password = @pwd AND AA = 'Yes'`);
 
         if (result.recordset.length === 0) {
-            return res.json({ success: false, message: 'ناوی یوزەر یان پاسۆردەکە هەڵەیە' });
+            loginFailureTracker.recordFailure(lockKey);
+            auditLog('LOGIN_FAILED', { username: cleanUser, ip: req.ip });
+            return res.status(401).json({ success: false, message: 'ناوی یوزەر یان پاسۆردەکە هەڵەیە' });
         }
 
+        loginFailureTracker.reset(lockKey);
         const user = result.recordset[0];
-        req.session.user = {
+        const sessionUser = {
             id: user.id,
             username: user.User_id,
             name: user.User_id, // User_id is the person's name in Tbl_User; User_Name is phone number
@@ -65,27 +141,36 @@ app.post('/api/login', async (req, res) => {
             permission: user.Permission,
             place: user.Place_ || ''
         };
-        res.json({ success: true, user: req.session.user });
+        sessionUser.isManager = isManagerUser(sessionUser);
+
+        // Prevent Session Fixation by regenerating session ID upon authentication
+        req.session.regenerate((regenErr) => {
+            if (regenErr) {
+                return sendSafeError(res, regenErr, 'کێشەی سێرڤەر لە کاتی دروستکردنی سێشن');
+            }
+            req.session.user = sessionUser;
+            auditLog('LOGIN_SUCCESS', { username: sessionUser.username, place: sessionUser.place, ip: req.ip });
+            res.json({ success: true, user: req.session.user });
+        });
     } catch (err) {
-        console.error('Login error:', err);
-        res.status(500).json({ success: false, message: 'کێشەی سێرڤەر' });
+        return sendSafeError(res, err, 'کێشەی سێرڤەر');
     }
 });
 
-// ─── GET ALL USERS (for autocomplete) ───────────────────────────────
-app.get('/api/users', async (req, res) => {
+// ─── GET ALL USERS (for login autocomplete - throttled) ─────────────
+app.get('/api/users', usersListLimiter.middleware, async (req, res) => {
     try {
         const pool = await getPool();
         const result = await pool.request()
             .query(`SELECT User_id, Place_ FROM Tbl_User WHERE AA = 'Yes' ORDER BY User_id`);
         res.json(result.recordset);
     } catch (err) {
-        res.status(500).json({ error: err.message });
+        return sendSafeError(res, err, 'کێشە لە هێنانی لیستی بەکارهێنەران');
     }
 });
 
 // ─── GET ALL PLACES (from Tbl_User, Gomrg, RAP, T1) ─────────────────
-app.get('/api/places', async (req, res) => {
+app.get('/api/places', requireAuth, async (req, res) => {
     try {
         const pool = await getPool();
         const result = await pool.request().query(`
@@ -105,21 +190,27 @@ app.get('/api/places', async (req, res) => {
         const places = result.recordset.map(r => r.place).filter(Boolean);
         res.json(places);
     } catch (err) {
-        console.error('Get places error:', err);
-        res.status(500).json({ error: err.message });
+        return sendSafeError(res, err, 'کێشە لە هێنانی شوێنەکان');
     }
 });
 
 // ─── LOGOUT ─────────────────────────────────────────────────────────
 app.post('/api/logout', (req, res) => {
-    req.session.destroy();
-    res.json({ success: true });
+    const uname = req.session?.user?.username;
+    req.session.destroy(() => {
+        res.clearCookie('tc.sid', { httpOnly: true, sameSite: 'strict' });
+        if (uname) auditLog('LOGOUT', { username: uname, ip: req.ip });
+        res.json({ success: true });
+    });
 });
 
 // ─── SESSION CHECK ───────────────────────────────────────────────────
 app.get('/api/me', (req, res) => {
     if (req.session && req.session.user) {
-        res.json({ loggedIn: true, user: req.session.user });
+        res.json({
+            loggedIn: true,
+            user: { ...req.session.user, isManager: isManagerUser(req.session.user) }
+        });
     } else {
         res.json({ loggedIn: false });
     }
@@ -280,7 +371,7 @@ app.get('/api/bash', requireAuth, async (req, res) => {
 });
 
 // ─── GET OPERATIONS LIST (Tbl_Operations) ───────────────────────────
-app.get('/api/operations', async (req, res) => {
+app.get('/api/operations', requireAuth, async (req, res) => {
     try {
         const pool = await getPool();
         const result = await pool.request().query(`
@@ -291,7 +382,7 @@ app.get('/api/operations', async (req, res) => {
         `);
         res.json(result.recordset.map(r => r.Operation));
     } catch (err) {
-        res.status(500).json({ error: err.message });
+        return sendSafeError(res, err, 'کێشە لە هێنانی لیستی جۆری مامەڵەکان');
     }
 });
 
@@ -613,7 +704,7 @@ app.get('/api/dashboard/today-records', requireAuth, async (req, res) => {
         request.input('userName', sql.NVarChar, userName);
         request.input('userId', sql.NVarChar, userId);
         if (searchTerm) {
-            request.input('searchTerm', sql.NVarChar, `%${searchTerm}%`);
+            request.input('searchTerm', sql.NVarChar, `%${escapeLike(searchTerm)}%`);
         }
 
         let query = '';
@@ -703,6 +794,10 @@ app.get('/api/dashboard/today-records', requireAuth, async (req, res) => {
                 ORDER BY id DESC
             `;
         } else if (category === 'hijz') {
+            if (!isManager) {
+                auditLog('RBAC_DENIED_HIJZ_TODAY', { user: currentUser.username, ip: req.ip });
+                return res.status(403).json({ success: false, message: 'دەسەڵاتی بەڕێوەبەر پێویستە' });
+            }
             let filter = 'CAST(Date_Releasing as date) = CAST(GETDATE() as date)';
             if (shouldFilterByUser) {
                 filter += ' AND (UUser = @userName OR UUser = @userId)';
@@ -1009,14 +1104,19 @@ app.get('/api/raport/search-car', requireAuth, async (req, res) => {
     }
 });
 
-// ─── DUAL-SERVER HIJZ INSERTION & OFFLINE QUEUE (62.201.232.190 & 62.201.232.90) ───
-const PENDING_HIJZ_FILE = path.join(__dirname, 'pending_hijz_90.json');
+// ─── DUAL-SERVER HIJZ INSERTION & OFFLINE QUEUE (ATOMIC STORAGE) ────
+const PENDING_HIJZ_FILE = path.join(getSecurityDataDir('data'), 'pending_hijz_90.json');
+const LEGACY_PENDING_HIJZ_FILE = path.join(__dirname, 'pending_hijz_90.json');
 
 function getPendingHijz90() {
     try {
-        if (!fs.existsSync(PENDING_HIJZ_FILE)) return [];
-        const raw = fs.readFileSync(PENDING_HIJZ_FILE, 'utf8');
-        return JSON.parse(raw || '[]');
+        if (fs.existsSync(PENDING_HIJZ_FILE)) {
+            return JSON.parse(fs.readFileSync(PENDING_HIJZ_FILE, 'utf8') || '[]');
+        }
+        if (fs.existsSync(LEGACY_PENDING_HIJZ_FILE)) {
+            return JSON.parse(fs.readFileSync(LEGACY_PENDING_HIJZ_FILE, 'utf8') || '[]');
+        }
+        return [];
     } catch (e) {
         return [];
     }
@@ -1024,7 +1124,7 @@ function getPendingHijz90() {
 
 function savePendingHijz90(list) {
     try {
-        fs.writeFileSync(PENDING_HIJZ_FILE, JSON.stringify(list, null, 2), 'utf8');
+        atomicWriteFileSync(PENDING_HIJZ_FILE, JSON.stringify(list, null, 2), 'utf8');
     } catch (e) {
         console.error('Failed to save pending Hijz list:', e);
     }
@@ -1175,7 +1275,7 @@ app.post('/api/raport', requireAuth, async (req, res) => {
 
         const dateVal = b.O ? new Date(b.O) : new Date();
         const dateStr = b.O ? String(b.O).slice(0, 10) : new Date().toISOString().slice(0, 10);
-        const userName = (req.session?.user?.name || req.session?.user?.username || b.UUser || 'سیستەم').trim();
+        const userName = (req.session?.user?.name || req.session?.user?.username || 'سیستەم').trim();
 
         const placeVal = String(b.place || b.P || req.session?.user?.place || 'بێستون').trim();
         const tabloVal = String(b.B || '').trim();
@@ -1239,11 +1339,11 @@ app.post('/api/raport', requireAuth, async (req, res) => {
 
         let hijzMsg = '';
         if (hijzRes.r190?.success && hijzRes.r90?.success) {
-            hijzMsg = 'نیشانەی حجز لە هەردوو سێرڤەر (62.201.232.190) و (62.201.232.90) تۆمار کرا.';
+            hijzMsg = 'نیشانەی حجز لە هەردوو سێرڤەر (سەرەکی و یەدەگ) تۆمار کرا.';
         } else if (hijzRes.r190?.success && !hijzRes.r90?.success) {
-            hijzMsg = 'نیشانەی حجز لە سێرڤەری (62.201.232.190) تۆمار کرا؛ بەهۆی ئەوەی سێرڤەری (62.201.232.90) لە ئێستادا ئۆفلاینە، خرایە نۆرەی ناردنی خۆکار و لەگەڵ کەوتنەوەکاری سێرڤەر ڕاستەوخۆ دەینێرێت.';
+            hijzMsg = 'نیشانەی حجز لە سێرڤەری سەرەکی تۆمار کرا؛ بەهۆی ئەوەی سێرڤەری یەدەگ لە ئێستادا ئۆفلاینە، خرایە نۆرەی ناردنی خۆکار و لەگەڵ کەوتنەوەکاری سێرڤەر ڕاستەوخۆ دەینێرێت.';
         } else if (!hijzRes.r190?.success && hijzRes.r90?.success) {
-            hijzMsg = 'نیشانەی حجز لە سێرڤەری (62.201.232.90) تۆمار کرا، بەڵام لە سێرڤەری سەرەکی (190) کێشە هەبوو.';
+            hijzMsg = 'نیشانەی حجز لە سێرڤەری یەدەگ تۆمار کرا، بەڵام لە سێرڤەری سەرەکی کێشە هەبوو.';
         } else {
             hijzMsg = 'بەڵام لە کاتی تۆمارکردنی نیشانەی حجز کێشە ڕوویدا.';
         }
@@ -1269,6 +1369,7 @@ app.post('/api/raport/update-t1', requireAuth, async (req, res) => {
     try {
         const pool = await getPool();
         const b = req.body || {};
+        const isMgr = isManagerUser(req.session.user);
 
         if (!b.A || !String(b.A).trim()) {
             return res.status(400).json({ success: false, message: 'ژمارەی ئۆتۆمبێل دیاری نەکراوە' });
@@ -1289,8 +1390,10 @@ app.post('/api/raport/update-t1', requireAuth, async (req, res) => {
             .input('L', sql.NVarChar, String(b.L || '').trim())
             .input('M', sql.NVarChar, String(b.M || '').trim());
 
+        // Non-managers can only update today's T1 records; target strictly the latest matching ID
+        const dateGuard = isMgr ? '' : 'AND CAST(DD AS DATE) = CAST(GETDATE() AS DATE)';
         const q = `
-            UPDATE TOP (1) T1 SET
+            UPDATE T1 SET
                 I  = @D,
                 P  = @E,
                 L  = @F,
@@ -1301,16 +1404,25 @@ app.post('/api/raport/update-t1', requireAuth, async (req, res) => {
                 AA = @K,
                 BB = @L,
                 E  = @M
-            WHERE REPLACE(A, ' ', '') = REPLACE(@A, ' ', '')
-              AND (@B = '' OR B = @B)
-              AND (@C = '' OR C = @C);
+            WHERE id = (
+                SELECT TOP 1 id FROM T1
+                WHERE REPLACE(A, ' ', '') = REPLACE(@A, ' ', '')
+                  AND (@B = '' OR B = @B)
+                  AND (@C = '' OR C = @C)
+                  ${dateGuard}
+                ORDER BY id DESC
+            );
         `;
 
-        await updReq.query(q);
+        const updRes = await updReq.query(q);
+        auditLog('RAPORT_UPDATE_T1', {
+            user: req.session.user.username,
+            plate: String(b.A).trim(),
+            rowsAffected: updRes.rowsAffected?.[0] || 0
+        });
         res.json({ success: true, message: 'زانیارییەکان لە تەیبڵی T1 نوێکرانەوە' });
     } catch (err) {
-        console.error('Update T1 from Raport error:', err);
-        res.status(500).json({ success: false, error: err.message });
+        return sendSafeError(res, err, 'کێشە لە نوێکردنەوەی زانیارییەکانی T1');
     }
 });
 
@@ -1703,28 +1815,27 @@ app.post('/api/hijz', requireAuth, async (req, res) => {
         if (!r190.success && !r90.success) {
             return res.status(500).json({
                 success: false,
-                message: `شکست لە تۆمارکردن لە هەردوو سێرڤەر: (190: ${r190.error || 'هەڵە'})، (90: ${r90.error || 'هەڵە'})`
+                message: 'شکست لە تۆمارکردنی نیشانەی حجز لە هەردوو سێرڤەر، تکایە دووبارە هەوڵبدەرەوە'
             });
         }
 
-        let message = 'نیشانەی حجز بە سەرکەوتوویی لە هەردوو سێرڤەر (62.201.232.190) و (62.201.232.90) تۆمار کرا';
+        let message = 'نیشانەی حجز بە سەرکەوتوویی لە هەردوو سێرڤەر (سەرەکی و یەدەگ) تۆمار کرا';
         if (r190.success && !r90.success) {
-            message = `نیشانەی حجز لە سێرڤەری سەرەکی (62.201.232.190) تۆمار کرا؛ بەهۆی ئەوەی سێرڤەری (62.201.232.90) لە ئێستادا ئۆفلاینە، خرایە نۆرەی ناردنی خۆکار و لەگەڵ پەیوەستبوونەوە دەستبەجێ هاوکات دەکرێت.`;
+            message = 'نیشانەی حجز لە سێرڤەری سەرەکی تۆمار کرا؛ بەهۆی ئەوەی سێرڤەری یەدەگ لە ئێستادا ئۆفلاینە، خرایە نۆرەی ناردنی خۆکار و لەگەڵ پەیوەستبوونەوە دەستبەجێ هاوکات دەکرێت.';
         } else if (!r190.success && r90.success) {
-            message = `نیشانەی حجز لە سێرڤەری (62.201.232.90) تۆمار کرا، بەڵام لە سێرڤەری سەرەکی (62.201.232.190) هەڵە ڕوویدا: ${r190.error}`;
+            message = 'نیشانەی حجز لە سێرڤەری یەدەگ تۆمار کرا، بەڵام لە سێرڤەری سەرەکی کێشە ڕوویدا.';
         }
 
         res.json({
             success: true,
             message,
             servers: {
-                server190: r190,
-                server90: r90
+                server190: { success: !!r190.success },
+                server90: { success: !!r90.success, queued: !!r90.queued }
             }
         });
     } catch (err) {
-        console.error('Add Hijz error:', err);
-        res.status(500).json({ success: false, error: err.message });
+        return sendSafeError(res, err, 'کێشە لە تۆمارکردنی نیشانەی حجز');
     }
 });
 
@@ -1752,47 +1863,60 @@ app.post('/api/hijz/sync-now', requireAuth, async (req, res) => {
     }
 });
 
-app.delete('/api/hijz/:id', requireAuth, async (req, res) => {
+app.delete('/api/hijz/:id', requireAuth, requireManager, async (req, res) => {
     try {
+        const hijzId = parseInt(req.params.id, 10);
+        if (!Number.isInteger(hijzId) || hijzId <= 0) {
+            return res.status(400).json({ success: false, message: 'ژمارەی تۆمار نادروستە' });
+        }
+
         const pool = await getPool();
         const itemRes = await pool.request()
-            .input('id', sql.Int, req.params.id)
-            .query(`SELECT Auto_No, Reg_Name FROM Hijz WHERE idd = @id`);
+            .input('id', sql.Int, hijzId)
+            .query(`SELECT Auto_No, Place_, Car_Plet, Reg_Name FROM Hijz WHERE idd = @id`);
         const car = itemRes.recordset[0];
 
-        // 1. Delete from 190
+        // 1. Delete from Primary Server
         await pool.request()
-            .input('id', sql.Int, req.params.id)
+            .input('id', sql.Int, hijzId)
             .query(`DELETE FROM Hijz WHERE idd = @id`);
 
-        // 2. Also delete from 90 if matching Auto_No or Reg_Name exists
+        // 2. Also delete from Secondary Server matching exact VIN or exact (Auto_No + Place_ + Car_Plet)
         if (car && (car.Auto_No || car.Reg_Name)) {
             try {
                 const pool90 = await getPool90();
                 const req90 = pool90.request();
                 let delQ = 'DELETE FROM Hijz WHERE 1=0 ';
-                if (car.Reg_Name && car.Reg_Name.trim()) {
+                if (car.Reg_Name && car.Reg_Name.trim() && car.Reg_Name.trim() !== '*') {
                     req90.input('reg', sql.NVarChar, car.Reg_Name.trim());
                     delQ += ' OR UPPER(LTRIM(RTRIM(Reg_Name))) = UPPER(LTRIM(RTRIM(@reg))) ';
                 }
                 if (car.Auto_No && car.Auto_No.trim()) {
                     req90.input('auto', sql.NVarChar, car.Auto_No.trim());
-                    delQ += ' OR Auto_No = @auto ';
+                    req90.input('place', sql.NVarChar, (car.Place_ || '').trim());
+                    req90.input('plet', sql.NVarChar, (car.Car_Plet || '').trim());
+                    delQ += ` OR (Auto_No = @auto AND (@place = '' OR Place_ = @place) AND (@plet = '' OR Car_Plet = @plet)) `;
                 }
                 await req90.query(delQ);
-                console.log(`[HIJZ DELETE] Also removed matching record from 62.201.232.90`);
+                console.log(`[HIJZ DELETE] Also removed matching record from secondary server`);
             } catch (del90Err) {
-                console.warn(`[HIJZ DELETE] Could not delete from 62.201.232.90:`, del90Err.message);
+                console.warn(`[HIJZ DELETE] Could not delete from secondary server:`, del90Err.message);
             }
         }
+        auditLog('HIJZ_DELETED', {
+            user: req.session.user.username,
+            hijzId,
+            plate: car?.Auto_No || '',
+            chassis: car?.Reg_Name || '',
+            ip: req.ip
+        });
         res.json({ success: true, message: 'حیجزەکە بە سەرکەوتوویی لە هەردوو سێرڤەر لابرا' });
     } catch (err) {
-        console.error('Delete Hijz error:', err);
-        res.status(500).json({ error: err.message });
+        return sendSafeError(res, err, 'کێشە لە لابردنی حیجز');
     }
 });
 
-// ─── UNIQUE BARCODE GENERATOR (STRICT <= 10 CHARS & NO COLLISION) ─────
+// ─── UNIQUE BARCODE GENERATOR (STRICT <= 10 CHARS & CRYPTO PRNG) ──────
 async function generateUniqueBarcode(pool) {
     const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
     let attempts = 0;
@@ -1800,7 +1924,7 @@ async function generateUniqueBarcode(pool) {
         attempts++;
         let randomStr = '';
         for (let i = 0; i < 8; i++) {
-            randomStr += chars.charAt(Math.floor(Math.random() * chars.length));
+            randomStr += chars.charAt(crypto.randomInt(chars.length));
         }
         const candidate = 'TC' + randomStr; // Exactly 10 characters!
         const check = await pool.request()
@@ -2999,7 +3123,7 @@ app.get('/api/register/find-va-barcode', requireAuth, async (req, res) => {
                     }
                     if (chassis && chassis !== '*') {
                         req90.input('hChassis90', sql.NVarChar, chassis);
-                        q90 += ` OR (UPPER(LTRIM(RTRIM(Reg_Name))) = @hChassis90 OR UPPER(REPLACE(Reg_Name, ' ', '')) = @hChassis)`;
+                        q90 += ` OR (UPPER(LTRIM(RTRIM(Reg_Name))) = @hChassis90 OR UPPER(REPLACE(Reg_Name, ' ', '')) = @hChassis90)`;
                     }
                     q90 += ` ORDER BY idd DESC`;
                     const r90 = await req90.query(q90);
@@ -3017,7 +3141,7 @@ app.get('/api/register/find-va-barcode', requireAuth, async (req, res) => {
                             note: h.car_Note,
                             officer: h.B,
                             user: h.UUser,
-                            sourceServer: '62.201.232.90'
+                            sourceServer: 'سێرڤەری یەدەگ'
                         };
                     }
                 } catch (e90) {
@@ -3278,24 +3402,30 @@ app.post('/api/register', requireAuth, async (req, res) => {
             .input('II', sql.NVarChar, safeFee)
             .input('JJ', sql.NVarChar, safeJJ)
             .input('FF', sql.NVarChar, user)
-            .input('GG', sql.NVarChar, GG || '')
+            .input('GG', sql.NVarChar, req.session.user.name || req.session.user.username || '')
             .input('DD', sql.NVarChar, DD || new Date().toISOString().slice(0, 10))
             .input('KK', sql.NVarChar, finalBarcode)
-            .query(`BEGIN TRANSACTION;
-                    INSERT INTO T1 (A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U, V, W, X, Y, Z, AA, BB, CC, II, JJ, FF, GG, DD, EE, KK)
-                    VALUES (@A, @B, @C, @D, @E, @F, @G, @H, @I, @J, @K, @L, @M, @N, @O, @P, @Q, @R, @S, @T, @U, @V, @W, @X, @Y, @Z, @AA, @BB, @CC, @II, @JJ, @FF, @GG, @DD, GETDATE(), @KK);
-                    DECLARE @newId INT = SCOPE_IDENTITY();
+            .query(`SET XACT_ABORT ON;
+                    BEGIN TRY
+                        BEGIN TRANSACTION;
+                        INSERT INTO T1 (A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U, V, W, X, Y, Z, AA, BB, CC, II, JJ, FF, GG, DD, EE, KK)
+                        VALUES (@A, @B, @C, @D, @E, @F, @G, @H, @I, @J, @K, @L, @M, @N, @O, @P, @Q, @R, @S, @T, @U, @V, @W, @X, @Y, @Z, @AA, @BB, @CC, @II, @JJ, @FF, @GG, @DD, GETDATE(), @KK);
+                        DECLARE @newId INT = SCOPE_IDENTITY();
 
-                    INSERT INTO T1_backup (A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U, V, W, X, Y, Z, AA, BB, CC, II, JJ, FF, GG, DD, EE, KK)
-                    VALUES (@A, @B, @C, @D, @E, @F, @G, @H, @I, @J, @K, @L, @M, @N, @O, @P, @Q, @R, @S, @T, @U, @V, @W, @X, @Y, @Z, @AA, @BB, @CC, @II, @JJ, @FF, @GG, @DD, GETDATE(), @KK);
-                    COMMIT TRANSACTION;
-                    SELECT @newId AS newId;`);
+                        INSERT INTO T1_backup (A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U, V, W, X, Y, Z, AA, BB, CC, II, JJ, FF, GG, DD, EE, KK)
+                        VALUES (@A, @B, @C, @D, @E, @F, @G, @H, @I, @J, @K, @L, @M, @N, @O, @P, @Q, @R, @S, @T, @U, @V, @W, @X, @Y, @Z, @AA, @BB, @CC, @II, @JJ, @FF, @GG, @DD, GETDATE(), @KK);
+                        COMMIT TRANSACTION;
+                        SELECT @newId AS newId;
+                    END TRY
+                    BEGIN CATCH
+                        IF @@TRANCOUNT > 0 ROLLBACK TRANSACTION;
+                        THROW;
+                    END CATCH;`);
 
         const newId = insertRes.recordset[0]?.newId;
         res.json({ success: true, message: 'ئوتومبێل بە سەرکەوتوویی تۆمارکرا', id: newId, barcode: finalBarcode });
     } catch (err) {
-        console.error('Register vehicle error:', err);
-        res.status(500).json({ success: false, message: err.message, error: err.message });
+        return sendSafeError(res, err, 'کێشە لە تۆمارکردنی زانیارییەکانی ئوتومبێل');
     }
 });
 
@@ -3512,8 +3642,8 @@ app.put('/api/register/:id', requireAuth, async (req, res) => {
     }
 });
 
-// ─── DUPLICATES & ERRORS ─────────────────────────────────────────────
-app.get('/api/duplicates', requireAuth, async (req, res) => {
+// ─── DUPLICATES & ERRORS (MANAGER ONLY) ──────────────────────────────
+app.get('/api/duplicates', requireAuth, requireManager, async (req, res) => {
     try {
         const pool = await getPool();
         const [dupChassis, dupPlates] = await Promise.all([
@@ -3579,12 +3709,15 @@ app.get('/api/personal-records', requireAuth, async (req, res) => {
     }
 });
 
-// ─── STAFF & PLACES ──────────────────────────────────────────────────
+// ─── STAFF & PLACES (SCOPED BY ROLE TO PREVENT PII DUMP) ─────────────
 app.get('/api/staff-list', requireAuth, async (req, res) => {
     try {
         const pool = await getPool();
+        const isMgr = isManagerUser(req.session.user);
         const [users, places] = await Promise.all([
-            pool.request().query(`SELECT id, User_id, User_Name, Place_, Permission, AA FROM Tbl_User ORDER BY User_id`),
+            isMgr
+                ? pool.request().query(`SELECT id, User_id, User_Name, Place_, Permission, AA FROM Tbl_User ORDER BY User_id`)
+                : pool.request().query(`SELECT User_id FROM Tbl_User WHERE AA = 'Yes' ORDER BY User_id`),
             pool.request().query(`SELECT DISTINCT Place_ FROM Tbl_User WHERE Place_ IS NOT NULL AND Place_ NOT IN ('*', '') ORDER BY Place_`)
         ]);
         res.json({
@@ -3592,8 +3725,7 @@ app.get('/api/staff-list', requireAuth, async (req, res) => {
             places: places.recordset.map(x => x.Place_)
         });
     } catch (err) {
-        console.error('Staff error:', err);
-        res.status(500).json({ error: err.message });
+        return sendSafeError(res, err, 'کێشە لە هێنانی لیستی کارمەندان');
     }
 });
 
@@ -3696,29 +3828,45 @@ async function restoreFileFromDatabase(relPath, destPath) {
     return false;
 }
 
+const TRUSTED_UPDATER_HOSTS = new Set(['raw.githubusercontent.com', 'objects.githubusercontent.com']);
+
 function downloadFileFromGitHub(relPath, destPath) {
-    const rawUrl = `https://raw.githubusercontent.com/nazhadqq-ctrl/Car_register/main/${relPath}?t=${Date.now()}`;
+    const cleanRel = String(relPath || '').trim().replace(/\\/g, '/');
+    if (cleanRel !== 'auto-updater.js') {
+        return Promise.reject(new Error('Unauthorized fallback download target'));
+    }
+    const rawUrl = `https://raw.githubusercontent.com/nazhadqq-ctrl/Car_register/main/${cleanRel}?t=${Date.now()}`;
     return new Promise((resolve, reject) => {
         const getUrl = (targetUrl, redirects = 0) => {
-            if (redirects > 5) return reject(new Error('Too many redirects'));
-            https.get(targetUrl, {
+            if (redirects > 3) return reject(new Error('Too many redirects'));
+            let parsed;
+            try { parsed = new URL(targetUrl); } catch (e) { return reject(new Error('Invalid URL')); }
+            if (parsed.protocol !== 'https:' || !TRUSTED_UPDATER_HOSTS.has(parsed.hostname.toLowerCase())) {
+                return reject(new Error('Blocked untrusted redirect host'));
+            }
+            https.get(parsed.toString(), {
                 headers: { 'User-Agent': 'TrafficCheck-Server-Fallback', 'Cache-Control': 'no-cache' }
             }, (res) => {
-                if (res.statusCode === 301 || res.statusCode === 302 || res.statusCode === 307) {
-                    return getUrl(res.headers.location, redirects + 1);
+                if (res.statusCode === 301 || res.statusCode === 302 || res.statusCode === 307 || res.statusCode === 308) {
+                    if (!res.headers.location) return reject(new Error('Missing redirect location'));
+                    return getUrl(new URL(res.headers.location, parsed).toString(), redirects + 1);
                 }
                 if (res.statusCode !== 200) {
-                    return reject(new Error(`HTTP ${res.statusCode} from ${targetUrl}`));
+                    return reject(new Error(`HTTP ${res.statusCode}`));
                 }
-                const file = fs.createWriteStream(destPath);
-                res.pipe(file);
-                file.on('finish', () => {
-                    file.close(resolve);
+                const chunks = [];
+                res.on('data', c => chunks.push(c));
+                res.on('end', () => {
+                    try {
+                        const code = Buffer.concat(chunks).toString('utf8');
+                        new vm.Script(code, { filename: cleanRel });
+                        atomicWriteFileSync(destPath, code, 'utf8');
+                        resolve();
+                    } catch (syntaxErr) {
+                        reject(syntaxErr);
+                    }
                 });
-            }).on('error', (err) => {
-                try { fs.unlinkSync(destPath); } catch(e){}
-                reject(err);
-            });
+            }).on('error', reject);
         };
         getUrl(rawUrl);
     });
@@ -3753,6 +3901,11 @@ function restartServerProcess() {
 app.post('/api/system/check-update', requireAuth, async (req, res) => {
     try {
         const isForce = req.body && !!req.body.force;
+        if (isForce && !isManagerUser(req.session.user)) {
+            auditLog('RBAC_DENIED_FORCE_UPDATE', { user: req.session.user.username, ip: req.ip });
+            return res.status(403).json({ success: false, message: 'تەنها بەڕێوەبەر دەتوانێت نوێکردنەوەی زۆرەملێ بکات' });
+        }
+        auditLog('SYSTEM_UPDATE_CHECK', { user: req.session.user.username, force: isForce, ip: req.ip });
         let updater;
         const updaterPath = path.join(__dirname, 'auto-updater.js');
 
@@ -3796,9 +3949,9 @@ app.post('/api/system/check-update', requireAuth, async (req, res) => {
     }
 });
 
-// ─── START SERVER & AUTO-CHECK FOR UPDATES ─────────────────────────
-httpServer = app.listen(PORT, () => {
-    console.log(`✅ TrafficCheck Server running on http://localhost:${PORT}`);
+// ─── START SERVER (LOOPBACK-BOUND BY DEFAULT FOR NETWORK SECURITY) ──
+httpServer = app.listen(PORT, HOST, () => {
+    console.log(`🛡️ TrafficCheck Secure Server running on http://${HOST}:${PORT}`);
     
     // Silent check for updates 7 seconds after startup
     setTimeout(async () => {

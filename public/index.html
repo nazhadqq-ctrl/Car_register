@@ -4492,7 +4492,7 @@
                             <span>📞</span>
                             <span dir="ltr">0772 617 1818</span>
                         </a>
-                        <a href="https://wa.me/9647726171818" target="_blank" class="btn-contact-action whatsapp">
+                        <a href="https://wa.me/9647726171818" target="_blank" rel="noopener noreferrer" class="btn-contact-action whatsapp">
                             <span>💬</span>
                             <span>نامەی واتسئەپ</span>
                         </a>
@@ -5017,6 +5017,10 @@ function setDate() {
 }
 
 document.getElementById('logoutBtn').addEventListener('click', async () => {
+    try {
+        localStorage.removeItem('activePlace');
+        localStorage.removeItem('activeUser');
+    } catch (e) {}
     await fetch('/api/logout', { method:'POST' });
     window.location.href = '/login.html';
 });
@@ -5944,18 +5948,19 @@ function initFeeCombobox() {
         }
 
         if (matches.length === 0) {
-            menu.innerHTML = `<div class="df-combo-empty">نووسینی نرخ: ${query}</div>`;
+            menu.innerHTML = `<div class="df-combo-empty">نووسینی نرخ: ${escapeHtml(query)}</div>`;
             activeFeeIndex = -1;
         } else {
             menu.innerHTML = matches.map((item, idx) => {
                 const n = Number(item);
-                const formatted = (!isNaN(n) && n > 0) ? n.toLocaleString() : item;
-                let textHtml = item === '0' ? '0' : `${formatted} (${item})`;
+                const formatted = (!isNaN(n) && n > 0) ? n.toLocaleString() : escapeHtml(item);
+                let textHtml = item === '0' ? '0' : `${formatted} (${escapeHtml(item)})`;
                 if (query && query !== '0') {
-                    const regex = new RegExp(`(${query})`, 'gi');
+                    const safeQ = query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+                    const regex = new RegExp(`(${safeQ})`, 'gi');
                     textHtml = textHtml.replace(regex, '<mark>$1</mark>');
                 }
-                return `<div class="df-combo-item" data-value="${item}" data-index="${idx}" style="font-family:'Courier New', monospace; font-weight:700; direction:ltr; text-align:right;">${textHtml}</div>`;
+                return `<div class="df-combo-item" data-value="${escapeHtml(item)}" data-index="${idx}" style="font-family:'Courier New', monospace; font-weight:700; direction:ltr; text-align:right;">${textHtml}</div>`;
             }).join('');
             activeFeeIndex = matches.length > 0 ? 0 : -1;
             updateActiveItem();
@@ -6523,8 +6528,8 @@ function showHijzRedAlert(r) {
 
     const regAlert = document.getElementById('regAlert');
     const h = r.hijz || {};
-    const plateInfo = (h.plate || h.tablo || h.bash) ? `<div><strong>ئوتومبێل:</strong> ${h.plate || ''} ${h.tablo || ''} (${h.bash || ''})</div>` : '';
-    const chassisInfo = h.chassis ? `<div><strong>شاسی:</strong> <span style="font-family:monospace;letter-spacing:1px;">${h.chassis}</span></div>` : '';
+    const plateInfo = (h.plate || h.tablo || h.bash) ? `<div><strong>ئوتومبێل:</strong> ${escapeHtml(h.plate || '')} ${escapeHtml(h.tablo || '')} (${escapeHtml(h.bash || '')})</div>` : '';
+    const chassisInfo = h.chassis ? `<div><strong>شاسی:</strong> <span style="font-family:monospace;letter-spacing:1px;">${escapeHtml(h.chassis)}</span></div>` : '';
 
     if (regAlert) {
         regAlert.innerHTML = `
@@ -6537,7 +6542,7 @@ function showHijzRedAlert(r) {
                     <button type="button" onclick="clearHijzAlert()" style="background:rgba(255,255,255,0.25);border:1.5px solid #fff;color:#fff;border-radius:4px;padding:4px 12px;cursor:pointer;font-family:var(--ku);font-weight:800;font-size:13px;">لابردنی ڕەنگی سوور ✕</button>
                 </div>
                 <div class="df-hijz-banner-msg">
-                    ${r.message || 'ئەم ئوتومبێلە کاری بۆ ناکرێت لەبەر ئەوەی نیشانەی گلدانەوەی لەسەرە و پەیوەندی بکەن بە سەرپەرشتیاری هۆبەی پشکنین'}
+                    ${escapeHtml(r.message || 'ئەم ئوتومبێلە کاری بۆ ناکرێت لەبەر ئەوەی نیشانەی گلدانەوەی لەسەرە و پەیوەندی بکەن بە سەرپەرشتیاری هۆبەی پشکنین')}
                 </div>
                 <div class="df-hijz-banner-details">
                     ${plateInfo}
@@ -8268,6 +8273,7 @@ async function dfPrintInspection() {
         <html lang="ku" dir="ltr">
         <head>
             <meta charset="UTF-8">
+            <meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' data:; script-src 'none';">
             <title>&lrm;</title>
             <style>
                 @page {
@@ -9313,7 +9319,7 @@ function renderSingleGomrgDocument(d) {
                 <div>وەزارەتی ناوخۆ - بەڕێوەبەرایەتی گشتی هاتووچۆ</div>
                 <div>بەڕێوەبەرایەتی هاتووچۆی پارێزگای سلێمانی</div>
                 <div>بەشی تۆمار کردن</div>
-                <div style="margin-top: 14px; font-weight: 800; font-size: 14.5px;">${placeName}</div>
+                <div style="margin-top: 14px; font-weight: 800; font-size: 14.5px;">${escapeHtml(placeName)}</div>
             </div>
 
             <!-- Center Column (Emblem + English) -->
@@ -9338,13 +9344,13 @@ function renderSingleGomrgDocument(d) {
         <div style="display: flex; justify-content: space-between; align-items: flex-end; padding: 2px 8px; font-size: 14px; font-weight: 700;">
             <!-- Right (Kurdish) -->
             <div style="direction: rtl; text-align: right; line-height: 1.6;">
-                <div>ژمارە : &nbsp; <span style="font-family: 'Speda', 'Speda-Bold', Arial, sans-serif; font-size: 14.5px;">${d.IDD || ''}</span></div>
-                <div>بەروار : &nbsp; <span style="font-family: 'Speda', 'Speda-Bold', Arial, sans-serif; font-size: 14px;">${d.date_insert || ''}</span></div>
+                <div>ژمارە : &nbsp; <span style="font-family: 'Speda', 'Speda-Bold', Arial, sans-serif; font-size: 14.5px;">${escapeHtml(d.IDD || '')}</span></div>
+                <div>بەروار : &nbsp; <span style="font-family: 'Speda', 'Speda-Bold', Arial, sans-serif; font-size: 14px;">${escapeHtml(d.date_insert || '')}</span></div>
             </div>
             <!-- Left (English) -->
             <div style="direction: ltr; text-align: left; font-family: 'Segoe UI', Arial, sans-serif; line-height: 1.6;">
-                <div>No. &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span>${d.IDD || ''}</span></div>
-                <div>Date &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span>${d.date_insert || ''}</span></div>
+                <div>No. &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span>${escapeHtml(d.IDD || '')}</span></div>
+                <div>Date &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp; <span>${escapeHtml(d.date_insert || '')}</span></div>
             </div>
         </div>
 
@@ -9367,9 +9373,9 @@ function renderSingleGomrgDocument(d) {
             <tr>
                 <td style="border: 1.5px solid #000; padding: 5px 10px; width: 130px; white-space: nowrap;">ئۆتۆمبێلی ژمارە</td>
                 <td style="border: 1.5px solid #000; padding: 5px 4px; width: 22px;">:</td>
-                <td style="border: 1.5px solid #000; padding: 5px 12px; width: 120px; font-size: 15px;">${d.car_n || ''}</td>
-                <td style="border: 1.5px solid #000; padding: 5px 8px; width: 70px;">${d.bash || ''}</td>
-                <td style="border: 1.5px solid #000; padding: 5px 8px; width: 110px;">${d.parezga || ''}</td>
+                <td style="border: 1.5px solid #000; padding: 5px 12px; width: 120px; font-size: 15px;">${escapeHtml(d.car_n || '')}</td>
+                <td style="border: 1.5px solid #000; padding: 5px 8px; width: 70px;">${escapeHtml(d.bash || '')}</td>
+                <td style="border: 1.5px solid #000; padding: 5px 8px; width: 110px;">${escapeHtml(d.parezga || '')}</td>
                 <td style="border: none;" colspan="3"></td>
             </tr>
 
@@ -9377,24 +9383,24 @@ function renderSingleGomrgDocument(d) {
             <tr>
                 <td style="border: 1.5px solid #000; padding: 6px 10px; width: 130px; white-space: nowrap;">جۆری ئۆتۆمبێل</td>
                 <td style="border: 1.5px solid #000; padding: 6px 4px; width: 22px;">:</td>
-                <td colspan="6" style="border: 1.5px solid #000; padding: 6px 12px; font-size: 15px; font-weight: 800; text-align: center;">${d.car_type || ''}</td>
+                <td colspan="6" style="border: 1.5px solid #000; padding: 6px 12px; font-size: 15px; font-weight: 800; text-align: center;">${escapeHtml(d.car_type || '')}</td>
             </tr>
 
             <!-- ROW 3 -->
             <tr>
                 <td style="border: 1.5px solid #000; padding: 5px 10px; width: 130px;">مۆدێل</td>
                 <td style="border: 1.5px solid #000; padding: 5px 4px; width: 22px;">:</td>
-                <td colspan="2" style="border: 1.5px solid #000; padding: 5px 12px; font-size: 15px;">${d.model || ''}</td>
+                <td colspan="2" style="border: 1.5px solid #000; padding: 5px 12px; font-size: 15px;">${escapeHtml(d.model || '')}</td>
                 <td style="border: 1.5px solid #000; padding: 5px 6px; width: 45px;">ڕەنگ</td>
                 <td style="border: 1.5px solid #000; padding: 5px 4px; width: 20px;">:</td>
-                <td colspan="2" style="border: 1.5px solid #000; padding: 5px 8px;">${d.color || ''}</td>
+                <td colspan="2" style="border: 1.5px solid #000; padding: 5px 8px;">${escapeHtml(d.color || '')}</td>
             </tr>
 
             <!-- ROW 4 -->
             <tr>
                 <td style="border: 1.5px solid #000; padding: 6px 10px; width: 130px;">ژمارەی شاسی</td>
                 <td style="border: 1.5px solid #000; padding: 6px 4px; width: 22px;">:</td>
-                <td colspan="4" style="border: 1.5px solid #000; padding: 6px 12px; font-size: 15px; font-weight: 800; letter-spacing: 0.5px;">${d.shassy || '*'}</td>
+                <td colspan="4" style="border: 1.5px solid #000; padding: 6px 12px; font-size: 15px; font-weight: 800; letter-spacing: 0.5px;">${escapeHtml(d.shassy || '*')}</td>
                 <td style="border: none;" colspan="2"></td>
             </tr>
 
@@ -9402,7 +9408,7 @@ function renderSingleGomrgDocument(d) {
             <tr>
                 <td style="border: 1.5px solid #000; padding: 5px 10px; width: 130px;">ژمارەی لاشە</td>
                 <td style="border: 1.5px solid #000; padding: 5px 4px; width: 22px;">:</td>
-                <td colspan="4" style="border: 1.5px solid #000; padding: 5px 12px;">${cleanQamara}</td>
+                <td colspan="4" style="border: 1.5px solid #000; padding: 5px 12px;">${escapeHtml(cleanQamara)}</td>
                 <td style="border: none;" colspan="2"></td>
             </tr>
 
@@ -9410,27 +9416,27 @@ function renderSingleGomrgDocument(d) {
             <tr>
                 <td style="border: 1.5px solid #000; padding: 5px 10px; width: 130px;">ژ.شاسی عەرەبانە1</td>
                 <td style="border: 1.5px solid #000; padding: 5px 4px; width: 22px;">:</td>
-                <td colspan="2" style="border: 1.5px solid #000; padding: 5px 12px;">${cleanAShassy}</td>
+                <td colspan="2" style="border: 1.5px solid #000; padding: 5px 12px;">${escapeHtml(cleanAShassy)}</td>
                 <td style="border: 1.5px solid #000; padding: 5px 6px; width: 45px;">ڕەنگ</td>
                 <td style="border: 1.5px solid #000; padding: 5px 4px; width: 20px;">:</td>
-                <td colspan="2" style="border: 1.5px solid #000; padding: 5px 8px;">${cleanBB}</td>
+                <td colspan="2" style="border: 1.5px solid #000; padding: 5px 8px;">${escapeHtml(cleanBB)}</td>
             </tr>
 
             <!-- ROW 7 -->
             <tr>
                 <td style="border: 1.5px solid #000; padding: 5px 10px; width: 130px;">ژ.شاسی عەرەبانە2</td>
                 <td style="border: 1.5px solid #000; padding: 5px 4px; width: 22px;">:</td>
-                <td colspan="2" style="border: 1.5px solid #000; padding: 5px 12px;">${cleanCC}</td>
+                <td colspan="2" style="border: 1.5px solid #000; padding: 5px 12px;">${escapeHtml(cleanCC)}</td>
                 <td style="border: 1.5px solid #000; padding: 5px 6px; width: 45px;">ڕەنگ</td>
                 <td style="border: 1.5px solid #000; padding: 5px 4px; width: 20px;">:</td>
-                <td colspan="2" style="border: 1.5px solid #000; padding: 5px 8px;">${cleanDD}</td>
+                <td colspan="2" style="border: 1.5px solid #000; padding: 5px 8px;">${escapeHtml(cleanDD)}</td>
             </tr>
 
             <!-- ROW 8 -->
             <tr>
                 <td style="border: 1.5px solid #000; padding: 6px 10px; width: 130px;">بەناوی هاوڵاتی</td>
                 <td style="border: 1.5px solid #000; padding: 6px 4px; width: 22px;">:</td>
-                <td colspan="4" style="border: 1.5px solid #000; padding: 6px 12px; font-size: 15px; font-weight: 800;">${d.Full_name || ''}</td>
+                <td colspan="4" style="border: 1.5px solid #000; padding: 6px 12px; font-size: 15px; font-weight: 800;">${escapeHtml(d.Full_name || '')}</td>
                 <td style="border: none;" colspan="2"></td>
             </tr>
         </table>
@@ -9442,14 +9448,14 @@ function renderSingleGomrgDocument(d) {
                     بۆتان دەنێرین بە مەبەستی :-
                 </div>
             </div>
-            <div style="border: 1.5px solid #000; padding: 10px 14px; min-height: 110px; font-size: 15px; font-weight: 800; line-height: 1.65; text-align: right; white-space: pre-wrap; box-sizing: border-box;">${d.resoon || ''}</div>
+            <div style="border: 1.5px solid #000; padding: 10px 14px; min-height: 110px; font-size: 15px; font-weight: 800; line-height: 1.65; text-align: right; white-space: pre-wrap; box-sizing: border-box;">${escapeHtml(d.resoon || '')}</div>
         </div>
 
         <!-- SIGNATURES -->
         <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-top: 40px; padding: 0 16px; direction: rtl; font-size: 14.5px; font-weight: 800; text-align: center;">
             <div style="width: 28%; text-align: center;">
                 <div>ڕێکخەری فۆڕم</div>
-                <div style="margin-top: 25px; font-size: 15px; font-weight: 800;">${userName}</div>
+                <div style="margin-top: 25px; font-size: 15px; font-weight: 800;">${escapeHtml(userName)}</div>
             </div>
             <div style="width: 25%; text-align: center;">
                 <div>ئەندام</div>
@@ -9500,7 +9506,8 @@ function gomrgPrintForm(customData) {
     <html lang="ckb" dir="rtl">
     <head>
         <meta charset="UTF-8">
-        <title>ڕاپۆرتی گومرگ - ${d.IDD || ''}</title>
+        <meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' data:; script-src 'none';">
+        <title>ڕاپۆرتی گومرگ - ${escapeHtml(d.IDD || '')}</title>
         <style>
             @font-face {
                 font-family: 'Speda';
@@ -9855,16 +9862,17 @@ async function loadHijzList() {
             <th>هۆکاری حیجز و تێبینی</th><th>بەروار</th><th>تۆمارکار</th><th>کردار</th>
         </tr></thead>`;
         const body = rows.map(r => {
+            const safeId = Number(r.idd) || 0;
             return `<tr>
-                <td><strong>${r.Auto_No||'-'}</strong></td>
-                <td><strong style="color:var(--danger);">${r.Reg_Name||'-'}</strong></td>
-                <td>${r.Place_||'-'}</td>
-                <td>${r.Car_Plet||'-'}</td>
-                <td style="max-width:240px;white-space:normal;color:#b91c1c;font-weight:600;">${r.car_Note||'-'}</td>
-                <td>${r.Date_Releasing||'-'}</td>
-                <td>${r.UUser||'-'}</td>
+                <td><strong>${escapeHtml(r.Auto_No||'-')}</strong></td>
+                <td><strong style="color:var(--danger);">${escapeHtml(r.Reg_Name||'-')}</strong></td>
+                <td>${escapeHtml(r.Place_||'-')}</td>
+                <td>${escapeHtml(r.Car_Plet||'-')}</td>
+                <td style="max-width:240px;white-space:normal;color:#b91c1c;font-weight:600;">${escapeHtml(r.car_Note||'-')}</td>
+                <td>${escapeHtml(r.Date_Releasing||'-')}</td>
+                <td>${escapeHtml(r.UUser||'-')}</td>
                 <td>
-                    <button class="btn-danger-sm" onclick="removeHijz(${r.idd})">🗑️ لابردنی حیجز</button>
+                    <button class="btn-danger-sm" onclick="removeHijz(${safeId})">🗑️ لابردنی حیجز</button>
                 </td>
             </tr>`;
         }).join('');
@@ -9973,15 +9981,16 @@ async function loadPersonalRecords() {
         </tr></thead>`;
         const body = d.records.map(r => {
             const date = r.date ? new Date(r.date).toLocaleDateString('ar-IQ') : '-';
-            return `<tr onclick="showDetail(${r.id})">
-                <td><strong>${r.plateNo||'-'}</strong></td>
-                <td>${r.province||'-'}</td>
-                <td>${r.type||'-'}</td>
-                <td>${r.model||'-'}</td>
-                <td>${r.color||'-'}</td>
-                <td><strong>${r.chassis||'-'}</strong></td>
-                <td>${r.owner||'-'}</td>
-                <td>${date}</td>
+            const safeId = Number(r.id) || 0;
+            return `<tr onclick="showDetail(${safeId})">
+                <td><strong>${escapeHtml(r.plateNo||'-')}</strong></td>
+                <td>${escapeHtml(r.province||'-')}</td>
+                <td>${escapeHtml(r.type||'-')}</td>
+                <td>${escapeHtml(r.model||'-')}</td>
+                <td>${escapeHtml(r.color||'-')}</td>
+                <td><strong>${escapeHtml(r.chassis||'-')}</strong></td>
+                <td>${escapeHtml(r.owner||'-')}</td>
+                <td>${escapeHtml(date)}</td>
             </tr>`;
         }).join('');
         wrap.innerHTML = `<table>${head}<tbody>${body}</tbody></table>`;
@@ -10012,10 +10021,10 @@ async function loadStaffList() {
         const body = users.map((u, i) => {
             return `<tr>
                 <td>${i + 1}</td>
-                <td><strong style="color:var(--primary);">${u.User_id||'-'}</strong></td>
-                <td>${u.User_Name||'-'}</td>
-                <td>${u.Place_||'-'}</td>
-                <td><span class="badge badge-cargo">${u.Permission||'-'}</span></td>
+                <td><strong style="color:var(--primary);">${escapeHtml(u.User_id||'-')}</strong></td>
+                <td>${escapeHtml(u.User_Name||'-')}</td>
+                <td>${escapeHtml(u.Place_||'-')}</td>
+                <td><span class="badge badge-cargo">${escapeHtml(u.Permission||'-')}</span></td>
                 <td><span class="badge ${u.AA==='Yes'?'badge-private':'badge-danger'}">${u.AA==='Yes'?'چالاک':'ناچالاک'}</span></td>
             </tr>`;
         }).join('');
@@ -10048,13 +10057,14 @@ async function loadDuplicates() {
             const head = `<thead><tr>
                 <th>شاسی</th><th>ژمارەی دووبارەبوونەوە</th><th>مۆدێل</th><th>ڕەنگ</th><th>خاوەن</th><th>کردار</th>
             </tr></thead>`;
-            const body = chDups.map(r => `<tr>
-                <td><strong style="color:var(--danger);">${r.chassis}</strong></td>
-                <td><span class="badge badge-danger">${r.cnt} جار</span></td>
-                <td>${r.model||'-'}</td>
-                <td>${r.color||'-'}</td>
-                <td>${r.owner||'-'}</td>
-                <td><button class="btn-primary" style="font-size:11px;padding:4px 8px;" onclick="searchExactChassis('${r.chassis}')">گەڕان</button></td>
+            window._dupChassisList = chDups.map(r => r.chassis || '');
+            const body = chDups.map((r, idx) => `<tr>
+                <td><strong style="color:var(--danger);">${escapeHtml(r.chassis)}</strong></td>
+                <td><span class="badge badge-danger">${escapeHtml(r.cnt)} جار</span></td>
+                <td>${escapeHtml(r.model||'-')}</td>
+                <td>${escapeHtml(r.color||'-')}</td>
+                <td>${escapeHtml(r.owner||'-')}</td>
+                <td><button class="btn-primary" style="font-size:11px;padding:4px 8px;" onclick="searchExactChassisByIdx(${idx})">گەڕان</button></td>
             </tr>`).join('');
             chWrap.innerHTML = `<table>${head}<tbody>${body}</tbody></table>`;
         }
@@ -10066,17 +10076,22 @@ async function loadDuplicates() {
                 <th>تابلۆ</th><th>پارێزگا</th><th>ژمارەی دووبارەبوونەوە</th><th>مۆدێل</th><th>خاوەن</th>
             </tr></thead>`;
             const body = plDups.map(r => `<tr>
-                <td><strong style="color:var(--danger);">${r.plate}</strong></td>
-                <td>${r.province||'-'}</td>
-                <td><span class="badge badge-danger">${r.cnt} جار</span></td>
-                <td>${r.model||'-'}</td>
-                <td>${r.owner||'-'}</td>
+                <td><strong style="color:var(--danger);">${escapeHtml(r.plate)}</strong></td>
+                <td>${escapeHtml(r.province||'-')}</td>
+                <td><span class="badge badge-danger">${escapeHtml(r.cnt)} جار</span></td>
+                <td>${escapeHtml(r.model||'-')}</td>
+                <td>${escapeHtml(r.owner||'-')}</td>
             </tr>`).join('');
             plWrap.innerHTML = `<table>${head}<tbody>${body}</tbody></table>`;
         }
     } catch(e) {
         chWrap.innerHTML = '<p style="color:red">کێشەی پەیوەندی</p>';
     }
+}
+
+function searchExactChassisByIdx(idx) {
+    const ch = (window._dupChassisList && window._dupChassisList[idx]) || '';
+    if (ch) searchExactChassis(ch);
 }
 
 function searchExactChassis(ch) {
@@ -10459,20 +10474,22 @@ function buildTable(rows) {
         <th>ساڵ</th><th>شاسی</th><th>خاوەن</th><th>پارێزگا</th><th>بەروار</th>
     </tr></thead>`;
     const body = rows.map(r => {
-        const badge = r.type?.includes('تایبەت') ? `<span class="badge badge-private">${r.type}</span>`
-            : r.type?.includes('بار') ? `<span class="badge badge-cargo">${r.type}</span>`
-            : `<span class="badge badge-sp">${r.type||'-'}</span>`;
+        const safeType = escapeHtml(r.type || '-');
+        const badge = r.type?.includes('تایبەت') ? `<span class="badge badge-private">${safeType}</span>`
+            : r.type?.includes('بار') ? `<span class="badge badge-cargo">${safeType}</span>`
+            : `<span class="badge badge-sp">${safeType}</span>`;
         const date = r.date ? new Date(r.date).toLocaleDateString('ar-IQ') : '-';
-        return `<tr onclick="showDetail(${r.id})">
-            <td><strong>${r.plateNo||'-'}</strong></td>
+        const safeId = Number(r.id) || 0;
+        return `<tr onclick="showDetail(${safeId})">
+            <td><strong>${escapeHtml(r.plateNo||'-')}</strong></td>
             <td>${badge}</td>
-            <td>${r.model||'-'}</td>
-            <td>${r.color||'-'}</td>
-            <td>${r.year||'-'}</td>
-            <td><strong style="color:var(--primary);">${r.chassis||'-'}</strong></td>
-            <td>${r.owner||'-'}</td>
-            <td>${r.province||'-'}</td>
-            <td>${date}</td>
+            <td>${escapeHtml(r.model||'-')}</td>
+            <td>${escapeHtml(r.color||'-')}</td>
+            <td>${escapeHtml(r.year||'-')}</td>
+            <td><strong style="color:var(--primary);">${escapeHtml(r.chassis||'-')}</strong></td>
+            <td>${escapeHtml(r.owner||'-')}</td>
+            <td>${escapeHtml(r.province||'-')}</td>
+            <td>${escapeHtml(date)}</td>
         </tr>`;
     }).join('');
     return `<table>${head}<tbody>${body}</tbody></table>`;
@@ -11068,20 +11085,22 @@ async function loadSuspicious() {
             <th>پلێت</th><th>جۆر</th><th>مۆدێل</th><th>ڕەنگ</th>
             <th>ساڵ</th><th>شاسی</th><th>تێبینی</th><th>بەڕاد</th><th>بەروار</th><th>کردار</th>
         </tr></thead>`;
-        const body = data.map(r => {
+        window._suspRows = data;
+        const body = data.map((r, idx) => {
             const date = r.date ? new Date(r.date).toLocaleDateString('ar-IQ') : '-';
-            return `<tr onclick="showSuspDetail(${JSON.stringify(r).replace(/"/g,'&quot;')})">
-                <td><strong>${r.plateNo||'-'}</strong></td>
-                <td>${r.type||'-'}</td>
-                <td>${r.model||'-'}</td>
-                <td>${r.color||'-'}</td>
-                <td>${r.year||'-'}</td>
-                <td><strong>${r.chassis||'-'}</strong></td>
-                <td style="color:var(--danger);font-weight:700">${r.note||'-'}</td>
-                <td>${r.barad||'-'}</td>
-                <td>${date}</td>
+            const safeId = Number(r.id) || 0;
+            return `<tr onclick="showSuspDetailByIdx(${idx})">
+                <td><strong>${escapeHtml(r.plateNo||'-')}</strong></td>
+                <td>${escapeHtml(r.type||'-')}</td>
+                <td>${escapeHtml(r.model||'-')}</td>
+                <td>${escapeHtml(r.color||'-')}</td>
+                <td>${escapeHtml(r.year||'-')}</td>
+                <td><strong>${escapeHtml(r.chassis||'-')}</strong></td>
+                <td style="color:var(--danger);font-weight:700">${escapeHtml(r.note||'-')}</td>
+                <td>${escapeHtml(r.barad||'-')}</td>
+                <td>${escapeHtml(date)}</td>
                 <td>
-                    <button type="button" onclick="event.stopPropagation();openRaportModal(${r.id})" style="background:#be123c;color:#fff;border:none;padding:4px 10px;border-radius:4px;font-size:11.5px;font-weight:800;cursor:pointer;display:inline-flex;align-items:center;gap:4px;font-family:inherit;">
+                    <button type="button" onclick="event.stopPropagation();openRaportModal(${safeId})" style="background:#be123c;color:#fff;border:none;padding:4px 10px;border-radius:4px;font-size:11.5px;font-weight:800;cursor:pointer;display:inline-flex;align-items:center;gap:4px;font-family:inherit;">
                         <span>📄</span>
                         <span>فۆڕم</span>
                     </button>
@@ -11092,6 +11111,12 @@ async function loadSuspicious() {
     } catch {
         document.getElementById('suspTable').innerHTML =
             '<div class="empty-box"><div class="eicon">⚠️</div><p>کێشەی بارکردن</p></div>';
+    }
+}
+
+function showSuspDetailByIdx(idx) {
+    if (window._suspRows && window._suspRows[idx]) {
+        showSuspDetail(window._suspRows[idx]);
     }
 }
 
@@ -11554,50 +11579,50 @@ function printTodayModalTable() {
         if (currentTodayGridCategory === 'registration') {
             rowsHtml += `<tr>
                 <td style="text-align:center;">${idx + 1}</td>
-                <td><b>${r.plateNo || '-'}</b></td>
-                <td>${r.province || '-'}</td>
-                <td>${r.plateType || '-'}</td>
-                <td style="font-family:monospace;">${r.chassis || '-'}</td>
-                <td>${r.carType || '-'}</td>
-                <td>${r.model || '-'}</td>
-                <td>${r.color || '-'}</td>
-                <td>${r.owner || '-'}</td>
-                <td>${r.registrar || '-'}</td>
+                <td><b>${escapeHtml(r.plateNo || '-')}</b></td>
+                <td>${escapeHtml(r.province || '-')}</td>
+                <td>${escapeHtml(r.plateType || '-')}</td>
+                <td style="font-family:monospace;">${escapeHtml(r.chassis || '-')}</td>
+                <td>${escapeHtml(r.carType || '-')}</td>
+                <td>${escapeHtml(r.model || '-')}</td>
+                <td>${escapeHtml(r.color || '-')}</td>
+                <td>${escapeHtml(r.owner || '-')}</td>
+                <td>${escapeHtml(r.registrar || '-')}</td>
             </tr>`;
         } else if (currentTodayGridCategory === 'gomrg') {
             rowsHtml += `<tr>
                 <td style="text-align:center;">${idx + 1}</td>
-                <td><b>${r.IDD || '-'}</b></td>
-                <td>${r.plateNo || '-'}</td>
-                <td>${r.province || '-'} (${r.plateType || '-'})</td>
-                <td style="font-family:monospace;">${r.chassis || '-'}</td>
-                <td>${r.carType || '-'} - ${r.model || '-'}</td>
-                <td>${r.owner || '-'}</td>
-                <td>${r.place || '-'}</td>
-                <td>${r.reason || '-'}</td>
-                <td>${r.registrar || '-'}</td>
+                <td><b>${escapeHtml(r.IDD || '-')}</b></td>
+                <td>${escapeHtml(r.plateNo || '-')}</td>
+                <td>${escapeHtml(r.province || '-')} (${escapeHtml(r.plateType || '-')})</td>
+                <td style="font-family:monospace;">${escapeHtml(r.chassis || '-')}</td>
+                <td>${escapeHtml(r.carType || '-')} - ${escapeHtml(r.model || '-')}</td>
+                <td>${escapeHtml(r.owner || '-')}</td>
+                <td>${escapeHtml(r.place || '-')}</td>
+                <td>${escapeHtml(r.reason || '-')}</td>
+                <td>${escapeHtml(r.registrar || '-')}</td>
             </tr>`;
         } else if (currentTodayGridCategory === 'raport') {
             rowsHtml += `<tr>
                 <td style="text-align:center;">${idx + 1}</td>
-                <td><b>${r.outSeq || '-'}</b></td>
-                <td>${r.plateNo || '-'}</td>
-                <td>${r.province || ''} (${r.plateType || ''})</td>
-                <td style="font-family:monospace;">${r.chassis || '-'}</td>
-                <td>${r.carType || '-'} - ${r.model || '-'}</td>
-                <td>${r.owner || '-'}</td>
-                <td>${r.sentTo || r.problem || '-'}</td>
-                <td>${r.registrar || '-'}</td>
+                <td><b>${escapeHtml(r.outSeq || '-')}</b></td>
+                <td>${escapeHtml(r.plateNo || '-')}</td>
+                <td>${escapeHtml(r.province || '')} (${escapeHtml(r.plateType || '')})</td>
+                <td style="font-family:monospace;">${escapeHtml(r.chassis || '-')}</td>
+                <td>${escapeHtml(r.carType || '-')} - ${escapeHtml(r.model || '-')}</td>
+                <td>${escapeHtml(r.owner || '-')}</td>
+                <td>${escapeHtml(r.sentTo || r.problem || '-')}</td>
+                <td>${escapeHtml(r.registrar || '-')}</td>
             </tr>`;
         } else if (currentTodayGridCategory === 'hijz') {
             rowsHtml += `<tr>
                 <td style="text-align:center;">${idx + 1}</td>
-                <td><b>${r.plateNo || '-'}</b></td>
-                <td>${r.province || '-'} (${r.plateType || '-'})</td>
-                <td>${r.owner || '-'}</td>
-                <td>${r.note || '-'}</td>
-                <td>${r.registrar || '-'}</td>
-                <td>${r.date_ ? String(r.date_).slice(0, 10) : '-'}</td>
+                <td><b>${escapeHtml(r.plateNo || '-')}</b></td>
+                <td>${escapeHtml(r.province || '-')} (${escapeHtml(r.plateType || '-')})</td>
+                <td>${escapeHtml(r.owner || '-')}</td>
+                <td>${escapeHtml(r.note || '-')}</td>
+                <td>${escapeHtml(r.registrar || '-')}</td>
+                <td>${escapeHtml(r.date_ ? String(r.date_).slice(0, 10) : '-')}</td>
             </tr>`;
         }
     });
@@ -11618,7 +11643,8 @@ function printTodayModalTable() {
         <html dir="rtl" lang="ku">
         <head>
             <meta charset="UTF-8">
-            <title>${title}</title>
+            <meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' data:; script-src 'none';">
+            <title>${escapeHtml(title)}</title>
             <style>
                 body { font-family: Tahoma, 'Segoe UI', Arial, sans-serif; margin: 20px; color: #000; direction: rtl; }
                 .p-head { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #000; padding-bottom: 10px; margin-bottom: 15px; }
@@ -11636,12 +11662,12 @@ function printTodayModalTable() {
         <body>
             <div class="p-head">
                 <div>
-                    <div class="p-title">${title}</div>
+                    <div class="p-title">${escapeHtml(title)}</div>
                     <div class="p-meta">بەڕێوەبەرایەتی هاتووچۆی سلێمانی - هۆبەی پشکنین و تۆمارکردن</div>
                 </div>
                 <div style="text-align: left;">
-                    <div class="p-meta">بەروار: ${dateStr}</div>
-                    <div class="p-meta">تۆمارکەر: ${userStr}</div>
+                    <div class="p-meta">بەروار: ${escapeHtml(dateStr)}</div>
+                    <div class="p-meta">تۆمارکەر: ${escapeHtml(userStr)}</div>
                     <div class="p-meta">کۆی گشتی: ${currentTodayModalRecords.length} تۆمار</div>
                 </div>
             </div>
@@ -11783,26 +11809,26 @@ async function showDetail(id) {
         const date = r.DD ? new Date(r.DD).toLocaleDateString('ar-IQ') : '-';
         document.getElementById('modalTitle').textContent = `🚗 ئوتومبێل – ${r.A||''}`;
         document.getElementById('modalBody').innerHTML = `
-            <div class="d-item"><div class="d-label">ژمارەی پلێت</div><div class="d-val hl">${r.A||'-'}</div></div>
-            <div class="d-item"><div class="d-label">جۆری ئوتومبێل</div><div class="d-val">${r.C||'-'}</div></div>
-            <div class="d-item"><div class="d-label">مۆدێل</div><div class="d-val">${r.I||'-'}</div></div>
-            <div class="d-item"><div class="d-label">کاتێگۆری</div><div class="d-val">${r.J||'-'}</div></div>
-            <div class="d-item"><div class="d-label">ڕەنگ</div><div class="d-val">${r.L||'-'}</div></div>
-            <div class="d-item"><div class="d-label">ساڵی دروستکردن</div><div class="d-val">${r.P||'-'}</div></div>
-            <div class="d-item"><div class="d-label">سووتەمەنی</div><div class="d-val">${r.K||'-'}</div></div>
-            <div class="d-item"><div class="d-label">گێڕ</div><div class="d-val">${r.M||'-'}</div></div>
-            <div class="d-item"><div class="d-label">ژمارەی دەرگا</div><div class="d-val">${r.N||'-'}</div></div>
-            <div class="d-item"><div class="d-label">ژمارەی سیلیندەر</div><div class="d-val">${r.O||'-'}</div></div>
-            <div class="d-item full"><div class="d-label">ژمارەی شاسی</div><div class="d-val hl">${r.R||'-'}</div></div>
-            <div class="d-item"><div class="d-label">ناوی خاوەن</div><div class="d-val">${r.G||'-'}</div></div>
-            <div class="d-item"><div class="d-label">ژمارەی مۆبایل</div><div class="d-val">${r.T||'-'}</div></div>
-            <div class="d-item"><div class="d-label">بەڕاد</div><div class="d-val">${r.E||'-'}</div></div>
-            <div class="d-item"><div class="d-label">مەکتەب / شوێن</div><div class="d-val">${r.D||'-'}</div></div>
-            <div class="d-item"><div class="d-label">پارێزگا</div><div class="d-val">${r.B||'-'}</div></div>
-            <div class="d-item"><div class="d-label">بەروار</div><div class="d-val">${date}</div></div>
-            <div class="d-item"><div class="d-label">تۆمارکەر</div><div class="d-val">${r.FF||'-'}</div></div>
-            <div class="d-item"><div class="d-label">پشکنەر</div><div class="d-val">${r.GG||'-'}</div></div>
-            ${r.U ? `<div class="d-item full" style="background:#fffbeb;border-color:#fef3c7;"><div class="d-label" style="color:#b45309">تێبینی</div><div class="d-val">${r.U}</div></div>` : ''}
+            <div class="d-item"><div class="d-label">ژمارەی پلێت</div><div class="d-val hl">${escapeHtml(r.A||'-')}</div></div>
+            <div class="d-item"><div class="d-label">جۆری ئوتومبێل</div><div class="d-val">${escapeHtml(r.C||'-')}</div></div>
+            <div class="d-item"><div class="d-label">مۆدێل</div><div class="d-val">${escapeHtml(r.I||'-')}</div></div>
+            <div class="d-item"><div class="d-label">کاتێگۆری</div><div class="d-val">${escapeHtml(r.J||'-')}</div></div>
+            <div class="d-item"><div class="d-label">ڕەنگ</div><div class="d-val">${escapeHtml(r.L||'-')}</div></div>
+            <div class="d-item"><div class="d-label">ساڵی دروستکردن</div><div class="d-val">${escapeHtml(r.P||'-')}</div></div>
+            <div class="d-item"><div class="d-label">سووتەمەنی</div><div class="d-val">${escapeHtml(r.K||'-')}</div></div>
+            <div class="d-item"><div class="d-label">گێڕ</div><div class="d-val">${escapeHtml(r.M||'-')}</div></div>
+            <div class="d-item"><div class="d-label">ژمارەی دەرگا</div><div class="d-val">${escapeHtml(r.N||'-')}</div></div>
+            <div class="d-item"><div class="d-label">ژمارەی سیلیندەر</div><div class="d-val">${escapeHtml(r.O||'-')}</div></div>
+            <div class="d-item full"><div class="d-label">ژمارەی شاسی</div><div class="d-val hl">${escapeHtml(r.R||'-')}</div></div>
+            <div class="d-item"><div class="d-label">ناوی خاوەن</div><div class="d-val">${escapeHtml(r.G||'-')}</div></div>
+            <div class="d-item"><div class="d-label">ژمارەی مۆبایل</div><div class="d-val">${escapeHtml(r.T||'-')}</div></div>
+            <div class="d-item"><div class="d-label">بەڕاد</div><div class="d-val">${escapeHtml(r.E||'-')}</div></div>
+            <div class="d-item"><div class="d-label">مەکتەب / شوێن</div><div class="d-val">${escapeHtml(r.D||'-')}</div></div>
+            <div class="d-item"><div class="d-label">پارێزگا</div><div class="d-val">${escapeHtml(r.B||'-')}</div></div>
+            <div class="d-item"><div class="d-label">بەروار</div><div class="d-val">${escapeHtml(date)}</div></div>
+            <div class="d-item"><div class="d-label">تۆمارکەر</div><div class="d-val">${escapeHtml(r.FF||'-')}</div></div>
+            <div class="d-item"><div class="d-label">پشکنەر</div><div class="d-val">${escapeHtml(r.GG||'-')}</div></div>
+            ${r.U ? `<div class="d-item full" style="background:#fffbeb;border-color:#fef3c7;"><div class="d-label" style="color:#b45309">تێبینی</div><div class="d-val">${escapeHtml(r.U)}</div></div>` : ''}
         `;
     } catch {
         document.getElementById('modalBody').innerHTML = '<p style="color:red">کێشەی بارکردن</p>';
@@ -11815,14 +11841,14 @@ function showSuspDetail(data) {
     openOverlay('detailModal');
     const date = r.date ? new Date(r.date).toLocaleDateString('ar-IQ') : '-';
     document.getElementById('modalBody').innerHTML = `
-        <div class="d-item"><div class="d-label">پلێت</div><div class="d-val hl">${r.plateNo||'-'}</div></div>
-        <div class="d-item"><div class="d-label">جۆر</div><div class="d-val">${r.type||'-'}</div></div>
-        <div class="d-item"><div class="d-label">مۆدێل</div><div class="d-val">${r.model||'-'}</div></div>
-        <div class="d-item"><div class="d-label">ڕەنگ</div><div class="d-val">${r.color||'-'}</div></div>
-        <div class="d-item"><div class="d-label">شاسی</div><div class="d-val">${r.chassis||'-'}</div></div>
-        <div class="d-item"><div class="d-label">بەڕاد</div><div class="d-val">${r.barad||'-'}</div></div>
-        <div class="d-item"><div class="d-label">بەروار</div><div class="d-val">${date}</div></div>
-        ${r.note ? `<div class="d-item full" style="background:#fee2e2;border-color:#fca5a5;"><div class="d-label" style="color:var(--danger)">⚠️ هۆکار / تێبینی</div><div class="d-val" style="color:var(--danger)">${r.note}</div></div>` : ''}
+        <div class="d-item"><div class="d-label">پلێت</div><div class="d-val hl">${escapeHtml(r.plateNo||'-')}</div></div>
+        <div class="d-item"><div class="d-label">جۆر</div><div class="d-val">${escapeHtml(r.type||'-')}</div></div>
+        <div class="d-item"><div class="d-label">مۆدێل</div><div class="d-val">${escapeHtml(r.model||'-')}</div></div>
+        <div class="d-item"><div class="d-label">ڕەنگ</div><div class="d-val">${escapeHtml(r.color||'-')}</div></div>
+        <div class="d-item"><div class="d-label">شاسی</div><div class="d-val">${escapeHtml(r.chassis||'-')}</div></div>
+        <div class="d-item"><div class="d-label">بەڕاد</div><div class="d-val">${escapeHtml(r.barad||'-')}</div></div>
+        <div class="d-item"><div class="d-label">بەروار</div><div class="d-val">${escapeHtml(date)}</div></div>
+        ${r.note ? `<div class="d-item full" style="background:#fee2e2;border-color:#fca5a5;"><div class="d-label" style="color:var(--danger)">⚠️ هۆکار / تێبینی</div><div class="d-val" style="color:var(--danger)">${escapeHtml(r.note)}</div></div>` : ''}
     `;
 }
 
