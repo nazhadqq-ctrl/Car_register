@@ -1,8 +1,27 @@
+const fs = require('fs');
+const path = require('path');
 const sql = require('mssql');
-const { loadDotEnv } = require('./security');
 
-// Load local .env secrets if present (takes priority over fallback defaults)
-loadDotEnv();
+// Self-contained .env loader (zero external local module dependency so legacy updaters never crash)
+(function loadLocalEnv() {
+    try {
+        const envPath = path.join(__dirname, '.env');
+        if (!fs.existsSync(envPath)) return;
+        const lines = fs.readFileSync(envPath, 'utf8').split(/\r?\n/);
+        for (const rawLine of lines) {
+            const line = rawLine.trim();
+            if (!line || line.startsWith('#')) continue;
+            const eqIdx = line.indexOf('=');
+            if (eqIdx <= 0) continue;
+            const key = line.slice(0, eqIdx).trim();
+            let val = line.slice(eqIdx + 1).trim();
+            if ((val.startsWith('"') && val.endsWith('"')) || (val.startsWith("'") && val.endsWith("'"))) {
+                val = val.slice(1, -1);
+            }
+            if (!(key in process.env)) process.env[key] = val;
+        }
+    } catch (e) {}
+})();
 
 // Server 1 - Primary Central Database (Least-Privilege SQL Login: NA)
 const config190 = {

@@ -7,9 +7,10 @@
 
 const fs = require('fs');
 const path = require('path');
+const crypto = require('crypto');
 const { sql, config190 } = require('./db');
 const { verifyAll } = require('./verify-syntax');
-const { sha256Buffer } = require('./security');
+const sha256Buffer = (bufOrStr) => crypto.createHash('sha256').update(Buffer.isBuffer(bufOrStr) ? bufOrStr : Buffer.from(String(bufOrStr || ''), 'utf8')).digest('hex');
 
 const config = {
     ...config190,

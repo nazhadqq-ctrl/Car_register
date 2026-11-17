@@ -1,11 +1,153 @@
 const express = require('express');
 const session = require('express-session');
 const path = require('path');
+const http = require('http');
 const https = require('https');
 const fs = require('fs');
 const crypto = require('crypto');
 const vm = require('vm');
 const { getPool, getPool90, sql } = require('./db');
+
+// Load security.js with full self-contained fallback so legacy auto-updaters (which don't fetch new files yet) NEVER crash on startup!
+function createFallbackSecurity() {
+    const loadDotEnv = (envFilePath = path.join(__dirname, '.env')) => {
+        try {
+            if (!fs.existsSync(envFilePath)) return;
+            for (const rawLine of fs.readFileSync(envFilePath, 'utf8').split(/\r?\n/)) {
+                const line = rawLine.trim();
+                if (!line || line.startsWith('#')) continue;
+                const eqIdx = line.indexOf('=');
+                if (eqIdx <= 0) continue;
+                const key = line.slice(0, eqIdx).trim();
+                let val = line.slice(eqIdx + 1).trim();
+                if ((val.startsWith('"') && val.endsWith('"')) || (val.startsWith("'") && val.endsWith("'"))) val = val.slice(1, -1);
+                if (!(key in process.env)) process.env[key] = val;
+            }
+        } catch (e) {}
+    };
+    const getSecurityDataDir = (subDir = '') => {
+        const base = process.env.TRAFFICCHECK_DATA_DIR || (process.env.LOCALAPPDATA ? path.join(process.env.LOCALAPPDATA, 'TrafficCheck') : path.join(__dirname, '.tc_data'));
+        const full = subDir ? path.join(base, subDir) : base;
+        try { if (!fs.existsSync(full)) fs.mkdirSync(full, { recursive: true }); return full; }
+        catch (e) { const fb = subDir ? path.join(__dirname, '.tc_data', subDir) : path.join(__dirname, '.tc_data'); if (!fs.existsSync(fb)) fs.mkdirSync(fb, { recursive: true }); return fb; }
+    };
+    const auditLog = (event, details = {}) => {
+        try {
+            const logPath = path.join(getSecurityDataDir('logs'), 'security-audit.jsonl');
+            fs.appendFileSync(logPath, JSON.stringify({ ts: new Date().toISOString(), event, ...details }) + '\n', 'utf8');
+        } catch (e) {}
+    };
+    const isManagerUser = (user) => {
+        if (!user || typeof user !== 'object') return false;
+        const perm = String(user.permission || '').trim().toUpperCase();
+        return Boolean(perm === 'MANAGER' || perm === 'ADMIN' || String(user.place || '').trim() === '*' || String(user.username || '').trim() === '9');
+    };
+    const requireManager = (req, res, next) => {
+        if (!req.session || !req.session.user) return res.status(401).json({ success: false, message: 'تکایە سەرەتا بچۆ ژوورەوە' });
+        if (!isManagerUser(req.session.user)) {
+            auditLog('RBAC_DENIED', { user: req.session.user.username, method: req.method, path: req.originalUrl, ip: req.ip });
+            return res.status(403).json({ success: false, message: 'دەسەڵاتی بەڕێوەبەر پێویستە بۆ ئەم کردارە' });
+        }
+        return next();
+    };
+    const securityHeadersMiddleware = (req, res, next) => {
+        res.setHeader('X-Content-Type-Options', 'nosniff');
+        res.setHeader('X-Frame-Options', 'SAMEORIGIN');
+        res.setHeader('Referrer-Policy', 'no-referrer');
+        res.setHeader('Permissions-Policy', 'camera=(), microphone=(), geolocation=(), payment=(), usb=()');
+        res.setHeader('X-XSS-Protection', '0');
+        res.setHeader('Cross-Origin-Opener-Policy', 'same-origin');
+        res.setHeader('Cross-Origin-Resource-Policy', 'same-origin');
+        res.setHeader('Content-Security-Policy', "default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: blob:; connect-src 'self'; frame-src 'self' about: blob:; object-src 'none'; base-uri 'self'; form-action 'self'; frame-ancestors 'self'");
+        if (req.path.startsWith('/api/') || req.path === '/index.html' || req.path === '/') {
+            res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, private');
+            res.setHeader('Pragma', 'no-cache');
+            res.setHeader('Expires', '0');
+        }
+        next();
+    };
+    const createHostGuard = (port) => {
+        const allowed = new Set([`localhost:${port}`, `127.0.0.1:${port}`, `[::1]:${port}`, 'localhost', '127.0.0.1', '[::1]']);
+        if (process.env.ALLOWED_HOSTS) process.env.ALLOWED_HOSTS.split(',').map(h => h.trim().toLowerCase()).filter(Boolean).forEach(h => allowed.add(h));
+        return (req, res, next) => {
+            const host = String(req.headers.host || '').trim().toLowerCase();
+            if (!host || !allowed.has(host)) return res.status(403).json({ success: false, message: 'داواکاری ڕێگەپێنەدراو (Host)' });
+            next();
+        };
+    };
+    const createCsrfGuard = (port) => {
+        const allowed = new Set([`http://localhost:${port}`, `http://127.0.0.1:${port}`, `http://[::1]:${port}`]);
+        if (process.env.ALLOWED_ORIGINS) process.env.ALLOWED_ORIGINS.split(',').map(o => o.trim().toLowerCase()).filter(Boolean).forEach(o => allowed.add(o));
+        const SAFE = new Set(['GET', 'HEAD', 'OPTIONS']);
+        return (req, res, next) => {
+            if (SAFE.has(req.method.toUpperCase())) return next();
+            if (String(req.headers['sec-fetch-site'] || '').toLowerCase() === 'cross-site') return res.status(403).json({ success: false, message: 'هەوڵی داواکاری دەرەکی بلۆک کرا (CSRF)' });
+            const origin = String(req.headers.origin || '').trim().toLowerCase();
+            if (origin) return allowed.has(origin) ? next() : res.status(403).json({ success: false, message: 'سەرچاوەی داواکاری ڕێگەپێنەدراوە (Origin)' });
+            const ref = String(req.headers.referer || '').trim().toLowerCase();
+            if (ref) {
+                try { if (!allowed.has(new URL(ref).origin.toLowerCase())) return res.status(403).json({ success: false, message: 'سەرچاوەی داواکاری ڕێگەپێنەدراوە (Referer)' }); }
+                catch (e) { return res.status(403).json({ success: false, message: 'داواکاری نادروستە' }); }
+            }
+            next();
+        };
+    };
+    const createRateLimiter = ({ windowMs, maxRequests, keyFn, message, eventName }) => {
+        const store = new Map();
+        const t = setInterval(() => { const now = Date.now(); for (const [k, v] of store.entries()) if (now > v.resetAt) store.delete(k); }, 5 * 60 * 1000);
+        if (t.unref) t.unref();
+        return {
+            middleware(req, res, next) {
+                const now = Date.now(); const key = keyFn(req);
+                let rec = store.get(key);
+                if (!rec || now > rec.resetAt) { rec = { count: 0, resetAt: now + windowMs }; store.set(key, rec); }
+                rec.count += 1;
+                if (rec.count > maxRequests) {
+                    const retrySec = Math.max(1, Math.ceil((rec.resetAt - now) / 1000));
+                    res.setHeader('Retry-After', String(retrySec));
+                    auditLog(eventName || 'RATE_LIMIT_EXCEEDED', { key, ip: req.ip, path: req.originalUrl });
+                    return res.status(429).json({ success: false, message: message || `داواکاری زۆر کراوە، تکایە پاش ${retrySec} چرکە هەوڵبدەرەوە` });
+                }
+                next();
+            },
+            recordFailure(key) {
+                const now = Date.now(); let rec = store.get(key);
+                if (!rec || now > rec.resetAt) { rec = { count: 0, resetAt: now + windowMs }; store.set(key, rec); }
+                rec.count += 1; return rec;
+            },
+            isBlocked(key) {
+                const now = Date.now(); const rec = store.get(key);
+                if (!rec) return { blocked: false, retrySec: 0 };
+                if (now > rec.resetAt) { store.delete(key); return { blocked: false, retrySec: 0 }; }
+                return rec.count >= maxRequests ? { blocked: true, retrySec: Math.max(1, Math.ceil((rec.resetAt - now) / 1000)) } : { blocked: false, retrySec: 0 };
+            },
+            reset(key) { store.delete(key); }
+        };
+    };
+    const escapeLike = (val) => String(val || '').replace(/[\[%_]/g, '[$&]');
+    const generateSessionSecret = () => (process.env.SESSION_SECRET && process.env.SESSION_SECRET.length >= 24) ? process.env.SESSION_SECRET : crypto.randomBytes(32).toString('hex');
+    const sendSafeError = (res, err, publicMessage = 'هەڵەیەکی ناوخۆیی سێرڤەر ڕوویدا', status = 500) => {
+        if (err) console.error(`[SAFE ERROR ${status}]`, err.message || err);
+        return res.status(status).json({ success: false, message: publicMessage, error: publicMessage });
+    };
+    const atomicWriteFileSync = (targetPath, data, encoding = 'utf8') => {
+        const dir = path.dirname(targetPath);
+        if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+        const tmpPath = `${targetPath}.tmp.${process.pid}.${Date.now()}`;
+        fs.writeFileSync(tmpPath, data, encoding);
+        fs.renameSync(tmpPath, targetPath);
+    };
+    return { loadDotEnv, getSecurityDataDir, auditLog, isManagerUser, requireManager, securityHeadersMiddleware, createHostGuard, createCsrfGuard, createRateLimiter, escapeLike, generateSessionSecret, sendSafeError, atomicWriteFileSync };
+}
+
+let _sec;
+try {
+    _sec = require('./security');
+} catch (e) {
+    console.warn('⚠️ security.js not found locally — using built-in security shield.');
+    _sec = createFallbackSecurity();
+}
+
 const {
     loadDotEnv,
     getSecurityDataDir,
@@ -20,7 +162,7 @@ const {
     generateSessionSecret,
     sendSafeError,
     atomicWriteFileSync
-} = require('./security');
+} = _sec;
 
 loadDotEnv();
 
@@ -3809,6 +3951,7 @@ app.get('/api/system/version', (req, res) => {
 });
 
 let httpServer = null;
+let httpServerV6 = null;
 
 async function restoreFileFromDatabase(relPath, destPath) {
     try {
@@ -3877,6 +4020,9 @@ function restartServerProcess() {
         console.log('🔄 Closing HTTP listener to release port...');
         if (httpServer && typeof httpServer.close === 'function') {
             try { httpServer.close(); } catch(e) {}
+        }
+        if (httpServerV6 && typeof httpServerV6.close === 'function') {
+            try { httpServerV6.close(); } catch(e) {}
         }
         setTimeout(() => {
             const { spawn } = require('child_process');
@@ -3949,9 +4095,16 @@ app.post('/api/system/check-update', requireAuth, async (req, res) => {
     }
 });
 
-// ─── START SERVER (LOOPBACK-BOUND BY DEFAULT FOR NETWORK SECURITY) ──
+// ─── START SERVER (LOOPBACK-BOUND IPv4 + IPv6 FOR ZERO-DELAY LOCALHOST) ──
 httpServer = app.listen(PORT, HOST, () => {
     console.log(`🛡️ TrafficCheck Secure Server running on http://${HOST}:${PORT}`);
+    if (HOST === '127.0.0.1') {
+        try {
+            httpServerV6 = http.createServer(app);
+            httpServerV6.on('error', () => {}); // Ignore if IPv6 loopback unavailable
+            httpServerV6.listen(PORT, '::1');
+        } catch (e) {}
+    }
     
     // Silent check for updates 7 seconds after startup
     setTimeout(async () => {
