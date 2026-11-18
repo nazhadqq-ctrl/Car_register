@@ -5129,13 +5129,18 @@ function updateKeyLength() {
 
 // ─── UNIQUE BARCODE GENERATOR & LIVE CODE 128 RENDERING ─────────────────
 function generateUniqueBarcode() {
-    // Strictly <= 10 characters: 'TC' + 8 uppercase chars (length = 10)
-    const chars = '23456789ABCDEFGHJKLMNPQRSTUVWXYZ';
+    // Strictly 10 characters: 'TC' + 8 uppercase alphanumeric chars (guaranteed mix of letters & numbers)
+    const letters = 'ABCDEFGHJKLMNPQRSTUVWXYZ';
+    const digits = '23456789';
+    const allChars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
     let rand = '';
-    for (let i = 0; i < 8; i++) {
-        rand += chars.charAt(Math.floor(Math.random() * chars.length));
+    for (let i = 0; i < 6; i++) {
+        rand += allChars.charAt(Math.floor(Math.random() * allChars.length));
     }
-    return ('TC' + rand).substring(0, 10);
+    rand += digits.charAt(Math.floor(Math.random() * digits.length));
+    rand += letters.charAt(Math.floor(Math.random() * letters.length));
+    const arr = rand.split('').sort(() => 0.5 - Math.random());
+    return ('TC' + arr.join('')).substring(0, 10);
 }
 
 function setPrintButtonState(enabled) {
@@ -5202,25 +5207,17 @@ function copyBarcodeToClipboard() {
     }
 }
 
-async function updateBarcodeState(forceRegenerate = false) {
+function updateBarcodeState(forceRegenerate = false) {
     const dfR = document.getElementById('dfR');
     const bEl = document.getElementById('dfBarcode');
     if (!dfR || !bEl) return;
-    const cleanCh = dfR.value.replace(/\s+/g, '');
+    const cleanCh = dfR.value.replace(/\s+/g, '').toUpperCase();
     if (cleanCh.length >= 3) {
-        if (forceRegenerate || !bEl.value || bEl.value === '*' || bEl.dataset.autoGen === 'true') {
-            let newCode = '';
-            try {
-                const res = await fetch('/api/barcode/generate');
-                if (res.ok) {
-                    const data = await res.json();
-                    if (data && data.barcode) newCode = data.barcode;
-                }
-            } catch (e) {}
-            if (!newCode) newCode = generateUniqueBarcode();
-            bEl.value = newCode.substring(0, 10);
+        if (forceRegenerate || !bEl.value || bEl.value === '*' || bEl.value === 'TC00000000' || bEl.dataset.autoGen === 'true') {
+            const newCode = generateUniqueBarcode();
+            bEl.value = newCode;
             bEl.dataset.autoGen = 'true';
-            renderLiveBarcode(bEl.value);
+            renderLiveBarcode(newCode);
         } else {
             renderLiveBarcode(bEl.value.substring(0, 10));
         }
@@ -5354,10 +5351,25 @@ function setupAutoEnglishUpper() {
             }
             if (e.target.id === 'dfR') {
                 updateKeyLength();
-                updateBarcodeState(true);
+                const curVin = e.target.value.replace(/\s+/g, '').toUpperCase();
+                if (curVin !== e.target.dataset.lastVin) {
+                    e.target.dataset.lastVin = curVin;
+                    updateBarcodeState(true);
+                }
             }
             if (e.target.id === 'dfBarcode') {
                 delete e.target.dataset.autoGen;
+            }
+        }
+    });
+
+    document.addEventListener('change', function(e) {
+        if (e.target && e.target.id === 'dfR') {
+            updateKeyLength();
+            const curVin = e.target.value.replace(/\s+/g, '').toUpperCase();
+            if (curVin !== e.target.dataset.lastVin) {
+                e.target.dataset.lastVin = curVin;
+                updateBarcodeState(true);
             }
         }
     });
@@ -6986,6 +6998,8 @@ function dfResetNew() {
     setVal('dfII', 0);
     setVal('dfJJ', '0');
     setVal('dfR', '');
+    const dfRReset = document.getElementById('dfR');
+    if (dfRReset) dfRReset.dataset.lastVin = '';
     setVal('dfS', 0);
     setVal('dfStar', '*');
     setVal('dfT', '');
@@ -7171,15 +7185,26 @@ async function onBarcodeVAChange() {
         set('dfQ', d.Q || 0);
         set('dfR', d.R || '');
         updateKeyLength();
+        const dfREl = document.getElementById('dfR');
+        if (dfREl) dfREl.dataset.lastVin = (d.R || '').replace(/\s+/g, '').toUpperCase();
 
-        // Fill exact Barcode from table column (Barcod in VA or HH/KK in T1)
-        const tableBarcode = (d.Barcod || d.HH || d.KK || barcode || '').trim();
+        // Barcode handling: NEVER use barcode from VA! Generate fresh unique 10-char random barcode for registration
         const bEl = document.getElementById('dfBarcode');
-        if (bEl) {
-            bEl.value = tableBarcode.substring(0, 10);
-            bEl.dataset.autoGen = 'false';
+        if (d.source === 'Taqega' || !r.alreadyRegistered) {
+            const freshBarcode = generateUniqueBarcode();
+            if (bEl) {
+                bEl.value = freshBarcode;
+                bEl.dataset.autoGen = 'true';
+            }
+            renderLiveBarcode(freshBarcode);
+        } else {
+            const tableBarcode = (d.HH || d.KK || barcode || '').trim().substring(0, 10);
+            if (bEl) {
+                bEl.value = tableBarcode;
+                bEl.dataset.autoGen = 'false';
+            }
+            renderLiveBarcode(tableBarcode);
         }
-        renderLiveBarcode(tableBarcode);
 
         set('dfS', d.S || 0);
         set('dfStar', '*');
@@ -7310,18 +7335,20 @@ function populateRegistrationFields(r, fallbackPlate = '', fallbackTablo = '', f
     set('dfQ', r.Q || 0);
     set('dfR', r.R || '');
     updateKeyLength();
+    const dfREl = document.getElementById('dfR');
+    if (dfREl) dfREl.dataset.lastVin = (r.R || '').replace(/\s+/g, '').toUpperCase();
 
     const bEl = document.getElementById('dfBarcode');
-    if (r.source === 'Taqega') {
+    if (r.source === 'Taqega' || !r.alreadyRegistered) {
         let code = generateUniqueBarcode();
         if (bEl) {
-            bEl.value = code.substring(0, 10);
+            bEl.value = code;
             bEl.dataset.autoGen = 'true';
         }
         renderLiveBarcode(code);
         setPrintButtonState(false);
     } else {
-        const code = (r.HH || r.KK || r.Barcod || (r.R ? generateUniqueBarcode() : 'TC00000000')).substring(0, 10);
+        const code = (r.HH || r.KK || (r.R ? generateUniqueBarcode() : 'TC00000000')).substring(0, 10);
         if (bEl) {
             bEl.value = code;
             bEl.dataset.autoGen = 'false';

@@ -2060,24 +2060,32 @@ app.delete('/api/hijz/:id', requireAuth, requireManager, async (req, res) => {
 
 // ─── UNIQUE BARCODE GENERATOR (STRICT <= 10 CHARS & CRYPTO PRNG) ──────
 async function generateUniqueBarcode(pool) {
-    const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+    const letters = 'ABCDEFGHJKLMNPQRSTUVWXYZ';
+    const digits = '23456789';
+    const allChars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
     let attempts = 0;
-    while (attempts < 60) {
+    while (attempts < 100) {
         attempts++;
         let randomStr = '';
-        for (let i = 0; i < 8; i++) {
-            randomStr += chars.charAt(crypto.randomInt(chars.length));
+        for (let i = 0; i < 6; i++) {
+            randomStr += allChars.charAt(crypto.randomInt(allChars.length));
         }
-        const candidate = 'TC' + randomStr; // Exactly 10 characters!
+        randomStr += digits.charAt(crypto.randomInt(digits.length));
+        randomStr += letters.charAt(crypto.randomInt(letters.length));
+        const arr = randomStr.split('').sort(() => 0.5 - Math.random());
+        const candidate = ('TC' + arr.join('')).substring(0, 10); // Strictly 10 characters alphanumeric with letters & numbers
+
         const check = await pool.request()
             .input('bc', sql.NVarChar, candidate)
-            .query(`SELECT TOP 1 id FROM T1 WHERE HH = @bc OR KK = @bc`);
+            .query(`SELECT TOP 1 id FROM T1 WHERE HH = @bc OR KK = @bc
+                    UNION
+                    SELECT TOP 1 id FROM T1_backup WHERE HH = @bc OR KK = @bc`);
         if (check.recordset.length === 0) {
             return candidate;
         }
     }
-    const digits = String(Date.now()).slice(-8);
-    return 'TC' + digits;
+    const digitsFallback = String(Date.now()).slice(-8);
+    return ('TC' + digitsFallback).substring(0, 10);
 }
 
 // ─── GET FRESH UNIQUE BARCODE ENDPOINT ────────────────────────────────
@@ -2748,8 +2756,9 @@ app.get('/api/register/find', requireAuth, async (req, res) => {
                         DD: r.Date_ ? new Date(r.Date_).toISOString().slice(0, 10) : new Date().toISOString().slice(0, 10),
                         resulat: r.resulat || '',
                         Psulla: r.Psulla || '',
-                        Barcod: r.Barcod || r.NN || cleanBarcode,
-                        KK: r.Barcod || r.NN || cleanBarcode
+                        Barcod: '',
+                        HH: '',
+                        KK: ''
                     });
                 }
             }
@@ -2911,8 +2920,9 @@ app.get('/api/register/find', requireAuth, async (req, res) => {
                     DD: r.Date_ ? new Date(r.Date_).toISOString().slice(0, 10) : new Date().toISOString().slice(0, 10),
                     resulat: r.resulat || '',
                     Psulla: r.Psulla || '',
-                    Barcod: r.Barcod || r.NN || cleanBarcode || '',
-                    KK: r.Barcod || r.NN || cleanBarcode || ''
+                    Barcod: '',
+                    HH: '',
+                    KK: ''
                 });
             }
 
@@ -3013,8 +3023,9 @@ app.get('/api/register/find', requireAuth, async (req, res) => {
                     JJ: 0,
                     DD: r.Date_ ? new Date(r.Date_).toISOString().slice(0, 10) : new Date().toISOString().slice(0, 10),
                     resulat: r.resulat || '',
-                    Barcod: r.Barcod || r.NN || '',
-                    KK: r.Barcod || r.NN || ''
+                    Barcod: '',
+                    HH: '',
+                    KK: ''
                 });
             }
 
@@ -3128,7 +3139,7 @@ app.get('/api/register/find-va-barcode', requireAuth, async (req, res) => {
         let chassis = (source === 'Taqega' ? row.shassy : row.R) || '';
         chassis = chassis.trim().toUpperCase();
 
-        const barcodeVal = (source === 'Taqega' ? (row.Barcod || row.NN) : (row.HH || row.KK)) || rawBarcode;
+        const barcodeVal = source === 'Taqega' ? '' : ((row.HH || row.KK) || rawBarcode);
 
         const formattedData = source === 'Taqega' ? {
             source: 'Taqega',
@@ -3167,9 +3178,9 @@ app.get('/api/register/find-va-barcode', requireAuth, async (req, res) => {
             DD: row.Date_ ? new Date(row.Date_).toISOString().slice(0, 10) : new Date().toISOString().slice(0, 10),
             resulat: row.resulat || '',
             Psulla: row.Psulla || '',
-            Barcod: barcodeVal,
-            HH: barcodeVal,
-            KK: barcodeVal
+            Barcod: '',
+            HH: '',
+            KK: ''
         } : {
             source: 'T1',
             id: row.id,
@@ -3497,12 +3508,20 @@ app.post('/api/register', requireAuth, async (req, res) => {
             }
         }
 
-        // ─── UNIQUE BARCODE <= 10 CHARACTERS GUARANTEE ───
+        // ─── UNIQUE BARCODE <= 10 CHARACTERS GUARANTEE (LETTERS & NUMBERS) ───
         let finalBarcode = (HH || KK || Barcode || '').trim().toUpperCase();
-        if (!finalBarcode || finalBarcode.length > 10 || finalBarcode === 'TC00000000' || finalBarcode === '*') {
+        const isValidBarcodeShape = (bc) => {
+            if (!bc || bc.length !== 10) return false;
+            if (bc === 'TC00000000' || bc.includes('*')) return false;
+            return /[A-Z]/.test(bc) && /[0-9]/.test(bc);
+        };
+
+        if (!isValidBarcodeShape(finalBarcode)) {
             finalBarcode = await generateUniqueBarcode(pool);
         } else {
-            const bcCheck = await pool.request().input('bc', sql.NVarChar, finalBarcode).query(`SELECT TOP 1 id FROM T1 WHERE HH = @bc OR KK = @bc`);
+            const bcCheck = await pool.request().input('bc', sql.NVarChar, finalBarcode).query(
+                `SELECT TOP 1 id FROM T1 WHERE HH = @bc OR KK = @bc UNION SELECT TOP 1 id FROM T1_backup WHERE HH = @bc OR KK = @bc`
+            );
             if (bcCheck.recordset.length > 0) {
                 finalBarcode = await generateUniqueBarcode(pool);
             }
