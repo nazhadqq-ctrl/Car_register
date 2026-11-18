@@ -7148,7 +7148,7 @@ async function onBarcodeVAChange() {
         if (typeof setTabloValue === 'function') setTabloValue(d.B || '');
         set('dfC', d.C || '');
         if (typeof setBashValue === 'function') setBashValue(d.C || '');
-        set('dfTo', (d.To && (d.To.includes('هاتووچۆ') || d.To.includes('پارێزگا'))) ? d.To : 'هاتووچۆی پارێزگای سلێمانی');
+        set('dfTo', (d.To && (d.To.includes('هاتووچۆ') || d.To.includes('پارێزگا'))) ? d.To : ((d.D && (d.D.includes('هاتووچۆ') || d.D.includes('پارێزگا'))) ? d.D : 'هاتووچۆی پارێزگای سلێمانی'));
         if (d.E && d.E.trim() !== '') {
             set('dfE', d.E);
         } else {
@@ -7172,8 +7172,8 @@ async function onBarcodeVAChange() {
         set('dfR', d.R || '');
         updateKeyLength();
 
-        // Fill exact Barcode from table column (Barcod in VA or KK in T1)
-        const tableBarcode = (d.Barcod || d.KK || barcode || '').trim();
+        // Fill exact Barcode from table column (Barcod in VA or HH/KK in T1)
+        const tableBarcode = (d.Barcod || d.HH || d.KK || barcode || '').trim();
         const bEl = document.getElementById('dfBarcode');
         if (bEl) {
             bEl.value = tableBarcode.substring(0, 10);
@@ -7256,8 +7256,8 @@ function populateRegistrationFields(r, fallbackPlate = '', fallbackTablo = '', f
         loadedVehicleId = null;
     }
     const vaInput = document.getElementById('dfBarcodeVA');
-    if (vaInput && (r.Barcod || r.KK)) {
-        vaInput.value = sanitizeEnglishBarcode(r.Barcod || r.KK);
+    if (vaInput && (r.Barcod || r.HH || r.KK)) {
+        vaInput.value = sanitizeEnglishBarcode(r.Barcod || r.HH || r.KK);
     }
     const set = (id, v) => {
         const el = document.getElementById(id);
@@ -7287,7 +7287,7 @@ function populateRegistrationFields(r, fallbackPlate = '', fallbackTablo = '', f
     if (typeof setTabloValue === 'function') setTabloValue(r.B || fallbackTablo || '');
     set('dfC', r.C || fallbackBash || '');
     if (typeof setBashValue === 'function') setBashValue(r.C || fallbackBash || '');
-    set('dfTo', (r.To && (r.To.includes('هاتووچۆ') || r.To.includes('پارێزگا'))) ? r.To : 'هاتووچۆی پارێزگای سلێمانی');
+    set('dfTo', (r.To && (r.To.includes('هاتووچۆ') || r.To.includes('پارێزگا'))) ? r.To : ((r.D && (r.D.includes('هاتووچۆ') || r.D.includes('پارێزگا'))) ? r.D : 'هاتووچۆی پارێزگای سلێمانی'));
     if (r.E && r.E.trim() !== '') {
         set('dfE', r.E);
     } else {
@@ -7321,7 +7321,7 @@ function populateRegistrationFields(r, fallbackPlate = '', fallbackTablo = '', f
         renderLiveBarcode(code);
         setPrintButtonState(false);
     } else {
-        const code = (r.KK || r.Barcod || (r.R ? generateUniqueBarcode() : 'TC00000000')).substring(0, 10);
+        const code = (r.HH || r.KK || r.Barcod || (r.R ? generateUniqueBarcode() : 'TC00000000')).substring(0, 10);
         if (bEl) {
             bEl.value = code;
             bEl.dataset.autoGen = 'false';
@@ -8090,7 +8090,7 @@ function getFormPayload() {
         A: val('dfA'),
         B: val('dfB'),
         C: val('dfC'),
-        D: val('dfD') || getActivePlace(),
+        D: val('dfTo') || 'هاتووچۆی پارێزگای سلێمانی',
         To: val('dfTo') || 'هاتووچۆی پارێزگای سلێمانی',
         E: val('dfE'),
         F: val('dfF') || '*',
@@ -8124,8 +8124,10 @@ function getFormPayload() {
         II: toEnDigits(val('dfII')) || '0',
         JJ: toEnDigits(val('dfJJ')) || '0',
         DD: val('dfDD'),
+        HH: val('dfBarcode') || val('dfStar') || '',
         KK: val('dfBarcode') || val('dfStar') || '',
         Barcode: val('dfBarcode') || val('dfStar') || '',
+        FF: val('dfD') || getActivePlace(),
         GG: currentUser?.name || currentUser?.username || ''
     };
 }
@@ -8233,14 +8235,16 @@ async function dfPrintInspection() {
     }
 
     const p = rData;
-    const barcodeCode = (p.KK || p.Barcode || (p.R ? ('TC' + (p.R.length >= 6 ? p.R.slice(-6) : p.R)) : 'TC00000000')).substring(0, 10);
+    const barcodeCode = (p.HH || p.KK || p.Barcode || (p.R ? ('TC' + (p.R.length >= 6 ? p.R.slice(-6) : p.R)) : 'TC00000000')).substring(0, 10);
     const barcodeSvg = generateCode128SVG(barcodeCode);
     const now = new Date();
     const timeStr = now.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: true });
     const dateStr = p.DD ? new Date(p.DD).toISOString().slice(0, 10) : now.toISOString().slice(0, 10);
     let toDirectorate = 'هاتووچۆی پارێزگای سلێمانی';
     const formToInput = (document.getElementById('dfTo') ? document.getElementById('dfTo').value.trim() : '');
-    if (formToInput && (formToInput.includes('هاتووچۆ') || formToInput.includes('پارێزگا'))) {
+    if (p.D && (p.D.includes('هاتووچۆ') || p.D.includes('پارێزگا'))) {
+        toDirectorate = p.D.trim();
+    } else if (formToInput && (formToInput.includes('هاتووچۆ') || formToInput.includes('پارێزگا'))) {
         toDirectorate = formToInput;
     } else if (p.To && (p.To.includes('هاتووچۆ') || p.To.includes('پارێزگا'))) {
         toDirectorate = p.To.trim();
@@ -8248,8 +8252,8 @@ async function dfPrintInspection() {
     toDirectorate = toDirectorate.replace(/^بەڕێوەبەرایەتی\s*/, '').trim();
     const formPlaceInput = (document.getElementById('dfD') ? document.getElementById('dfD').value.trim() : '');
     const userPlace = (currentUser && (currentUser.place || currentUser.Place_)) || '';
-    const placeName = p.D || formPlaceInput || userPlace || getActivePlace() || 'عمر عوسمان';
-    const userName = p.FF || currentUser?.name || currentUser?.username || '';
+    const placeName = p.FF || formPlaceInput || userPlace || getActivePlace() || 'عمر عوسمان';
+    const userName = p.GG || currentUser?.name || currentUser?.username || '';
 
     // ─── ROBUST NORMALIZATION FOR MODEL YEAR & INSPECTION FEE ───
     let valModel = (p.P !== undefined && p.P !== null && String(p.P).trim() !== '') ? String(p.P).trim() : (pForm.P ? String(pForm.P).trim() : '0');
@@ -8301,7 +8305,7 @@ async function dfPrintInspection() {
                         break-inside: avoid !important;
                     }
                     .rdlc-footer-section {
-                        margin-top: 4.5cm !important;
+                        margin-top: 3.5cm !important;
                         page-break-inside: avoid !important;
                         break-inside: avoid !important;
                     }
@@ -8335,7 +8339,7 @@ async function dfPrintInspection() {
                     break-inside: avoid;
                 }
                 .rdlc-footer-section {
-                    margin-top: 4.5cm;
+                    margin-top: 3.5cm;
                     width: 100%;
                     page-break-inside: avoid;
                     break-inside: avoid;
@@ -8513,7 +8517,7 @@ async function dfPrintInspection() {
                     align-items: center;
                     padding: 0 40px;
                     margin-top: 3px;
-                    margin-bottom: 4px;
+                    margin-bottom: 1cm;
                     page-break-inside: avoid;
                     break-inside: avoid;
                 }
@@ -8528,6 +8532,10 @@ async function dfPrintInspection() {
                     font-size: 12.5px;
                     background: #fff;
                 }
+                .rdlc-sig-officer {
+                    position: relative;
+                    left: -2cm;
+                }
 
                 /* 6. VERIFICATION ROW */
                 .rdlc-verify-line {
@@ -8539,6 +8547,13 @@ async function dfPrintInspection() {
                     margin-bottom: 3px;
                     page-break-inside: avoid;
                     break-inside: avoid;
+                }
+                .rdlc-verify-barads {
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    gap: 2cm;
+                    flex: 1;
                 }
                 .rdlc-verify-sub {
                     display: flex;
@@ -8762,7 +8777,7 @@ async function dfPrintInspection() {
                 <div class="rdlc-footer-section">
                     <!-- 5. SIGNATURES ROW -->
                     <div class="rdlc-signatures-row">
-                        <div class="rdlc-sig-box">
+                        <div class="rdlc-sig-box rdlc-sig-officer">
                             ئەفسەری پشکنین
                         </div>
                         <div class="rdlc-sig-box">
@@ -8772,13 +8787,15 @@ async function dfPrintInspection() {
 
                     <!-- 6. VERIFICATION LINE -->
                     <div class="rdlc-verify-line">
-                        <div class="rdlc-verify-sub">
-                            <span class="rdlc-border-box">${escapeHtml(p.F || '*')}</span>
-                        </div>
+                        <div class="rdlc-verify-barads">
+                            <div class="rdlc-verify-sub">
+                                <span class="rdlc-border-box">${escapeHtml(p.F || '*')}</span>
+                            </div>
 
-                        <div class="rdlc-verify-sub">
-                            <span class="rdlc-border-box">${escapeHtml(p.E || '')}</span>
-                            <span style="font-weight:800;font-size:13px;">پشکنینی بۆ کراوە لە لایەن بەڕادی هاتووچۆ</span>
+                            <div class="rdlc-verify-sub">
+                                <span class="rdlc-border-box">${escapeHtml(p.E || '')}</span>
+                                <span style="font-weight:800;font-size:13px;">پشکنینی بۆ کراوە لە لایەن بەڕادی هاتووچۆ</span>
+                            </div>
                         </div>
 
                         <div class="rdlc-verify-sub">

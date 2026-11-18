@@ -857,7 +857,7 @@ app.get('/api/dashboard/today-records', requireAuth, async (req, res) => {
                 filter += ' AND (GG = @userName OR FF = @userName OR FF = @userId OR GG = @userId)';
             }
             if (searchTerm) {
-                filter += ' AND (A LIKE @searchTerm OR R LIKE @searchTerm OR G LIKE @searchTerm OR E LIKE @searchTerm OR P LIKE @searchTerm OR KK LIKE @searchTerm)';
+                filter += ' AND (A LIKE @searchTerm OR R LIKE @searchTerm OR G LIKE @searchTerm OR E LIKE @searchTerm OR P LIKE @searchTerm OR HH LIKE @searchTerm OR KK LIKE @searchTerm)';
             }
             query = `
                 SELECT TOP 300
@@ -875,7 +875,7 @@ app.get('/api/dashboard/today-records', requireAuth, async (req, res) => {
                     DD as date_,
                     FF as registrar,
                     GG as checker,
-                    KK as barcode
+                    COALESCE(NULLIF(LTRIM(RTRIM(HH)), ''), KK) as barcode
                 FROM T1
                 WHERE ${filter}
                 ORDER BY id DESC
@@ -2071,7 +2071,7 @@ async function generateUniqueBarcode(pool) {
         const candidate = 'TC' + randomStr; // Exactly 10 characters!
         const check = await pool.request()
             .input('bc', sql.NVarChar, candidate)
-            .query(`SELECT TOP 1 id FROM T1 WHERE KK = @bc`);
+            .query(`SELECT TOP 1 id FROM T1 WHERE HH = @bc OR KK = @bc`);
         if (check.recordset.length === 0) {
             return candidate;
         }
@@ -2189,7 +2189,7 @@ app.get('/api/register/find-t1', requireAuth, async (req, res) => {
 
         if (cleanBarcode) {
             reqT1.input('t1Bc', sql.NVarChar, cleanBarcode);
-            query += ` OR (KK = @t1Bc OR R = @t1Bc) `;
+            query += ` OR (HH = @t1Bc OR KK = @t1Bc OR R = @t1Bc) `;
         }
 
         if (cleanPlate && cleanTablo && cleanBash) {
@@ -2277,7 +2277,9 @@ app.get('/api/register/find-t1', requireAuth, async (req, res) => {
                 B: r.B || 'سلێمانی',
                 C: r.C || 'تایبەت',
                 D: r.D || '',
-                To: (r.To && (r.To.includes('هاتووچۆ') || r.To.includes('پارێزگا'))) ? r.To : 'هاتووچۆی پارێزگای سلێمانی',
+                To: (r.D && (r.D.includes('هاتووچۆ') || r.D.includes('پارێزگا'))) ? r.D : 'هاتووچۆی پارێزگای سلێمانی',
+                FF: r.FF || '',
+                GG: r.GG || '',
                 E: r.E || '',
                 F: r.F || '*',
                 G: (r.G || '').trim(),
@@ -2306,8 +2308,9 @@ app.get('/api/register/find-t1', requireAuth, async (req, res) => {
                 II: r.II || 0,
                 JJ: r.JJ || 0,
                 DD: regDate,
-                KK: r.KK || '',
-                Barcod: r.KK || '',
+                HH: r.HH || r.KK || '',
+                KK: r.KK || r.HH || '',
+                Barcod: r.HH || r.KK || '',
                 user: r.FF,
                 updatedBy: r.GG
             }
@@ -2465,6 +2468,7 @@ app.get('/api/register/find', requireAuth, async (req, res) => {
                         B: existing.B || 'سلێمانی',
                         C: existing.C || 'تایبەت',
                         D: existing.D || '',
+                        To: (existing.D && (existing.D.includes('هاتووچۆ') || existing.D.includes('پارێزگا'))) ? existing.D : 'هاتووچۆی پارێزگای سلێمانی',
                         E: existing.E || '',
                         F: existing.F || '*',
                         G: (existing.G || '').trim(),
@@ -2493,9 +2497,12 @@ app.get('/api/register/find', requireAuth, async (req, res) => {
                         II: existing.II || 0,
                         JJ: existing.JJ || 0,
                         DD: regDate,
-                        Barcod: existing.KK || '',
-                        KK: existing.KK || '',
-                        user: existing.FF
+                        Barcod: existing.HH || existing.KK || '',
+                        HH: existing.HH || existing.KK || '',
+                        KK: existing.KK || existing.HH || '',
+                        FF: existing.FF || '',
+                        GG: existing.GG || '',
+                        user: existing.GG || existing.FF
                     });
                 } else {
                     // Registered on a past date: duplicate
@@ -2508,7 +2515,7 @@ app.get('/api/register/find', requireAuth, async (req, res) => {
                         tablo: existing.B,
                         bash: existing.C,
                         chassis: existing.R,
-                        user: existing.FF
+                        user: existing.GG || existing.FF
                     });
                 }
             }
@@ -2518,7 +2525,7 @@ app.get('/api/register/find', requireAuth, async (req, res) => {
         if (cleanBarcode) {
             const bRes = await pool.request()
                 .input('bc', sql.NVarChar, cleanBarcode)
-                .query(`SELECT TOP 1 * FROM T1 WHERE KK = @bc OR R = @bc ORDER BY id DESC`);
+                .query(`SELECT TOP 1 * FROM T1 WHERE HH = @bc OR KK = @bc OR R = @bc ORDER BY id DESC`);
             if (bRes.recordset.length > 0) {
                 const r = bRes.recordset[0];
                 
@@ -2595,8 +2602,9 @@ app.get('/api/register/find', requireAuth, async (req, res) => {
                     II: r.II || 0,
                     JJ: r.JJ || 0,
                     DD: r.DD ? new Date(r.DD).toISOString().slice(0, 10) : new Date().toISOString().slice(0, 10),
-                    KK: r.KK || cleanBarcode,
-                    Barcod: r.KK || cleanBarcode,
+                    HH: r.HH || r.KK || cleanBarcode,
+                    KK: r.KK || r.HH || cleanBarcode,
+                    Barcod: r.HH || r.KK || cleanBarcode,
                     resulat: ''
                 });
             } else {
@@ -2657,7 +2665,7 @@ app.get('/api/register/find', requireAuth, async (req, res) => {
                     const chkBarcodeBc = (r.Barcod || r.NN || cleanBarcode || '').trim().toUpperCase();
 
                     const chkReqBc = pool.request();
-                    let chkQueryBc = `SELECT TOP 1 id, A, B, C, R, DD, EE, FF, KK FROM T1 WHERE 1=0 `;
+                    let chkQueryBc = `SELECT TOP 1 id, A, B, C, R, DD, EE, FF, GG, HH, KK FROM T1 WHERE 1=0 `;
                     let hasChkCondBc = false;
 
                     if (chkPlateBc && chkTabloBc && chkBashBc) {
@@ -2686,7 +2694,7 @@ app.get('/api/register/find', requireAuth, async (req, res) => {
                     if (chkBarcodeBc && chkBarcodeBc !== '*') {
                         hasChkCondBc = true;
                         chkReqBc.input('chkBarcode', sql.NVarChar, chkBarcodeBc);
-                        chkQueryBc += ` OR (UPPER(LTRIM(RTRIM(KK))) = @chkBarcode)`;
+                        chkQueryBc += ` OR (UPPER(LTRIM(RTRIM(HH))) = @chkBarcode OR UPPER(LTRIM(RTRIM(KK))) = @chkBarcode)`;
                     }
 
                     if (hasChkCondBc) {
@@ -2704,7 +2712,7 @@ app.get('/api/register/find', requireAuth, async (req, res) => {
                         alreadyRegistered: isAlreadyInT1Bc,
                         t1Id: dupT1Bc ? dupT1Bc.id : null,
                         date: dupT1Bc ? (dupT1Bc.DD ? new Date(dupT1Bc.DD).toISOString().slice(0, 10) : (dupT1Bc.EE ? new Date(dupT1Bc.EE).toISOString().slice(0, 10) : 'نەزانراو')) : undefined,
-                        user: dupT1Bc ? dupT1Bc.FF : undefined,
+                        user: dupT1Bc ? (dupT1Bc.GG || dupT1Bc.FF) : undefined,
                         isToday: dupT1Bc ? (dupT1Bc.DD && new Date(dupT1Bc.DD).toDateString() === new Date().toDateString()) : false,
                         A: r.auto_no || '',
                         B: r.plet ? r.plet.replace(/ى/g, 'ی') : 'سلێمانی',
@@ -2820,7 +2828,7 @@ app.get('/api/register/find', requireAuth, async (req, res) => {
                 const chkBarcode = (r.Barcod || r.NN || cleanBarcode || '').trim().toUpperCase();
 
                 const chkReq = pool.request();
-                let chkQuery = `SELECT TOP 1 id, A, B, C, R, DD, EE, FF, KK FROM T1 WHERE 1=0 `;
+                let chkQuery = `SELECT TOP 1 id, A, B, C, R, DD, EE, FF, GG, HH, KK FROM T1 WHERE 1=0 `;
                 let hasChkCond = false;
 
                 if (chkPlate && chkTablo && chkBash) {
@@ -2849,7 +2857,7 @@ app.get('/api/register/find', requireAuth, async (req, res) => {
                 if (chkBarcode && chkBarcode !== '*') {
                     hasChkCond = true;
                     chkReq.input('chkBarcode', sql.NVarChar, chkBarcode);
-                    chkQuery += ` OR (UPPER(LTRIM(RTRIM(KK))) = @chkBarcode)`;
+                    chkQuery += ` OR (UPPER(LTRIM(RTRIM(HH))) = @chkBarcode OR UPPER(LTRIM(RTRIM(KK))) = @chkBarcode)`;
                 }
 
                 if (hasChkCond) {
@@ -2867,7 +2875,7 @@ app.get('/api/register/find', requireAuth, async (req, res) => {
                     alreadyRegistered: isAlreadyInT1,
                     t1Id: dupT1 ? dupT1.id : null,
                     date: dupT1 ? (dupT1.DD ? new Date(dupT1.DD).toISOString().slice(0, 10) : (dupT1.EE ? new Date(dupT1.EE).toISOString().slice(0, 10) : 'نەزانراو')) : undefined,
-                    user: dupT1 ? dupT1.FF : undefined,
+                    user: dupT1 ? (dupT1.GG || dupT1.FF) : undefined,
                     isToday: dupT1 ? (dupT1.DD && new Date(dupT1.DD).toDateString() === new Date().toDateString()) : false,
                     A: r.auto_no || cleanPlate,
                     B: r.plet ? r.plet.replace(/ى/g, 'ی') : (cleanTablo || 'سلێمانی'),
@@ -3084,13 +3092,17 @@ app.get('/api/register/find-va-barcode', requireAuth, async (req, res) => {
             const qT1 = `
                 SELECT TOP 1 * FROM T1
                 WHERE (
-                    KK = @bc
+                    HH = @bc
+                    OR REPLACE(HH, ' ', '') = @bcClean
+                    OR UPPER(HH) = @bcClean
+                    OR KK = @bc
                     OR REPLACE(KK, ' ', '') = @bcClean
                     OR UPPER(KK) = @bcClean
                     OR R = @bc
                     OR REPLACE(R, ' ', '') = @bcClean
                     OR A = @bc
                     OR REPLACE(A, ' ', '') = @bcClean
+                    OR HH LIKE @bcLike
                     OR KK LIKE @bcLike
                 )
                 ORDER BY id DESC
@@ -3116,7 +3128,7 @@ app.get('/api/register/find-va-barcode', requireAuth, async (req, res) => {
         let chassis = (source === 'Taqega' ? row.shassy : row.R) || '';
         chassis = chassis.trim().toUpperCase();
 
-        const barcodeVal = (source === 'Taqega' ? (row.Barcod || row.NN) : row.KK) || rawBarcode;
+        const barcodeVal = (source === 'Taqega' ? (row.Barcod || row.NN) : (row.HH || row.KK)) || rawBarcode;
 
         const formattedData = source === 'Taqega' ? {
             source: 'Taqega',
@@ -3156,6 +3168,7 @@ app.get('/api/register/find-va-barcode', requireAuth, async (req, res) => {
             resulat: row.resulat || '',
             Psulla: row.Psulla || '',
             Barcod: barcodeVal,
+            HH: barcodeVal,
             KK: barcodeVal
         } : {
             source: 'T1',
@@ -3164,6 +3177,9 @@ app.get('/api/register/find-va-barcode', requireAuth, async (req, res) => {
             B: row.B || 'سلێمانی',
             C: row.C || 'تایبەت',
             D: row.D || '',
+            To: (row.D && (row.D.includes('هاتووچۆ') || row.D.includes('پارێزگا'))) ? row.D : 'هاتووچۆی پارێزگای سلێمانی',
+            FF: row.FF || '',
+            GG: row.GG || '',
             E: row.E || '',
             F: row.F || '*',
             G: (row.G || '').trim(),
@@ -3193,6 +3209,7 @@ app.get('/api/register/find-va-barcode', requireAuth, async (req, res) => {
             JJ: row.JJ || 0,
             DD: row.DD ? new Date(row.DD).toISOString().slice(0, 10) : new Date().toISOString().slice(0, 10),
             Barcod: barcodeVal,
+            HH: barcodeVal,
             KK: barcodeVal
         };
 
@@ -3299,7 +3316,7 @@ app.get('/api/register/find-va-barcode', requireAuth, async (req, res) => {
         let dupId = null;
 
         if (source === 'Taqega') {
-            let t1CheckQuery = `SELECT TOP 1 id, A, B, C, R, DD, EE, FF, KK FROM T1 WHERE 1=0 `;
+            let t1CheckQuery = `SELECT TOP 1 id, A, B, C, R, DD, EE, FF, GG, HH, KK FROM T1 WHERE 1=0 `;
             const t1Req = pool.request();
             let hasT1Cond = false;
 
@@ -3330,7 +3347,7 @@ app.get('/api/register/find-va-barcode', requireAuth, async (req, res) => {
             if (barcodeVal && barcodeVal !== '*') {
                 hasT1Cond = true;
                 t1Req.input('cpBarcode', sql.NVarChar, String(barcodeVal).trim().toUpperCase());
-                t1CheckQuery += ` OR (UPPER(LTRIM(RTRIM(KK))) = @cpBarcode)`;
+                t1CheckQuery += ` OR (UPPER(LTRIM(RTRIM(HH))) = @cpBarcode OR UPPER(LTRIM(RTRIM(KK))) = @cpBarcode)`;
             }
 
             if (hasT1Cond) {
@@ -3341,7 +3358,7 @@ app.get('/api/register/find-va-barcode', requireAuth, async (req, res) => {
                     isDuplicate = true;
                     dupId = existing.id;
                     dupDate = existing.DD ? new Date(existing.DD).toISOString().slice(0, 10) : (existing.EE ? new Date(existing.EE).toISOString().slice(0, 10) : 'نەزانراو');
-                    dupUser = existing.FF;
+                    dupUser = existing.GG || existing.FF;
                 }
             }
         } else {
@@ -3349,7 +3366,7 @@ app.get('/api/register/find-va-barcode', requireAuth, async (req, res) => {
             isDuplicate = true;
             dupId = row.id;
             dupDate = row.DD ? new Date(row.DD).toISOString().slice(0, 10) : (row.EE ? new Date(row.EE).toISOString().slice(0, 10) : 'نەزانراو');
-            dupUser = row.FF;
+            dupUser = row.GG || row.FF;
         }
 
         return res.json({
@@ -3375,8 +3392,8 @@ app.get('/api/register/find-va-barcode', requireAuth, async (req, res) => {
 app.post('/api/register', requireAuth, async (req, res) => {
     try {
         let {
-            A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U,
-            V, W, X, Y, Z, AA, BB, CC, II, JJ, GG, DD, KK, Barcode
+            A, B, C, D, To, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U,
+            V, W, X, Y, Z, AA, BB, CC, II, JJ, FF, GG, HH, DD, KK, Barcode
         } = req.body;
 
         if (!A && !R) {
@@ -3445,7 +3462,7 @@ app.post('/api/register', requireAuth, async (req, res) => {
                 dupReq.input('dR', sql.NVarChar, cleanR);
                 dupWhere += ` OR (UPPER(LTRIM(RTRIM(R))) = @dR OR UPPER(REPLACE(R, ' ', '')) = @dR)`;
             }
-            const dupCheck = await dupReq.query(`SELECT TOP 1 id, A, B, C, R, DD, FF FROM T1 ${dupWhere} ORDER BY id DESC`);
+            const dupCheck = await dupReq.query(`SELECT TOP 1 id, A, B, C, R, DD, FF, GG FROM T1 ${dupWhere} ORDER BY id DESC`);
             
             if (dupCheck.recordset.length > 0) {
                 const existing = dupCheck.recordset[0];
@@ -3453,7 +3470,7 @@ app.post('/api/register', requireAuth, async (req, res) => {
                 return res.status(409).json({
                     success: false,
                     isDuplicate: true,
-                    message: `⚠️ ئەم ئوتومبێلە پێشتر تۆمارکراوە بەم زانیارییانە (ژمارە: ${existing.A} - تابلۆ: ${existing.B} - بەش: ${existing.C} - شاسی: ${existing.R}) لە بەرواری (${dateStr}) لە لایەن (${existing.FF || '-'}). هەموو ڕیکۆردێک تەنها یەکجار داخل دەکرێت و دووبارە قبوڵ ناکرێتەوە! لە کاتی پێویست دەبێت ئەدمین بیسڕێتەوە.`
+                    message: `⚠️ ئەم ئوتومبێلە پێشتر تۆمارکراوە بەم زانیارییانە (ژمارە: ${existing.A} - تابلۆ: ${existing.B} - بەش: ${existing.C} - شاسی: ${existing.R}) لە بەرواری (${dateStr}) لە لایەن (${existing.GG || existing.FF || '-'}). هەموو ڕیکۆردێک تەنها یەکجار داخل دەکرێت و دووبارە قبوڵ ناکرێتەوە! لە کاتی پێویست دەبێت ئەدمین بیسڕێتەوە.`
                 });
             }
         }
@@ -3481,11 +3498,11 @@ app.post('/api/register', requireAuth, async (req, res) => {
         }
 
         // ─── UNIQUE BARCODE <= 10 CHARACTERS GUARANTEE ───
-        let finalBarcode = (KK || Barcode || '').trim().toUpperCase();
-        if (!finalBarcode || finalBarcode.length > 10 || finalBarcode === 'TC00000000') {
+        let finalBarcode = (HH || KK || Barcode || '').trim().toUpperCase();
+        if (!finalBarcode || finalBarcode.length > 10 || finalBarcode === 'TC00000000' || finalBarcode === '*') {
             finalBarcode = await generateUniqueBarcode(pool);
         } else {
-            const bcCheck = await pool.request().input('bc', sql.NVarChar, finalBarcode).query(`SELECT TOP 1 id FROM T1 WHERE KK = @bc`);
+            const bcCheck = await pool.request().input('bc', sql.NVarChar, finalBarcode).query(`SELECT TOP 1 id FROM T1 WHERE HH = @bc OR KK = @bc`);
             if (bcCheck.recordset.length > 0) {
                 finalBarcode = await generateUniqueBarcode(pool);
             }
@@ -3511,11 +3528,14 @@ app.post('/api/register', requireAuth, async (req, res) => {
         const safeCC = toAsciiDigits(CC != null ? String(CC) : '0') || '0';
         const safeJJ = toAsciiDigits(JJ != null ? String(JJ) : '0') || '0';
 
+        const toDirectorate = String(To || D || 'هاتووچۆی پارێزگای سلێمانی').trim();
+        const inspectionPlace = String(FF || req.session.user.place || '').trim();
+
         const insertRes = await pool.request()
             .input('A', sql.NVarChar, A || '')
             .input('B', sql.NVarChar, B || '')
             .input('C', sql.NVarChar, C || 'تایبەت')
-            .input('D', sql.NVarChar, D || req.session.user.place || '')
+            .input('D', sql.NVarChar, toDirectorate)
             .input('E', sql.NVarChar, E || '')
             .input('F', sql.NVarChar, F || '*')
             .input('G', sql.NVarChar, G || '')
@@ -3543,19 +3563,20 @@ app.post('/api/register', requireAuth, async (req, res) => {
             .input('CC', sql.NVarChar, safeCC)
             .input('II', sql.NVarChar, safeFee)
             .input('JJ', sql.NVarChar, safeJJ)
-            .input('FF', sql.NVarChar, user)
+            .input('FF', sql.NVarChar, inspectionPlace)
             .input('GG', sql.NVarChar, req.session.user.name || req.session.user.username || '')
+            .input('HH', sql.NVarChar, finalBarcode)
             .input('DD', sql.NVarChar, DD || new Date().toISOString().slice(0, 10))
             .input('KK', sql.NVarChar, finalBarcode)
             .query(`SET XACT_ABORT ON;
                     BEGIN TRY
                         BEGIN TRANSACTION;
-                        INSERT INTO T1 (A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U, V, W, X, Y, Z, AA, BB, CC, II, JJ, FF, GG, DD, EE, KK)
-                        VALUES (@A, @B, @C, @D, @E, @F, @G, @H, @I, @J, @K, @L, @M, @N, @O, @P, @Q, @R, @S, @T, @U, @V, @W, @X, @Y, @Z, @AA, @BB, @CC, @II, @JJ, @FF, @GG, @DD, GETDATE(), @KK);
+                        INSERT INTO T1 (A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U, V, W, X, Y, Z, AA, BB, CC, II, JJ, FF, GG, HH, DD, EE, KK)
+                        VALUES (@A, @B, @C, @D, @E, @F, @G, @H, @I, @J, @K, @L, @M, @N, @O, @P, @Q, @R, @S, @T, @U, @V, @W, @X, @Y, @Z, @AA, @BB, @CC, @II, @JJ, @FF, @GG, @HH, @DD, GETDATE(), @KK);
                         DECLARE @newId INT = SCOPE_IDENTITY();
 
-                        INSERT INTO T1_backup (A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U, V, W, X, Y, Z, AA, BB, CC, II, JJ, FF, GG, DD, EE, KK)
-                        VALUES (@A, @B, @C, @D, @E, @F, @G, @H, @I, @J, @K, @L, @M, @N, @O, @P, @Q, @R, @S, @T, @U, @V, @W, @X, @Y, @Z, @AA, @BB, @CC, @II, @JJ, @FF, @GG, @DD, GETDATE(), @KK);
+                        INSERT INTO T1_backup (A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U, V, W, X, Y, Z, AA, BB, CC, II, JJ, FF, GG, HH, DD, EE, KK)
+                        VALUES (@A, @B, @C, @D, @E, @F, @G, @H, @I, @J, @K, @L, @M, @N, @O, @P, @Q, @R, @S, @T, @U, @V, @W, @X, @Y, @Z, @AA, @BB, @CC, @II, @JJ, @FF, @GG, @HH, @DD, GETDATE(), @KK);
                         COMMIT TRANSACTION;
                         SELECT @newId AS newId;
                     END TRY
@@ -3587,8 +3608,8 @@ app.put('/api/register/:id', requireAuth, async (req, res) => {
         const toAsciiDigits = str => String(str ?? '').replace(/[٠-٩]/g, d => '٠١٢٣٤٥٦٧٨٩'.indexOf(d)).replace(/[۰-۹]/g, d => '۰۱۲۳۴۵۶۷۸۹'.indexOf(d)).trim();
 
         let {
-            A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U,
-            V, W, X, Y, Z, AA, BB, CC, II, JJ, GG, DD, KK, Barcode
+            A, B, C, D, To, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U,
+            V, W, X, Y, Z, AA, BB, CC, II, JJ, FF, GG, HH, DD, KK, Barcode
         } = req.body;
 
         const pool = await getPool();
@@ -3598,7 +3619,7 @@ app.put('/api/register/:id', requireAuth, async (req, res) => {
         const existingCheck = await pool.request()
             .input('chkId', sql.Int, id)
             .query(`
-                SELECT id, DD, EE, FF,
+                SELECT id, A, B, C, R, HH, KK, DD, EE, FF,
                        CASE 
                            WHEN TRY_CONVERT(date, DD) = CONVERT(date, GETDATE()) 
                              OR TRY_CONVERT(date, EE) = CONVERT(date, GETDATE()) 
@@ -3731,12 +3752,23 @@ app.put('/api/register/:id', requireAuth, async (req, res) => {
         const safeCC = toAsciiDigits(CC != null ? String(CC) : '0') || '0';
         const safeJJ = toAsciiDigits(JJ != null ? String(JJ) : '0') || '0';
 
+        const toDirectorate = String(To || D || 'هاتووچۆی پارێزگای سلێمانی').trim();
+        const inspectionPlace = String(FF || curRec.FF || user.place || '').trim();
+        const origA = String(curRec.A || '').trim();
+        const origB = String(curRec.B || '').trim();
+        const origC = String(curRec.C || '').trim();
+        const origR = String(curRec.R || '').trim().toUpperCase();
+        const origHH = String(curRec.HH || '').trim();
+        const origKK = String(curRec.KK || '').trim();
+        const origBc = origHH || origKK;
+        const finalKK = String(HH || KK || Barcode || origBc || '').trim();
+
         await pool.request()
             .input('id', sql.Int, id)
             .input('A', sql.NVarChar, A || '')
             .input('B', sql.NVarChar, B || '')
             .input('C', sql.NVarChar, C || 'تایبەت')
-            .input('D', sql.NVarChar, D || '')
+            .input('D', sql.NVarChar, toDirectorate)
             .input('E', sql.NVarChar, E || '')
             .input('F', sql.NVarChar, F || '*')
             .input('G', sql.NVarChar, G || '')
@@ -3764,18 +3796,76 @@ app.put('/api/register/:id', requireAuth, async (req, res) => {
             .input('CC', sql.NVarChar, safeCC)
             .input('II', sql.NVarChar, safeFee)
             .input('JJ', sql.NVarChar, safeJJ)
+            .input('FF', sql.NVarChar, inspectionPlace)
             .input('GG', sql.NVarChar, userName)
-            .input('KK', sql.NVarChar, KK || Barcode || '')
+            .input('HH', sql.NVarChar, finalKK)
+            .input('KK', sql.NVarChar, finalKK)
             .input('origDD', sql.NVarChar, origDD)
-            .query(`UPDATE T1 SET
-                        A=@A, B=@B, C=@C, D=@D, E=@E, F=@F, G=@G, H=@H, I=@I, J=@J,
-                        K=@K, L=@L, M=@M, N=@N, O=@O, P=@P, Q=@Q, R=@R, S=@S, T=@T,
-                        U=@U, V=@V, W=@W, X=@X, Y=@Y, Z=@Z, AA=@AA, BB=@BB, CC=@CC,
-                        II=@II, JJ=@JJ, GG=@GG, KK=@KK
-                    WHERE id = @id;
+            .input('origA', sql.NVarChar, origA)
+            .input('origB', sql.NVarChar, origB)
+            .input('origC', sql.NVarChar, origC)
+            .input('origR', sql.NVarChar, origR)
+            .input('origBc', sql.NVarChar, origBc)
+            .query(`SET XACT_ABORT ON;
+                    BEGIN TRY
+                        BEGIN TRANSACTION;
 
-                    INSERT INTO T1_backup (A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U, V, W, X, Y, Z, AA, BB, CC, II, JJ, FF, GG, DD, EE, KK)
-                    VALUES (@A, @B, @C, @D, @E, @F, @G, @H, @I, @J, @K, @L, @M, @N, @O, @P, @Q, @R, @S, @T, @U, @V, @W, @X, @Y, @Z, @AA, @BB, @CC, @II, @JJ, @GG, N'UPDATE_AUDIT', @origDD, GETDATE(), @KK);`);
+                        UPDATE T1 SET
+                            A=@A, B=@B, C=@C, D=@D, E=@E, F=@F, G=@G, H=@H, I=@I, J=@J,
+                            K=@K, L=@L, M=@M, N=@N, O=@O, P=@P, Q=@Q, R=@R, S=@S, T=@T,
+                            U=@U, V=@V, W=@W, X=@X, Y=@Y, Z=@Z, AA=@AA, BB=@BB, CC=@CC,
+                            II=@II, JJ=@JJ, FF=@FF, GG=@GG, HH=@HH, KK=@KK
+                        WHERE id = @id;
+
+                        DECLARE @bUpdated INT = 0;
+
+                        IF (@origBc <> N'')
+                        BEGIN
+                            UPDATE T1_backup SET
+                                A=@A, B=@B, C=@C, D=@D, E=@E, F=@F, G=@G, H=@H, I=@I, J=@J,
+                                K=@K, L=@L, M=@M, N=@N, O=@O, P=@P, Q=@Q, R=@R, S=@S, T=@T,
+                                U=@U, V=@V, W=@W, X=@X, Y=@Y, Z=@Z, AA=@AA, BB=@BB, CC=@CC,
+                                II=@II, JJ=@JJ, FF=@FF, GG=@GG, HH=@HH, KK=@KK
+                            WHERE HH = @origBc OR KK = @origBc;
+                            SET @bUpdated = @@ROWCOUNT;
+                        END
+
+                        IF (@bUpdated = 0 AND @origR <> N'' AND @origR <> N'*')
+                        BEGIN
+                            UPDATE T1_backup SET
+                                A=@A, B=@B, C=@C, D=@D, E=@E, F=@F, G=@G, H=@H, I=@I, J=@J,
+                                K=@K, L=@L, M=@M, N=@N, O=@O, P=@P, Q=@Q, R=@R, S=@S, T=@T,
+                                U=@U, V=@V, W=@W, X=@X, Y=@Y, Z=@Z, AA=@AA, BB=@BB, CC=@CC,
+                                II=@II, JJ=@JJ, FF=@FF, GG=@GG, HH=@HH, KK=@KK
+                            WHERE UPPER(LTRIM(RTRIM(R))) = @origR
+                              AND (TRY_CONVERT(date, DD) = TRY_CONVERT(date, @origDD) OR TRY_CONVERT(date, EE) = TRY_CONVERT(date, @origDD));
+                            SET @bUpdated = @@ROWCOUNT;
+                        END
+
+                        IF (@bUpdated = 0 AND @origA <> N'')
+                        BEGIN
+                            UPDATE T1_backup SET
+                                A=@A, B=@B, C=@C, D=@D, E=@E, F=@F, G=@G, H=@H, I=@I, J=@J,
+                                K=@K, L=@L, M=@M, N=@N, O=@O, P=@P, Q=@Q, R=@R, S=@S, T=@T,
+                                U=@U, V=@V, W=@W, X=@X, Y=@Y, Z=@Z, AA=@AA, BB=@BB, CC=@CC,
+                                II=@II, JJ=@JJ, FF=@FF, GG=@GG, HH=@HH, KK=@KK
+                            WHERE A = @origA AND B = @origB AND C = @origC
+                              AND (TRY_CONVERT(date, DD) = TRY_CONVERT(date, @origDD) OR TRY_CONVERT(date, EE) = TRY_CONVERT(date, @origDD));
+                            SET @bUpdated = @@ROWCOUNT;
+                        END
+
+                        IF (@bUpdated = 0)
+                        BEGIN
+                            INSERT INTO T1_backup (A, B, C, D, E, F, G, H, I, J, K, L, M, N, O, P, Q, R, S, T, U, V, W, X, Y, Z, AA, BB, CC, II, JJ, FF, GG, HH, DD, EE, KK)
+                            VALUES (@A, @B, @C, @D, @E, @F, @G, @H, @I, @J, @K, @L, @M, @N, @O, @P, @Q, @R, @S, @T, @U, @V, @W, @X, @Y, @Z, @AA, @BB, @CC, @II, @JJ, @FF, @GG, @HH, @origDD, GETDATE(), @KK);
+                        END
+
+                        COMMIT TRANSACTION;
+                    END TRY
+                    BEGIN CATCH
+                        IF @@TRANCOUNT > 0 ROLLBACK TRANSACTION;
+                        THROW;
+                    END CATCH;`);
 
         res.json({ success: true, message: 'زانیاری ئوتومبێل بە سەرکەوتوویی نوێکرایەوە' });
     } catch (err) {
@@ -3828,7 +3918,7 @@ app.get('/api/personal-records', requireAuth, async (req, res) => {
             .query(`
                 SELECT TOP 100 id, A as plateNo, B as province, C as type, I as model, L as color, R as chassis, G as owner, DD as date
                 FROM T1 
-                WHERE FF = @u1 OR FF = @u2
+                WHERE GG = @u1 OR GG = @u2 OR FF = @u1 OR FF = @u2
                 ORDER BY DD DESC
             `);
         const stats = await pool.request()
@@ -3839,7 +3929,7 @@ app.get('/api/personal-records', requireAuth, async (req, res) => {
                     COUNT(*) as totalEntered,
                     SUM(CASE WHEN CAST(DD as date) = CAST(GETDATE() as date) THEN 1 ELSE 0 END) as todayEntered
                 FROM T1 
-                WHERE FF = @u1 OR FF = @u2
+                WHERE GG = @u1 OR GG = @u2 OR FF = @u1 OR FF = @u2
             `);
         res.json({
             records: result.recordset,
@@ -3898,7 +3988,7 @@ app.get('/api/advanced-search', requireAuth, async (req, res) => {
             const userPlace = (currentUser.place || '').trim();
             if (userPlace && userPlace !== '*' && userPlace !== 'هەموو') {
                 request.input('advUserPlace', sql.NVarChar, userPlace);
-                conditions.push('(D = @advUserPlace OR B = @advUserPlace)');
+                conditions.push('(FF = @advUserPlace OR D = @advUserPlace OR B = @advUserPlace)');
             }
         }
 
