@@ -100,10 +100,11 @@ async function publish() {
             content = 'BASE64:' + buf.toString('base64');
             sizeKb = (buf.length / 1024).toFixed(1);
         } else {
-            const buf = fs.readFileSync(fullPath);
-            hash = sha256Buffer(buf);
-            content = buf.toString('utf8');
-            sizeKb = (buf.length / 1024).toFixed(1);
+            const rawText = fs.readFileSync(fullPath, 'utf8').replace(/\r\n/g, '\n');
+            const normBuf = Buffer.from(rawText, 'utf8');
+            hash = sha256Buffer(normBuf);
+            content = rawText;
+            sizeKb = (normBuf.length / 1024).toFixed(1);
         }
         manifest.files[relFile] = hash;
         prepared.push({ relFile, content, sizeKb });

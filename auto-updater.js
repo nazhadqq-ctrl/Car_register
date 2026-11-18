@@ -22,6 +22,16 @@ function sha256(bufOrStr) {
   return crypto.createHash('sha256').update(buf).digest('hex');
 }
 
+function hashMatches(relPath, buf, expectedHash) {
+  if (!expectedHash) return true;
+  if (sha256(buf) === expectedHash) return true;
+  if (!ALLOWED_BINARY_EXT.test(relPath)) {
+    const lfNormalized = buf.toString('utf8').replace(/\r\n/g, '\n');
+    if (sha256(lfNormalized) === expectedHash) return true;
+  }
+  return false;
+}
+
 function validateDownloadedContent(relPath, rawBufOrStr) {
   const isTextCode = /\.(js|html|json)$/i.test(relPath);
   if (!isTextCode) return;
@@ -212,8 +222,7 @@ async function checkForUpdates(force = false) {
         const content = await fetchUrl(fileUrl, 12000);
 
         if (manifestHashes && manifestHashes[relPath]) {
-          const actualHash = sha256(content);
-          if (actualHash !== manifestHashes[relPath]) {
+          if (!hashMatches(relPath, content, manifestHashes[relPath])) {
             throw new Error(`SHA-256 mismatch for ${relPath}`);
           }
         }
@@ -228,37 +237,31 @@ async function checkForUpdates(force = false) {
       }
     }
 
-    // Abort entire update if any integrity or syntax error occurred
-    if (errors.length > 0) {
+    // If GitHub failed integrity/network checks, fall through to Central Database fallback before aborting
+    if (errors.length === 0) {
+      const updatedFiles = [];
+      for (const item of staged) {
+        atomicWrite(item.targetPath, item.content);
+        updatedFiles.push(item.relPath);
+      }
+
+      try {
+        atomicWrite(path.join(__dirname, 'version.json'), Buffer.from(JSON.stringify(remoteGitHubVer, null, 2), 'utf8'));
+      } catch (e) {}
+
       return {
-        success: false,
-        hasUpdate: false,
+        success: true,
+        hasUpdate: true,
         source: 'github',
-        errors,
-        message: 'نوێکردنەوە ڕاگیرا بەهۆی نەبوونی هاوتایی ئەمنی یان هەڵەی فایلەکان!'
+        previousVersion: localVer.version,
+        newVersion: remoteGitHubVer.version,
+        newBuild: remoteGitHubVer.build,
+        updatedFiles,
+        message: `سیستەمەکە بە سەرکەوتوویی و پارێزراوی لە GitHub نوێکرایەوە بۆ وەشانی (${remoteGitHubVer.version})!`
       };
+    } else {
+      console.warn('⚠️ [GitHub] پشکنینی ئەمنی یان داگرتن سەرکەوتوو نەبوو، هەوڵدان لە ڕێگەی داتابەیسی ناوەندی:', errors.join(' | '));
     }
-
-    const updatedFiles = [];
-    for (const item of staged) {
-      atomicWrite(item.targetPath, item.content);
-      updatedFiles.push(item.relPath);
-    }
-
-    try {
-      atomicWrite(path.join(__dirname, 'version.json'), Buffer.from(JSON.stringify(remoteGitHubVer, null, 2), 'utf8'));
-    } catch (e) {}
-
-    return {
-      success: true,
-      hasUpdate: true,
-      source: 'github',
-      previousVersion: localVer.version,
-      newVersion: remoteGitHubVer.version,
-      newBuild: remoteGitHubVer.build,
-      updatedFiles,
-      message: `سیستەمەکە بە سەرکەوتوویی و پارێزراوی لە GitHub نوێکرایەوە بۆ وەشانی (${remoteGitHubVer.version})!`
-    };
   }
 
   // ═══════════════════════════════════════════════════════════════
@@ -335,8 +338,7 @@ async function checkForUpdates(force = false) {
               }
 
               if (dbManifestHashes && dbManifestHashes[relPath]) {
-                const actualHash = sha256(buf);
-                if (actualHash !== dbManifestHashes[relPath]) {
+                if (!hashMatches(relPath, buf, dbManifestHashes[relPath])) {
                   throw new Error(`SHA-256 mismatch for ${relPath}`);
                 }
               }
