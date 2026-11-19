@@ -1,14 +1,14 @@
 {
   "version": "1.8.5",
   "build": 185,
-  "generatedAt": "2026-11-19T19:20:48.233Z",
+  "generatedAt": "2026-11-19T19:38:20.093Z",
   "files": {
     "version.json": "d8a6f8c407276e91455be8a14cb5b098259882669b9ad3e30da86a990617aa7d",
     "security.js": "8765788b8bc619adf58331a40c3b0260adcdc4670701176b721387520d9b5601",
     "server.js": "a5229aa745be5091a1577a09e64e07217ce2587498813994e602619b57aa6687",
     "auto-updater.js": "e688dac73664cd8c5a08ec20bc8309d0994f11e1e15539017525f1c2a8f24c45",
     "package.json": "7b2d794179ec79a7d9fcabaafb25e83bcccbfeea7c46893a6e2d51d022f8fa65",
-    "public/index.html": "b7ef6f40f621f532ea55993642b82d1c690eb60fd66e6a3c962aa3b5c6008c86",
+    "public/index.html": "a70f9345e2a5d90fc0ae46b87f784dad4c86dc2c8a7c478265159dc8be0133b5",
     "public/login.html": "41d610f4e80e035d4bd4d49278bb643d5bf0c4cb9f1289997367b5d548b69562",
     "public/profile-avatar.jpg": "dba7a4321bd779a8b43380208ba613f50863b7e86585615ea1132255b1e60a0b",
     "public/traffic-it-logo.jpg": "7692bbde9a6e19bdc0524b2bc7bf42e84492a0c5106ce61ef6ea22b965e4ccc1",
