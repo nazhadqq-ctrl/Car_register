@@ -3715,198 +3715,211 @@
 </div>
 
 <!-- ══ RAPORT PAGE (MAIN SECTION) ════════════════════════════════ -->
-<div class="page" id="page-raport">
-    <div class="rap-card">
-        <!-- Windows Form Titlebar -->
-        <div class="rap-titlebar">
-            <div class="rap-titlebar-left">
-                <span style="font-size: 16px;">📄</span>
-                <span class="rap-titlebar-title">فۆڕمی نوسراوی ڕاپۆرتی کێشەی ئۆتۆمبێل</span>
+<div class="page theme-midnight" id="page-raport">
+    <div class="rap-card modal-desktop" style="max-width:1380px; width:98%; margin:10px auto; border-radius:12px; border:1px solid #1e2d4a; box-shadow:0 25px 65px -15px rgba(0,0,0,0.65), 0 0 0 1px rgba(56,189,248,0.2); overflow:hidden; background:#090e17;">
+        <!-- Windows Form Window Header -->
+        <div class="desktop-window-titlebar" style="background:linear-gradient(180deg, #1e293b 0%, #0f172a 100%); border-bottom:1px solid #334668; display:flex; align-items:center; justify-content:space-between; padding:0 14px; height:34px; user-select:none;">
+            <div style="display:flex;align-items:center;gap:10px;">
+                <span style="font-size:15px;">📄</span>
+                <span class="desktop-window-title" style="font-size:13.5px; font-weight:800; color:#f1f5f9; display:flex; align-items:center; gap:8px;">ALL - فۆڕمی نوسراوی ڕاپۆرتی کێشەی ئۆتۆمبێل</span>
+                <span class="df-theme-status-pill" id="rapThemeStatusPill" style="font-size:10px; font-weight:800; padding:1px 8px; border-radius:12px; background:rgba(56,189,248,0.18); color:#38bdf8; border:1px solid rgba(56,189,248,0.35);">🌙 دارکی شاهانە (Midnight)</span>
             </div>
-            <div class="rap-titlebar-right">
-                <!-- Royal Dark Mode Toggle Button -->
-                <button type="button" class="rap-titlebar-btn" id="rapBtnDarkToggle" onclick="toggleRaportDarkMode()" title="گۆڕینی دۆخی دارکی شاهانە / دۆخی ڕووناک">
+
+            <div style="display:flex;align-items:center;gap:8px;">
+                <!-- Quick Dark / Light Toggle Button -->
+                <button type="button" class="df-titlebar-btn" id="rapBtnDarkToggle" onclick="toggleRaportDarkMode()" title="گۆڕینی دۆخی دارکی شاهانە / دۆخی ڕووناک">
                     <span id="rapDarkIcon">🌙</span>
                     <span id="rapDarkText">دارکی شاهانە</span>
                 </button>
-                <button type="button" class="rap-titlebar-btn" onclick="switchTab('dashboard')" title="گەڕانەوە بۆ داشبۆرد">
+
+                <!-- Dashboard Return Button -->
+                <button type="button" class="df-titlebar-btn" onclick="switchTab('dashboard')" title="گەڕانەوە بۆ داشبۆرد">
                     <span>داشبۆرد ↩</span>
                 </button>
             </div>
         </div>
 
-        <div class="rap-body">
-            <!-- Top Controls Row: Sequence, Place, Date, Title, User Badge -->
-            <div class="rap-header-row">
-                <!-- Right Side: Sequence, Place, Date -->
-                <div class="rap-header-controls">
-                    <div class="rap-header-item">
-                        <span class="rap-label">ز - ڕۆشتوو</span>
-                        <input type="text" id="rapOutS" class="rap-out-s" readonly value="3407">
-                    </div>
-                    <div class="rap-header-item">
-                        <span class="rap-label">شوێنی پشکنین</span>
-                        <input type="text" id="rapPlace" class="rap-input" list="globalPlaceList" style="width: 170px; text-align: center;" placeholder="شوێنی پشکنین..." onchange="onGlobalPlaceChange(this.value)">
-                    </div>
-                    <div class="rap-header-item">
-                        <span class="rap-label">بەروار</span>
-                        <input type="date" id="rapDate" class="rap-input" style="width: 160px; text-align: center;">
-                    </div>
-                </div>
-
-                <!-- Center Title & User Badge -->
-                <div class="rap-header-title-wrap">
-                    <h2 class="rap-main-title">نوسراوی ڕاپۆرت سەبارەت بە کێشەی ئۆتۆمبێل</h2>
-                    <span id="rapBadgeUser" class="rap-user-badge">9</span>
-                </div>
-            </div>
-
-            <!-- BARCODE SCANNER ROW (گەڕان بە پێ ی بارکۆد ڕیدەر بۆ فۆڕمی ڕاپۆرت) -->
-            <div class="rap-barcode-row">
-                <div style="display:flex; align-items:center; gap:12px; flex-wrap:wrap;">
-                    <span style="font-size:22px; line-height:1;">📷</span>
-                    <label for="rapBarcodeVA" class="rap-barcode-label">گەڕان بە پێ ی بارکۆد ڕیدەر:</label>
-                    <input type="text" id="rapBarcodeVA" class="rap-barcode-input auto-en-upper" placeholder="بارکۆد لێرە لێبدە..." autocomplete="off" lang="en" dir="ltr" autocapitalize="characters" spellcheck="false" oninput="this.value = sanitizeEnglishBarcode(this.value);" onchange="onRaportBarcodeVAChange()" onkeydown="if(event.key==='Enter'){event.preventDefault();event.stopPropagation();onRaportBarcodeVAChange();}">
-                    <button type="button" class="rap-barcode-btn" onclick="onRaportBarcodeVAChange()">
-                        <span>🔍</span>
-                        <span>گەڕان بە بارکۆد</span>
-                    </button>
-                </div>
-                <div id="rapBarcodeVASpinner" style="display:none; font-size:13.5px; font-weight:900; color:#2563eb;">
-                    ⏳ لە وەرگرتنی داتادایە لە تەیبڵی تاقیگە (VA)...
-                </div>
-            </div>
-
-            <!-- Cyan Search Banner: (ژمارە + تابلۆ + بەش ئنجا گەڕان) -->
-            <div class="rap-search-banner">
-                <div style="display: flex; align-items: center; gap: 14px; flex-wrap: wrap;">
-                    <!-- 1. Car Number -->
-                    <div style="display: flex; align-items: center; gap: 8px;">
-                        <span class="rap-search-label">ژمارەی ئۆتۆمبێل</span>
-                        <input type="text" id="rapSearchCarNo" class="rap-input" placeholder="A59099" style="width: 150px; text-align: center; font-weight: 900;" onkeydown="if(event.key==='Enter'){event.preventDefault();doRaportSearch();}">
-                    </div>
-
-                    <!-- 2. Tablo -->
-                    <div style="display: flex; align-items: center; gap: 8px;">
-                        <span class="rap-search-label">تابلۆی</span>
-                        <input list="rapSearchTabloList" id="rapSearchTablo" class="rap-input" style="width: 190px; text-align: center;" value="سلێمانی" placeholder="تابلۆ..." onkeydown="if(event.key==='Enter'){event.preventDefault();doRaportSearch();}">
-                        <datalist id="rapSearchTabloList"></datalist>
-                    </div>
-
-                    <!-- 3. Bash -->
-                    <div style="display: flex; align-items: center; gap: 8px;">
-                        <span class="rap-search-label">بەش</span>
-                        <input list="rapSearchBashList" id="rapSearchBash" class="rap-input" style="width: 140px; text-align: center;" value="تایبەت" placeholder="بەش..." onkeydown="if(event.key==='Enter'){event.preventDefault();doRaportSearch();}">
-                        <datalist id="rapSearchBashList"></datalist>
-                    </div>
-
-                    <!-- 4. Search Button -->
-                    <button type="button" id="rapBtnSearch" class="rap-search-btn" onclick="doRaportSearch()">بگەڕێ</button>
-                </div>
-
-                <div id="rapSearchSpinner" style="display: none; font-size: 13.5px; font-weight: 800; color: #0284c7;">
-                    ⏳ لە گەڕاندایە لە تەیبڵی تاقیگە (VA)...
-                </div>
-            </div>
-
+        <div class="desktop-body-wrapper rap-body" style="background:#0d1527; padding:12px 18px 20px 18px; direction:rtl;">
             <!-- Dynamic Alert Box for Search / Save feedback -->
             <div id="rapAlertBox"></div>
 
-            <!-- Form Inputs Table/Rows -->
-            <div class="rap-form-rows">
-                <!-- Row 1: Car No + Tablo + Bash | Car Model -->
-                <div class="rap-row">
-                    <div class="rap-col">
-                        <span class="rap-label" style="width: 130px;">ژمارەی ئۆتۆمبێل</span>
-                        <input type="text" id="rapA" class="rap-input" placeholder="ژمارە" style="width: 130px; text-align: center; font-weight: 900;">
-                        <select id="rapB" class="rap-select" style="flex: 1;"></select>
-                        <select id="rapC" class="rap-select" style="width: 120px;"></select>
+            <div class="desktop-form-container">
+                <!-- TOP BANNER: INSPECTION PLACE, CENTER BILINGUAL TITLE, SEQUENCE, DATE, USER BADGE -->
+                <div class="df-top-banner rap-top-banner" style="background:#131d33; border:1px solid #1e2d4a; border-radius:8px; padding:8px 16px; margin-bottom:10px; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px;">
+                    <!-- RIGHT CORNER: شوێنی پشکنین (Inspection Place) -->
+                    <div style="display:flex;align-items:center;gap:6px;">
+                        <span class="df-label" style="font-size:12.5px;font-weight:800;white-space:nowrap;color:#cbd5e1;">📍 شوێنی پشکنین:</span>
+                        <input type="text" id="rapPlace" list="globalPlaceList" class="df-input" style="width:165px;font-weight:800;font-size:13px;text-align:center;background:#0b1120;color:#f8fafc;border:1px solid #334668;" placeholder="شوێنی پشکنین..." onchange="onGlobalPlaceChange(this.value)">
                     </div>
-                    <div class="rap-col">
-                        <span class="rap-label" style="width: 130px;">جۆری ئۆتۆمبێل</span>
-                        <input type="text" id="rapD" class="rap-input" placeholder="جۆری ئۆتۆمبێل (مۆدێل)" style="flex: 1;">
+
+                    <!-- CENTER TITLE -->
+                    <div style="text-align:center;font-size:16px;font-weight:900;letter-spacing:0.3px;display:flex;align-items:center;gap:10px;">
+                        <span class="df-top-title-text" style="font-weight:900;color:#60a5fa;">بەڕێوەبەرایەتی هاتووچۆی پارێزگای سلێمانی</span>
+                        <span style="display:inline-block;width:5px;height:5px;background:#94a3b8;border-radius:50%;"></span>
+                        <span style="color:#ef4444;background:rgba(239,68,68,0.12);padding:2px 10px;border-radius:6px;border:1px solid rgba(239,68,68,0.3);font-size:14px;font-weight:900;">هۆبەی OPVI - ڕاپۆرتی کێشەی ئۆتۆمبێل</span>
+                    </div>
+
+                    <!-- LEFT CORNER: Sequence, Date, User Badge -->
+                    <div style="display:flex;align-items:center;gap:10px;">
+                        <div style="display:flex;align-items:center;gap:6px;">
+                            <span class="df-label" style="font-size:12px;font-weight:800;color:#cbd5e1;">ز - ڕۆشتوو:</span>
+                            <input type="text" id="rapOutS" class="df-input df-pink" style="width:75px;font-weight:900;text-align:center;font-family:'JetBrains Mono', Consolas, monospace;background:#1e293b;border:1px solid #475569;color:#fde047;" readonly value="3407">
+                        </div>
+                        <div style="display:flex;align-items:center;gap:6px;">
+                            <span class="df-label" style="font-size:12px;font-weight:800;color:#cbd5e1;">بەروار:</span>
+                            <input type="date" id="rapDate" class="df-input" style="width:145px;font-weight:800;text-align:center;background:#0b1120;color:#f8fafc;border:1px solid #334668;color-scheme:dark;">
+                        </div>
+                        <div class="df-user-badge rap-user-badge" id="rapBadgeUser" title="کۆدی بەکارهێنەر" style="background:#0b1120;color:#f8fafc;border:2px solid #ef4444;font-weight:900;font-size:17px;padding:2px 12px;border-radius:6px;min-width:40px;text-align:center;font-family:'JetBrains Mono', Consolas, monospace;">9</div>
                     </div>
                 </div>
 
-                <!-- Row 2: Chassis | Color | Model Year -->
-                <div class="rap-row">
-                    <div class="rap-col">
-                        <span class="rap-badge-chassis">ژمارەی شاسی</span>
-                        <input type="text" id="rapG" class="rap-input" placeholder="ژمارەی شاسی سەرەکی" style="flex: 1; text-align: center; font-weight: 900;">
+                <!-- BARCODE SCANNER ROW (گەڕان بە بارکۆد ڕیدەر لە تەیبڵی ڤی ئەی VA) -->
+                <div class="df-barcode-scanner-bar rap-barcode-row" style="background:linear-gradient(135deg, #112338 0%, #0e3b5e 100%); border:1.5px solid #2563eb; border-radius:8px; padding:8px 16px; margin-bottom:10px; display:flex; align-items:center; justify-content:space-between; gap:12px; box-shadow:0 4px 15px rgba(37,99,235,0.2);">
+                    <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
+                        <span style="font-size:18px; line-height:1;">📷</span>
+                        <label for="rapBarcodeVA" style="font-size:13px; font-weight:800; cursor:pointer; white-space:nowrap; color:#93c5fd;">گەڕان بە پێی بارکۆد ڕیدەر:</label>
+                        <input type="text" id="rapBarcodeVA" class="df-input auto-en-upper" placeholder="بارکۆد لێرە لێبدە..." autocomplete="off" lang="en" dir="ltr" autocapitalize="characters" spellcheck="false" style="width:280px; height:32px; font-size:15.5px; font-weight:800; text-align:center; outline:none; direction:ltr !important; font-family:'JetBrains Mono', Consolas, monospace !important; text-transform:uppercase; background:#0b1120; color:#f8fafc; border:1px solid #38bdf8;" oninput="this.value = sanitizeEnglishBarcode(this.value);" onchange="onRaportBarcodeVAChange()" onkeydown="if(event.key==='Enter'||event.keyCode===13||event.key==='Tab'){event.preventDefault();event.stopPropagation();onRaportBarcodeVAChange();}">
+                        <button type="button" class="df-btn-search" style="height:32px; padding:0 18px; font-size:13px; background:#2563eb; color:#fff; border:none; border-radius:5px; font-weight:800; cursor:pointer;" onclick="onRaportBarcodeVAChange()">
+                            <span>🔍 گەڕان بە بارکۆد</span>
+                        </button>
                     </div>
-                    <div class="rap-col">
-                        <span class="rap-label" style="width: 130px;">ڕەنگی سوار ڕەو</span>
-                        <input type="text" id="rapF" class="rap-input" placeholder="ڕەنگ" style="flex: 1;">
-                        <span class="rap-label" style="margin-right: 6px;">مۆدێل</span>
-                        <input type="text" id="rapE" class="rap-input" value="0" style="width: 95px; text-align: center; font-weight: 900;">
-                    </div>
-                </div>
-
-                <!-- Row 3: Qamara | Citizen Name -->
-                <div class="rap-row">
-                    <div class="rap-col">
-                        <span class="rap-label" style="width: 130px;">ژمارەی قەماره</span>
-                        <input type="text" id="rapH" class="rap-input" value="*" style="flex: 1; text-align: center;">
-                    </div>
-                    <div class="rap-col">
-                        <span class="rap-label" style="width: 130px;">بە ناوی هاوڵاتی</span>
-                        <input type="text" id="rapM" class="rap-input rap-citizen-input" placeholder="ناوی سیانی هاوڵاتی" style="flex: 1;">
+                    <div id="rapBarcodeVASpinner" style="display:none; font-size:12.5px; font-weight:800; color:#38bdf8;">
+                        ⏳ لە وەرگرتنی داتادایە لە تەیبڵی تاقیگە (VA)...
                     </div>
                 </div>
 
-                <!-- Row 4: Trailer 1 Color | Trailer 1 Chassis -->
-                <div class="rap-row">
-                    <div class="rap-col">
-                        <span class="rap-label" style="width: 130px;">ڕەنگی عارەبانە1</span>
-                        <input type="text" id="rapJ" class="rap-input" placeholder="ڕەنگی عەرەبانە 1" style="flex: 1;">
+                <!-- Cyan Search Banner: (ژمارە + تابلۆ + بەش ئنجا گەڕان) -->
+                <div class="rap-search-banner" style="background:rgba(14, 165, 233, 0.08); border:1px solid rgba(56, 189, 248, 0.28); border-radius:8px; padding:8px 14px; margin-bottom:10px; display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px;">
+                    <div style="display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+                        <!-- 1. Car Number -->
+                        <div style="display: flex; align-items: center; gap: 6px;">
+                            <span class="df-label" style="background:#082f49; border-color:#38bdf8; color:#bae6fd;">ژمارەی ئۆتۆمبێل</span>
+                            <input type="text" id="rapSearchCarNo" class="df-input auto-en-upper" placeholder="A59099" style="width: 140px; text-align: center; font-weight: 900; font-family:'JetBrains Mono', Consolas, monospace; background:#0b1120; color:#f8fafc; border:1px solid #334668;" onkeydown="if(event.key==='Enter'){event.preventDefault();doRaportSearch();}">
+                        </div>
+
+                        <!-- 2. Tablo -->
+                        <div style="display: flex; align-items: center; gap: 6px;">
+                            <span class="df-label">تابلۆی</span>
+                            <input list="rapSearchTabloList" id="rapSearchTablo" class="df-input" style="width: 165px; text-align: center; background:#0b1120; color:#f8fafc; border:1px solid #334668;" value="سلێمانی" placeholder="تابلۆ..." onkeydown="if(event.key==='Enter'){event.preventDefault();doRaportSearch();}">
+                            <datalist id="rapSearchTabloList"></datalist>
+                        </div>
+
+                        <!-- 3. Bash -->
+                        <div style="display: flex; align-items: center; gap: 6px;">
+                            <span class="df-label">بەش</span>
+                            <input list="rapSearchBashList" id="rapSearchBash" class="df-input" style="width: 130px; text-align: center; background:#0b1120; color:#f8fafc; border:1px solid #334668;" value="تایبەت" placeholder="بەش..." onkeydown="if(event.key==='Enter'){event.preventDefault();doRaportSearch();}">
+                            <datalist id="rapSearchBashList"></datalist>
+                        </div>
+
+                        <!-- 4. Search Button -->
+                        <button type="button" id="rapBtnSearch" class="df-btn-search" style="height:32px; padding:0 20px; font-size:13px; background:linear-gradient(135deg, #0284c7 0%, #0369a1 100%); color:#fff; border:none; border-radius:5px; font-weight:800; cursor:pointer;" onclick="doRaportSearch()">
+                            <span>🔍 بگەڕێ</span>
+                        </button>
                     </div>
-                    <div class="rap-col">
-                        <span class="rap-label" style="width: 170px;">ژمارەی شاسی عەرەبانە</span>
-                        <input type="text" id="rapI" class="rap-input" value="*" style="flex: 1; text-align: center; font-weight: 900;">
+
+                    <div id="rapSearchSpinner" style="display: none; font-size: 12.5px; font-weight: 800; color: #38bdf8;">
+                        ⏳ لە گەڕاندایە لە تەیبڵی تاقیگە (VA)...
                     </div>
                 </div>
 
-                <!-- Row 5: Trailer 2 Color | Trailer 2 Chassis -->
-                <div class="rap-row">
-                    <div class="rap-col">
-                        <span class="rap-label" style="width: 130px;">ڕەنگی عارەبانە2</span>
-                        <input type="text" id="rapL" class="rap-input" placeholder="ڕەنگی عەرەبانە 2" style="flex: 1;">
+                <!-- Form Inputs Table/Rows -->
+                <div class="desktop-fields-grid" style="display:flex; flex-direction:column; gap:8px;">
+                    <!-- Row 1: Car No + Tablo + Bash | Car Model -->
+                    <div class="df-row">
+                        <span class="df-label" style="background:#1e3a8a; border-color:#3b82f6; color:#dbeafe; width:125px;">ژمارەی ئۆتۆمبێل</span>
+                        <input type="text" id="rapA" class="df-input df-plate auto-en-upper" placeholder="ژمارە" style="width: 140px; text-align: center; font-weight: 900; font-family:'JetBrains Mono', Consolas, monospace; font-size:16px;">
+                        
+                        <span class="df-label" style="width:75px;">تابلۆی</span>
+                        <select id="rapB" class="df-select" style="width: 170px;"></select>
+                        
+                        <span class="df-label" style="width:65px;">بەش</span>
+                        <select id="rapC" class="df-select" style="width: 130px;"></select>
+
+                        <span class="df-label" style="width:115px;">جۆری ئۆتۆمبێل</span>
+                        <input type="text" id="rapD" class="df-input" placeholder="جۆری ئۆتۆمبێل (مۆدێل)" style="flex: 1; font-weight:800;">
                     </div>
-                    <div class="rap-col">
-                        <span class="rap-label" style="width: 170px;">ژمارەی شاسی عەرەبانە2</span>
-                        <input type="text" id="rapK" class="rap-input" value="*" style="flex: 1; text-align: center; font-weight: 900;">
+
+                    <!-- Row 2: Chassis | Color | Model Year -->
+                    <div class="df-row">
+                        <span class="df-label" style="background:#082f49; border-color:#38bdf8; color:#bae6fd; width:125px;">ژمارەی شاسی</span>
+                        <input type="text" id="rapG" class="df-input auto-en-upper" placeholder="ژمارەی شاسی سەرەکی" style="flex: 1; text-align: center; font-weight: 900; font-family:'JetBrains Mono', Consolas, Courier New, monospace; font-size:16px; letter-spacing:1px; color:#38bdf8;">
+
+                        <span class="df-label" style="width:115px;">ڕەنگی سوار ڕەو</span>
+                        <input type="text" id="rapF" class="df-input" placeholder="ڕەنگ" style="width: 220px; font-weight:800;">
+
+                        <span class="df-label" style="background:#064e3b; border-color:#10b981; color:#a7f3d0; width:75px;">مۆدێل</span>
+                        <input type="text" id="rapE" class="df-input" value="0" style="width: 100px; text-align: center; font-weight: 900;">
+                    </div>
+
+                    <!-- Row 3: Qamara | Citizen Name -->
+                    <div class="df-row">
+                        <span class="df-label" style="width:125px;">ژمارەی قەماره</span>
+                        <input type="text" id="rapH" class="df-input" value="*" style="width: 280px; text-align: center; font-family:'JetBrains Mono', Consolas, monospace;">
+
+                        <span class="df-label" style="background:#451a03; border-color:#f59e0b; color:#fef08a; width:130px;">بە ناوی هاوڵاتی</span>
+                        <input type="text" id="rapM" class="df-input" placeholder="ناوی سیانی هاوڵاتی" style="flex: 1; font-weight:800; font-size:14px; border-color:rgba(245,158,11,0.5);">
+                    </div>
+
+                    <!-- Row 4: Trailer 1 Color | Trailer 1 Chassis -->
+                    <div class="df-row">
+                        <span class="df-label" style="width:125px;">ڕەنگی عارەبانە1</span>
+                        <input type="text" id="rapJ" class="df-input" placeholder="ڕەنگی عەرەبانە 1" style="width: 280px;">
+
+                        <span class="df-label" style="width:160px;">ژمارەی شاسی عەرەبانە</span>
+                        <input type="text" id="rapI" class="df-input" value="*" style="flex: 1; text-align: center; font-weight: 900; font-family:'JetBrains Mono', Consolas, monospace;">
+                    </div>
+
+                    <!-- Row 5: Trailer 2 Color | Trailer 2 Chassis -->
+                    <div class="df-row">
+                        <span class="df-label" style="width:125px;">ڕەنگی عارەبانە2</span>
+                        <input type="text" id="rapL" class="df-input" placeholder="ڕەنگی عەرەبانە 2" style="width: 280px;">
+
+                        <span class="df-label" style="width:160px;">ژمارەی شاسی عەرەبانە2</span>
+                        <input type="text" id="rapK" class="df-input" value="*" style="flex: 1; text-align: center; font-weight: 900; font-family:'JetBrains Mono', Consolas, monospace;">
+                    </div>
+
+                    <!-- Row 6: Barad 1 | Barad 2 -->
+                    <div class="df-row">
+                        <span class="df-label" style="width:125px;">بەڕادی هاتووچۆ 1</span>
+                        <select id="rapQ" class="df-select" style="flex: 1;"></select>
+
+                        <span class="df-label" style="width:130px;">بەڕادی هاتووچۆ 2</span>
+                        <select id="rapR" class="df-select" style="flex: 1;"></select>
+                    </div>
+
+                    <!-- Row 7: Reason Badge + Reason Input -->
+                    <div class="df-row" style="margin-top:2px;">
+                        <span class="df-label" style="background:linear-gradient(135deg, #dc2626 0%, #991b1b 100%); border:1px solid #ef4444; color:#ffffff; box-shadow:0 2px 8px rgba(220,38,38,0.4); width:190px; font-weight:900;">دەینێرین بۆتان بەمەبەستی</span>
+                        <input type="text" id="rapN" class="df-input" list="rapReasonsList" placeholder="هۆکار و تێبینی لیژنە بنووسە یان لە لیستەکە هەڵبژێرە..." style="flex: 1; height:36px; font-size:14px; font-weight:700; border-color:rgba(239,68,68,0.5);">
+                        <datalist id="rapReasonsList"></datalist>
                     </div>
                 </div>
 
-                <!-- Row 6: Barad 2 | Barad 1 -->
-                <div class="rap-row">
-                    <div class="rap-col">
-                        <span class="rap-label" style="width: 130px;">بەڕادی هاتووچۆ 2</span>
-                        <select id="rapR" class="rap-select" style="flex: 1;"></select>
+                <!-- Bottom Action Buttons Dock -->
+                <div class="rap-actions-row" style="background:linear-gradient(180deg, #131d33 0%, #0d1527 100%); border:1px solid #1e2d4a; border-radius:8px; padding:10px 16px; margin-top:14px; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px; box-shadow:0 4px 15px rgba(0,0,0,0.3);">
+                    <div style="display:flex; align-items:center; gap:10px; flex-wrap:wrap;">
+                        <button type="button" id="btnRapSave" class="df-btn-primary" style="background:linear-gradient(135deg, #059669 0%, #10b981 100%); color:#ffffff; font-weight:900; font-size:13.5px; padding:8px 22px; border:1px solid #34d399; border-radius:6px; box-shadow:0 4px 14px rgba(16, 185, 129, 0.4); cursor:pointer; display:inline-flex; align-items:center; gap:6px; transition:all 0.15s ease;" onclick="saveRaportRecord()">
+                            <span>💾</span>
+                            <span>تۆمار کردنی زانیاری</span>
+                        </button>
+                        
+                        <button type="button" id="btnRapPrint" class="df-btn-primary" style="background:linear-gradient(135deg, #0284c7 0%, #38bdf8 100%); color:#ffffff; font-weight:900; font-size:13.5px; padding:8px 22px; border:1px solid #7dd3fc; border-radius:6px; box-shadow:0 4px 14px rgba(56, 189, 248, 0.4); cursor:pointer; display:inline-flex; align-items:center; gap:6px; transition:all 0.15s ease;" onclick="printRaportLetter()">
+                            <span>🖨️</span>
+                            <span>چاپ کردنی ڕاپۆرت</span>
+                        </button>
+                        
+                        <button type="button" id="btnRapCorrect" class="df-btn-primary" style="background:linear-gradient(135deg, #d97706 0%, #f59e0b 100%); color:#ffffff; font-weight:900; font-size:13.5px; padding:8px 20px; border:1px solid #fde047; border-radius:6px; box-shadow:0 4px 14px rgba(245, 158, 11, 0.4); cursor:pointer; display:inline-flex; align-items:center; gap:6px; transition:all 0.15s ease;" onclick="updateT1FromRaport()">
+                            <span>🔄</span>
+                            <span>ڕاست کردنەوەی زانیاری لە کاتی ڕاکێشان</span>
+                        </button>
                     </div>
-                    <div class="rap-col">
-                        <span class="rap-label" style="width: 170px;">بەڕادی هاتووچۆ 1</span>
-                        <select id="rapQ" class="rap-select" style="flex: 1;"></select>
+
+                    <div>
+                        <button type="button" id="btnRapNew" class="df-btn-secondary" style="background:linear-gradient(135deg, #334155 0%, #1e293b 100%); color:#f1f5f9; font-weight:800; font-size:13.5px; padding:8px 20px; border:1px solid #475569; border-radius:6px; cursor:pointer; display:inline-flex; align-items:center; gap:6px; transition:all 0.15s ease;" onclick="resetRaportForm()">
+                            <span>✨</span>
+                            <span>فۆڕمی نوێ (پاککردنەوە)</span>
+                        </button>
                     </div>
-                </div>
-
-                <!-- Row 7: Red Badge "دەینێرین بۆتان بەمەبەستی" + Reason Input/Combobox (SWAPPED: Badge FIRST on Right, Input SECOND on Left) -->
-                <div class="rap-row rap-reason-row">
-                    <span class="rap-reason-badge">دەینێرین بۆتان بەمەبەستی</span>
-                    <input type="text" id="rapN" class="rap-input rap-reason-input" list="rapReasonsList" placeholder="هۆکار و تێبینی لیژنە بنووسە یان لە لیستەکە هەڵبژێرە...">
-                    <datalist id="rapReasonsList"></datalist>
-                </div>
-            </div>
-
-            <!-- Bottom Action Buttons -->
-            <div class="rap-actions-row">
-                <div class="rap-actions-group">
-                    <button type="button" id="btnRapSave" class="rap-btn-action rap-btn-save" onclick="saveRaportRecord()">تۆمار کردنی زانیاری</button>
-                    <button type="button" id="btnRapPrint" class="rap-btn-action rap-btn-print" onclick="printRaportLetter()">چاپ کردنی ڕاپۆرت</button>
-                    <button type="button" id="btnRapCorrect" class="rap-btn-action rap-btn-correct" onclick="updateT1FromRaport()">ڕاست کردنەوەی زانیاری لە کاتی ڕاکێشان</button>
-                </div>
-                <div>
-                    <button type="button" id="btnRapNew" class="rap-btn-action rap-btn-new" onclick="resetRaportForm()">فۆڕمی نوێ (پاککردنەوە)</button>
                 </div>
             </div>
         </div>
@@ -10959,7 +10972,7 @@ let _raportCurrentId = null;
 
 // ─── RAPORT FORM THEME CONTROLLER (ROYAL DARK MODE - دارکی شاهانە) ────
 function initRaportTheme() {
-    const saved = localStorage.getItem('traffic_raport_theme') || 'light';
+    const saved = localStorage.getItem('traffic_raport_theme') || 'midnight';
     applyRaportTheme(saved);
 }
 
@@ -10989,6 +11002,10 @@ function applyRaportTheme(themeName) {
     if (icon && text) {
         icon.textContent = isDark ? '☀️' : '🌙';
         text.textContent = isDark ? 'ڕووناک' : 'دارکی شاهانە';
+    }
+    const pill = document.getElementById('rapThemeStatusPill');
+    if (pill) {
+        pill.textContent = isDark ? '🌙 دارکی شاهانە (Midnight)' : '☀️ کلاسیک ڕووناک';
     }
 }
 
