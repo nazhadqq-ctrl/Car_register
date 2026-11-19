@@ -913,7 +913,7 @@ app.get('/api/dashboard/today-records', requireAuth, async (req, res) => {
                 filter += ' AND (R = @userName OR R = @userId)';
             }
             if (searchTerm) {
-                filter += ' AND (A LIKE @searchTerm OR D LIKE @searchTerm OR F LIKE @searchTerm OR H LIKE @searchTerm OR I LIKE @searchTerm)';
+                filter += ' AND (A LIKE @searchTerm OR G LIKE @searchTerm OR D LIKE @searchTerm OR M LIKE @searchTerm OR N LIKE @searchTerm)';
             }
             query = `
                 SELECT TOP 300
@@ -921,14 +921,21 @@ app.get('/api/dashboard/today-records', requireAuth, async (req, res) => {
                     A as plateNo,
                     B as province,
                     C as plateType,
-                    D as chassis,
-                    E as chassisProblem,
-                    F as carType,
-                    G as model,
-                    H as problem,
-                    I as sentTo,
+                    D as carType,
+                    E as model,
+                    F as color,
+                    G as chassis,
+                    H as qamara,
+                    I as arabana1_chassis,
+                    J as arabana1_color,
+                    K as arabana2_chassis,
+                    L as arabana2_color,
+                    M as owner,
+                    N as problem,
+                    N as note,
                     O as date_,
-                    P as place,
+                    P as directorate,
+                    Q as place,
                     R as registrar,
                     S as outSeq
                 FROM RAP
@@ -996,11 +1003,18 @@ app.get('/api/suspicious', requireAuth, async (req, res) => {
             year: r.E,
             color: r.F,
             chassis: r.G,
-            oldChassis: r.I,
-            barad: r.M,
+            qamara: r.H,
+            arabana1_chassis: r.I,
+            arabana1_color: r.J,
+            arabana2_chassis: r.K,
+            arabana2_color: r.L,
+            owner: r.M,
             note: r.N,
             date: r.O,
-            checker: r.R
+            directorate: r.P,
+            place: r.Q,
+            checker: r.R,
+            outSeq: r.S
         }));
         res.json(mapped);
     } catch (err) {
@@ -1015,11 +1029,11 @@ app.get('/api/raport/init', requireAuth, async (req, res) => {
         const pool = await getPool();
         const cu = req.session.user || {};
 
-        const [rSeq, rPlaces, rTablos, rBashes, rBarads, rReasons] = await Promise.all([
+        const [rSeq, rPlaces, rTablos, rBashes, rBarads, rReasons, rDirectorates] = await Promise.all([
             pool.request().query(`SELECT ISNULL(MAX(S), 0) + 1 AS nextS FROM RAP`),
             pool.request().query(`
-                SELECT DISTINCT P AS place FROM RAP 
-                WHERE P IS NOT NULL AND LEN(TRIM(P)) > 0 AND P != '*' AND P != '0'
+                SELECT DISTINCT Q AS place FROM RAP 
+                WHERE Q IS NOT NULL AND LEN(TRIM(Q)) > 0 AND Q != '*' AND Q != '0'
                 UNION
                 SELECT DISTINCT Place_ AS place FROM Tbl_User 
                 WHERE Place_ IS NOT NULL AND LEN(TRIM(Place_)) > 0 AND Place_ != '*'
@@ -1040,6 +1054,11 @@ app.get('/api/raport/init', requireAuth, async (req, res) => {
                 SELECT TOP 20 N as reason, COUNT(*) as cnt FROM RAP 
                 WHERE N IS NOT NULL AND LEN(TRIM(N)) > 3 
                 GROUP BY N ORDER BY cnt DESC
+            `),
+            pool.request().query(`
+                SELECT DISTINCT P AS directorate FROM RAP 
+                WHERE P IS NOT NULL AND LEN(TRIM(P)) > 0 AND P != '*' AND P != '0'
+                ORDER BY directorate
             `)
         ]);
 
@@ -1049,6 +1068,9 @@ app.get('/api/raport/init', requireAuth, async (req, res) => {
         const bashes = rBashes.recordset.map(x => x.bash).filter(Boolean);
         const barads = rBarads.recordset.map(x => x.Barad).filter(Boolean);
         const reasons = rReasons.recordset.map(x => x.reason.trim()).filter(Boolean);
+        let directorates = rDirectorates.recordset.map(x => x.directorate).filter(Boolean);
+        if (!directorates.includes('سلێمانی')) directorates.unshift('سلێمانی');
+        if (!directorates.includes('هەڵەبجە')) directorates.push('هەڵەبجە');
 
         res.json({
             success: true,
@@ -1058,6 +1080,7 @@ app.get('/api/raport/init', requireAuth, async (req, res) => {
             bashes,
             barads,
             reasons,
+            directorates,
             currentUser: {
                 username: cu.username || '',
                 name: cu.name || cu.username || '',
@@ -1417,13 +1440,13 @@ app.post('/api/raport', requireAuth, async (req, res) => {
 
         const dateVal = b.O ? new Date(b.O) : new Date();
         const dateStr = b.O ? String(b.O).slice(0, 10) : new Date().toISOString().slice(0, 10);
-        const userName = (req.session?.user?.name || req.session?.user?.username || 'سیستەم').trim();
-
-        const placeVal = String(b.place || b.P || req.session?.user?.place || 'بێستون').trim();
+        const userName = String(b.R || req.session?.user?.name || req.session?.user?.username || 'سیستەم').trim();
+        const placeVal = String(b.Q || b.place || req.session?.user?.place || 'بێستون').trim();
         const tabloVal = String(b.B || '').trim();
         const bashVal  = String(b.C || '').trim();
-        const barad1   = String(b.Q || '').trim();
-        const barad2   = String(b.R || '').trim();
+        const directorateVal = String(b.P || b.directorate || tabloVal || 'سلێمانی').trim();
+        const barad1   = String(b.barad1 || placeVal).trim();
+        const barad2   = String(b.barad2 || userName).trim();
 
         // 1. INSERT INTO RAP table
         const insertRapReq = pool.request()
@@ -1434,16 +1457,16 @@ app.post('/api/raport', requireAuth, async (req, res) => {
             .input('E', sql.NVarChar, String(b.E || '0').trim())
             .input('F', sql.NVarChar, String(b.F || '').trim())
             .input('G', sql.NVarChar, String(b.G || '').trim())
-            .input('H', sql.NVarChar, String(b.H || '').trim())
-            .input('I', sql.NVarChar, String(b.I || '').trim())
+            .input('H', sql.NVarChar, String(b.H || '*').trim())
+            .input('I', sql.NVarChar, String(b.I || '*').trim())
             .input('J', sql.NVarChar, String(b.J || '').trim())
-            .input('K', sql.NVarChar, String(b.K || '').trim())
+            .input('K', sql.NVarChar, String(b.K || '*').trim())
             .input('L', sql.NVarChar, String(b.L || '').trim())
             .input('M', sql.NVarChar, String(b.M || '').trim())
             .input('N', sql.NVarChar, String(b.N || '').trim())
             .input('O', sql.Date, dateVal)
-            .input('P', sql.NVarChar, tabloVal || 'سلێمانی')
-            .input('Q', sql.NVarChar, placeVal || 'بێستون')
+            .input('P', sql.NVarChar, directorateVal)
+            .input('Q', sql.NVarChar, placeVal)
             .input('R', sql.NVarChar, userName)
             .input('S', sql.Int, sVal);
 

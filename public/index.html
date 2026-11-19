@@ -2343,52 +2343,458 @@
             align-items: center;
         }
 
-        /* Form Rows & Gap */
-        .rap-form-rows {
-            display: flex;
-            flex-direction: column;
-            gap: 14px;
-        }
-        .rap-row {
-            display: flex;
-            gap: 16px;
-            align-items: center;
-            flex-wrap: wrap;
-        }
-        .rap-col {
-            flex: 1;
-            min-width: 320px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
+        /* ══════════════════════════════════════════════════════════════════
+           OFFICIAL REPORT SHEET STYLES (100% REPLICA OF Report23.rdlc)
+        ══════════════════════════════════════════════════════════════════ */
+        .rap-rdlc-sheet {
+            background: var(--rap-card-bg);
+            border: 2px solid var(--rap-card-border);
+            border-radius: 8px;
+            padding: 24px 32px;
+            margin: 16px 0;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.08);
+            font-family: 'Speda', 'NRT Reg', Tahoma, Arial, sans-serif;
+            color: var(--rap-text-main);
+            transition: all 0.25s ease;
         }
 
-        /* Reason Row (Row 7): Badge FIRST, Input SECOND */
-        .rap-reason-row {
+        /* 1. Header (3 Columns) */
+        .rap-rdlc-header {
             display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 6px;
             gap: 12px;
-            align-items: center;
-            margin-top: 6px;
         }
-        .rap-reason-badge {
-            background: var(--rap-reason-bg);
-            color: var(--rap-reason-text);
-            font-weight: 900;
+        .rap-rdlc-hdr-right {
+            text-align: right;
+            width: 36%;
             font-size: 14.5px;
-            padding: 8px 18px;
-            height: 38px;
+            font-weight: 800;
+            line-height: 1.6;
+            color: var(--rap-text-main);
+        }
+        .rap-rdlc-inline-select {
+            background: var(--rap-input-bg);
+            color: var(--rap-input-text);
+            border: 1.5px solid var(--rap-input-border);
+            border-radius: 4px;
+            font-weight: 800;
+            font-size: 13.5px;
+            padding: 2px 8px;
+            outline: none;
+            cursor: pointer;
+            font-family: inherit;
+        }
+        .rap-rdlc-hdr-center {
+            text-align: center;
+            width: 38%;
+        }
+        .rap-rdlc-emblem {
+            height: 76px;
+            object-fit: contain;
+            margin-bottom: 4px;
+        }
+        .rap-rdlc-en-text {
+            font-family: Arial, sans-serif;
+            font-size: 10px;
+            font-weight: 700;
+            line-height: 1.35;
+            direction: ltr;
+            color: var(--rap-text-main);
+            text-align: center;
+        }
+        .rap-rdlc-hdr-left {
+            text-align: center;
+            width: 26%;
+        }
+        .rap-rdlc-place-title {
+            font-size: 15px;
+            font-weight: 800;
+            margin-bottom: 4px;
+            color: var(--rap-text-main);
+        }
+        .rap-rdlc-place-input {
+            width: 100% !important;
+            max-width: 170px !important;
+            height: 36px !important;
+            min-height: 36px !important;
+            text-align: center !important;
+            font-weight: 800 !important;
+            font-size: 14px !important;
+            border: 1.5px solid var(--rap-input-border) !important;
+            border-radius: 5px !important;
+            background: var(--rap-input-bg) !important;
+            color: var(--rap-input-text) !important;
+            outline: none !important;
+        }
+
+        /* 2. Ref & Date Row (Tablix6) */
+        .rap-rdlc-ref-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 14px;
+            margin-bottom: 6px;
+            font-size: 14px;
+            font-weight: 800;
+            color: var(--rap-text-main);
+        }
+        .rap-rdlc-ref-left {
+            direction: ltr;
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            text-align: left;
+        }
+        .rap-rdlc-ref-right {
+            direction: rtl;
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+            text-align: right;
+        }
+        .rap-rdlc-ref-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .rap-rdlc-ref-colon {
+            font-weight: 800;
+        }
+        .rap-rdlc-ref-input {
+            height: 30px !important;
+            min-height: 30px !important;
+            padding: 2px 8px !important;
+            border: 1.5px solid var(--rap-input-border) !important;
+            border-radius: 4px !important;
+            font-size: 14px !important;
+            font-weight: 800 !important;
+            text-align: center !important;
+            background: var(--rap-input-bg) !important;
+            color: var(--rap-input-text) !important;
+            outline: none !important;
+        }
+        .rap-rdlc-ref-span {
+            font-family: Arial, sans-serif;
+            font-weight: 800;
+            font-size: 14px;
+            min-width: 80px;
+            display: inline-block;
+        }
+
+        /* Dividing Line (Line1) */
+        .rap-rdlc-line1 {
+            border-bottom: 2px solid var(--rap-card-border);
+            width: 100%;
+            margin: 8px 0 16px 0;
+        }
+
+        /* 3. Recipient & Subject */
+        .rap-rdlc-subject-wrap {
+            text-align: center;
+            margin-bottom: 16px;
+            color: var(--rap-text-main);
+        }
+        .rap-rdlc-recipient {
+            font-size: 16px;
+            font-weight: 900;
+            margin-bottom: 4px;
+        }
+        .rap-rdlc-subject {
+            font-size: 15px;
+            font-weight: 900;
+            display: inline-block;
+            border-bottom: 2px solid var(--rap-text-main);
+            padding-bottom: 2px;
+        }
+
+        /* Grid Table Core Styles */
+        .rap-rdlc-tablix2 {
+            width: 65%;
+            display: flex;
+            border: 1.5px solid var(--rap-card-border);
+            font-weight: 800;
+            font-size: 14px;
+            min-height: 34px;
+            align-items: stretch;
+            margin-bottom: -1.5px;
             box-sizing: border-box;
-            border-radius: 6px;
-            white-space: nowrap;
-            flex-shrink: 0;
-            display: inline-flex;
+        }
+        .rap-rdlc-cell {
+            display: flex;
             align-items: center;
             justify-content: center;
-            box-shadow: 0 2px 6px rgba(220, 38, 38, 0.3);
+            padding: 2px 6px;
+            box-sizing: border-box;
         }
-        .rap-reason-input {
-            flex: 1;
+        .rap-rdlc-cell-input {
+            width: 100% !important;
+            height: 28px !important;
+            min-height: 28px !important;
+            padding: 2px 6px !important;
+            border: 1px solid transparent !important;
+            border-radius: 3px !important;
+            font-size: 14px !important;
             font-weight: 800 !important;
+            background: var(--rap-input-bg) !important;
+            color: var(--rap-input-text) !important;
+            outline: none !important;
+            text-align: center !important;
+            box-sizing: border-box !important;
+            font-family: inherit !important;
+        }
+        .rap-rdlc-cell-input:focus {
+            border-color: var(--rap-input-focus) !important;
+            box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.25) !important;
+        }
+        .rap-rdlc-cell-select {
+            width: 100% !important;
+            height: 28px !important;
+            min-height: 28px !important;
+            padding: 2px 4px !important;
+            border: 1px solid transparent !important;
+            border-radius: 3px !important;
+            font-size: 13.5px !important;
+            font-weight: 800 !important;
+            background: var(--rap-input-bg) !important;
+            color: var(--rap-input-text) !important;
+            outline: none !important;
+            text-align: center !important;
+            cursor: pointer !important;
+            font-family: inherit !important;
+        }
+        .rap-rdlc-cell-select:focus {
+            border-color: var(--rap-input-focus) !important;
+        }
+
+        /* Tablix2 Cells */
+        .rap-t2-b {
+            width: 28%;
+            border-left: 1.5px solid var(--rap-card-border);
+        }
+        .rap-t2-c {
+            width: 22%;
+            border-left: 1.5px solid var(--rap-card-border);
+        }
+        .rap-t2-a {
+            width: 18%;
+            border-left: 1.5px solid var(--rap-card-border);
+        }
+        .rap-t2-colon {
+            width: 6%;
+            border-left: 1.5px solid var(--rap-card-border);
+            font-weight: 900;
+        }
+        .rap-t2-label {
+            width: 44%;
+            white-space: nowrap;
+            justify-content: flex-start;
+            font-weight: 800;
+            padding-right: 8px;
+        }
+
+        /* Tablix4: Car Make Row */
+        .rap-rdlc-tablix4 {
+            width: 100%;
+            border: 1.5px solid var(--rap-card-border);
+            display: flex;
+            align-items: stretch;
+            min-height: 38px;
+            font-weight: 800;
+            font-size: 14px;
+            margin-bottom: -1.5px;
+            box-sizing: border-box;
+        }
+        .rap-t4-val {
+            flex: 1;
+            border-left: 1.5px solid var(--rap-card-border);
+            padding: 3px 8px;
+        }
+        .rap-t4-colon {
+            width: 30px;
+            border-left: 1.5px solid var(--rap-card-border);
+            font-weight: 900;
+        }
+        .rap-t4-label {
+            width: 140px;
+            justify-content: flex-start;
+            padding-right: 8px;
+            white-space: nowrap;
+            font-weight: 800;
+        }
+
+        /* Tablix3: 6-Row Specifications Grid */
+        .rap-rdlc-tablix3 {
+            width: 100%;
+            display: flex;
+            flex-direction: column;
+            box-sizing: border-box;
+        }
+        .rap-rdlc-t3-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: stretch;
+            width: 100%;
+            min-height: 32px;
+            margin-bottom: -1.5px;
+            box-sizing: border-box;
+        }
+        .rap-rdlc-t3-half-left {
+            width: 32%;
+            display: flex;
+            border: 1.5px solid var(--rap-card-border);
+            align-items: stretch;
+            box-sizing: border-box;
+        }
+        .rap-rdlc-t3-half-right {
+            width: 65%;
+            display: flex;
+            border: 1.5px solid var(--rap-card-border);
+            align-items: stretch;
+            box-sizing: border-box;
+        }
+        .rap-rdlc-spacer {
+            border: none !important;
+            visibility: hidden;
+        }
+
+        /* Tablix3 Inner Cells */
+        .rap-t3-val-left {
+            flex: 1;
+            border-left: 1.5px solid var(--rap-card-border);
+            padding: 2px 6px;
+        }
+        .rap-t3-colon-sm {
+            width: 24px;
+            border-left: 1.5px solid var(--rap-card-border);
+            font-weight: 900;
+        }
+        .rap-t3-label-sm {
+            width: 55px;
+            font-weight: 800;
+            white-space: nowrap;
+        }
+        .rap-t3-val-right {
+            flex: 1;
+            border-left: 1.5px solid var(--rap-card-border);
+            padding: 2px 8px;
+        }
+        .rap-t3-colon {
+            width: 30px;
+            border-left: 1.5px solid var(--rap-card-border);
+            font-weight: 900;
+        }
+        .rap-t3-label {
+            width: 140px;
+            justify-content: flex-start;
+            padding-right: 8px;
+            white-space: nowrap;
+            font-weight: 800;
+        }
+
+        /* Specific Fonts for Form Cells */
+        .rap-font-chassis {
+            font-family: 'Courier New', Courier, monospace !important;
+            font-weight: 900 !important;
+            font-size: 15px !important;
+            letter-spacing: 0.6px;
+            text-transform: uppercase;
+        }
+        .rap-font-plate {
+            font-family: Arial, sans-serif !important;
+            font-weight: 900 !important;
+            font-size: 16px !important;
+        }
+        .rap-font-mono {
+            font-family: Arial, sans-serif !important;
+            font-weight: 900 !important;
+            font-size: 15px !important;
+        }
+
+        /* Purpose Box (Textbox3 & Tablix5) */
+        .rap-rdlc-purpose-wrap {
+            margin-top: 14px;
+            width: 100%;
+        }
+        .rap-rdlc-purpose-label {
+            width: 42%;
+            border: 1.5px solid var(--rap-card-border);
+            padding: 5px 12px;
+            font-weight: 900;
+            font-size: 14.5px;
+            text-align: center;
+            background: #e2e8f0;
+            color: #0f172a;
+            margin-bottom: -1.5px;
+            box-sizing: border-box;
+        }
+        #page-raport.theme-midnight .rap-rdlc-purpose-label,
+        #page-raport.theme-dark .rap-rdlc-purpose-label {
+            background: #1e293b;
+            color: #f8fafc;
+            border-color: #334668;
+        }
+        .rap-rdlc-purpose-box {
+            width: 100%;
+            border: 1.5px solid var(--rap-card-border);
+            padding: 6px 12px;
+            box-sizing: border-box;
+        }
+        .rap-rdlc-textarea {
+            width: 100% !important;
+            min-height: 58px !important;
+            border: none !important;
+            background: transparent !important;
+            color: var(--rap-input-text) !important;
+            font-size: 14.5px !important;
+            font-weight: 800 !important;
+            line-height: 1.7 !important;
+            outline: none !important;
+            resize: vertical !important;
+            font-family: inherit !important;
+            direction: rtl !important;
+        }
+
+        /* Closing Statement */
+        .rap-rdlc-closing {
+            text-align: center;
+            margin-top: 28px;
+            font-size: 14px;
+            font-weight: 800;
+            color: var(--rap-text-main);
+        }
+
+        /* Signatures (4 Columns) */
+        .rap-rdlc-signatures {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-top: 36px;
+            padding: 0 16px;
+            font-size: 13.5px;
+            font-weight: 800;
+            color: var(--rap-text-main);
+        }
+        .rap-rdlc-sig-col {
+            text-align: center;
+            width: 22%;
+        }
+        .rap-rdlc-sig-title {
+            font-weight: 800;
+            font-size: 14px;
+            margin-bottom: 6px;
+        }
+        .rap-rdlc-sig-val {
+            font-weight: 800;
+            font-size: 13px;
+            color: #0284c7;
+        }
+        .rap-rdlc-sig-line {
+            color: var(--rap-text-muted);
+            font-size: 11px;
+            letter-spacing: 1px;
         }
 
         /* Bottom Action Buttons: 42px height, 8px 26px padding, 15px font-size, 900 font-weight */
@@ -3308,14 +3714,14 @@
 
 </div>
 
-<!-- ══ RAPORT PAGE (MAIN SECTION - فۆڕمی ڕاپۆرت لە بەشی سەرەکی) ════════════ -->
+<!-- ══ RAPORT PAGE (MAIN SECTION - فۆڕمی ڕاپۆرت 100% وەک Report23.rdlc) ════════════ -->
 <div class="page" id="page-raport">
     <div class="rap-card">
         <!-- Windows Form Titlebar -->
         <div class="rap-titlebar">
             <div class="rap-titlebar-left">
                 <span style="font-size: 16px;">📄</span>
-                <span class="rap-titlebar-title">فۆڕمی نوسراوی ڕاپۆرتی کێشەی ئۆتۆمبێل</span>
+                <span class="rap-titlebar-title">فۆڕمی ڕاپۆرتی پشکنین (ڕاپۆرتی فەرمی هاتووچۆ – Report23)</span>
             </div>
             <div class="rap-titlebar-right">
                 <!-- Royal Dark Mode Toggle Button -->
@@ -3330,36 +3736,11 @@
         </div>
 
         <div class="rap-body">
-            <!-- Top Controls Row: Sequence, Place, Date, Title, User Badge -->
-            <div class="rap-header-row">
-                <!-- Right Side: Sequence, Place, Date -->
-                <div class="rap-header-controls">
-                    <div class="rap-header-item">
-                        <span class="rap-label">ز - ڕۆشتوو</span>
-                        <input type="text" id="rapOutS" class="rap-out-s" readonly value="3407">
-                    </div>
-                    <div class="rap-header-item">
-                        <span class="rap-label">شوێنی پشکنین</span>
-                        <input type="text" id="rapPlace" class="rap-input" list="globalPlaceList" style="width: 170px; text-align: center;" placeholder="شوێنی پشکنین..." onchange="onGlobalPlaceChange(this.value)">
-                    </div>
-                    <div class="rap-header-item">
-                        <span class="rap-label">بەروار</span>
-                        <input type="date" id="rapDate" class="rap-input" style="width: 160px; text-align: center;">
-                    </div>
-                </div>
-
-                <!-- Center Title & User Badge -->
-                <div class="rap-header-title-wrap">
-                    <h2 class="rap-main-title">نوسراوی ڕاپۆرت سەبارەت بە کێشەی ئۆتۆمبێل</h2>
-                    <span id="rapBadgeUser" class="rap-user-badge">9</span>
-                </div>
-            </div>
-
-            <!-- BARCODE SCANNER ROW (گەڕان بە پێ ی بارکۆد ڕیدەر بۆ فۆڕمی ڕاپۆرت) -->
+            <!-- 1. BARCODE SCANNER ROW (گەڕان بە پێی بارکۆد لە تەیبڵی تاقیگە VA) -->
             <div class="rap-barcode-row">
                 <div style="display:flex; align-items:center; gap:12px; flex-wrap:wrap;">
                     <span style="font-size:22px; line-height:1;">📷</span>
-                    <label for="rapBarcodeVA" class="rap-barcode-label">گەڕان بە پێ ی بارکۆد ڕیدەر:</label>
+                    <label for="rapBarcodeVA" class="rap-barcode-label">گەڕان بە پێی بارکۆد ڕیدەر:</label>
                     <input type="text" id="rapBarcodeVA" class="rap-barcode-input auto-en-upper" placeholder="بارکۆد لێرە لێبدە..." autocomplete="off" lang="en" dir="ltr" autocapitalize="characters" spellcheck="false" oninput="this.value = sanitizeEnglishBarcode(this.value);" onchange="onRaportBarcodeVAChange()" onkeydown="if(event.key==='Enter'){event.preventDefault();event.stopPropagation();onRaportBarcodeVAChange();}">
                     <button type="button" class="rap-barcode-btn" onclick="onRaportBarcodeVAChange()">
                         <span>🔍</span>
@@ -3371,30 +3752,26 @@
                 </div>
             </div>
 
-            <!-- Cyan Search Banner: (ژمارە + تابلۆ + بەش ئنجا گەڕان) -->
+            <!-- 2. Search Banner (ژمارەی ئۆتۆمبێل + تابلۆ + بەش) -->
             <div class="rap-search-banner">
                 <div style="display: flex; align-items: center; gap: 14px; flex-wrap: wrap;">
-                    <!-- 1. Car Number -->
                     <div style="display: flex; align-items: center; gap: 8px;">
                         <span class="rap-search-label">ژمارەی ئۆتۆمبێل</span>
                         <input type="text" id="rapSearchCarNo" class="rap-input" placeholder="A59099" style="width: 150px; text-align: center; font-weight: 900;" onkeydown="if(event.key==='Enter'){event.preventDefault();doRaportSearch();}">
                     </div>
 
-                    <!-- 2. Tablo -->
                     <div style="display: flex; align-items: center; gap: 8px;">
                         <span class="rap-search-label">تابلۆی</span>
                         <input list="rapSearchTabloList" id="rapSearchTablo" class="rap-input" style="width: 190px; text-align: center;" value="سلێمانی" placeholder="تابلۆ..." onkeydown="if(event.key==='Enter'){event.preventDefault();doRaportSearch();}">
                         <datalist id="rapSearchTabloList"></datalist>
                     </div>
 
-                    <!-- 3. Bash -->
                     <div style="display: flex; align-items: center; gap: 8px;">
                         <span class="rap-search-label">بەش</span>
                         <input list="rapSearchBashList" id="rapSearchBash" class="rap-input" style="width: 140px; text-align: center;" value="تایبەت" placeholder="بەش..." onkeydown="if(event.key==='Enter'){event.preventDefault();doRaportSearch();}">
                         <datalist id="rapSearchBashList"></datalist>
                     </div>
 
-                    <!-- 4. Search Button -->
                     <button type="button" id="rapBtnSearch" class="rap-search-btn" onclick="doRaportSearch()">بگەڕێ</button>
                 </div>
 
@@ -3406,101 +3783,285 @@
             <!-- Dynamic Alert Box for Search / Save feedback -->
             <div id="rapAlertBox"></div>
 
-            <!-- Form Inputs Table/Rows -->
-            <div class="rap-form-rows">
-                <!-- Row 1: Car No + Tablo + Bash | Car Model -->
-                <div class="rap-row">
-                    <div class="rap-col">
-                        <span class="rap-label" style="width: 130px;">ژمارەی ئۆتۆمبێل</span>
-                        <input type="text" id="rapA" class="rap-input" placeholder="ژمارە" style="width: 130px; text-align: center; font-weight: 900;">
-                        <select id="rapB" class="rap-select" style="flex: 1;"></select>
-                        <select id="rapC" class="rap-select" style="width: 120px;"></select>
+            <!-- ══════════════════════════════════════════════════════════════════════════
+                 OFFICIAL REPORT SHEET CONTAINER (100% REPLICA OF Report23.rdlc)
+                 ══════════════════════════════════════════════════════════════════════════ -->
+            <div class="rap-rdlc-sheet">
+                
+                <!-- 1. Header (3 Columns: Right Directorate P, Center Official Emblem & English, Left Place Q) -->
+                <div class="rap-rdlc-header">
+                    <!-- Right Column: Directorate (P), Registration Affairs, OPVI -->
+                    <div class="rap-rdlc-hdr-right">
+                        <div style="display:flex; align-items:center; gap:6px;">
+                            <span>بەڕێوەبەرایەتى هاتووچۆى پارێزگاى</span>
+                            <select id="rapDirectorate" class="rap-rdlc-inline-select" onchange="onRapDirectorateChange(this.value)">
+                                <option value="سلێمانی" selected>سلێمانی</option>
+                                <option value="هەڵەبجە">هەڵەبجە</option>
+                                <option value="دهۆک">دهۆک</option>
+                                <option value="هەولێر">هەولێر</option>
+                                <option value="گەرمیان">گەرمیان</option>
+                            </select>
+                        </div>
+                        <div>به‌ڕێوه‌به‌رێتی به‌شی تۆمار</div>
+                        <div style="font-size:15px; font-weight:800;">OPVI &nbsp;هۆبه‌ی</div>
                     </div>
-                    <div class="rap-col">
-                        <span class="rap-label" style="width: 130px;">جۆری ئۆتۆمبێل</span>
-                        <input type="text" id="rapD" class="rap-input" placeholder="جۆری ئۆتۆمبێل (مۆدێل)" style="flex: 1;">
+
+                    <!-- Center Column: Emblem + English Text -->
+                    <div class="rap-rdlc-hdr-center">
+                        <img src="data:image/jpeg;base64,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" class="rap-rdlc-emblem" alt="Ministry of Interior Traffic Emblem" onerror="this.src='/img/kurdistan_traffic_logo.png'">
+                        <div class="rap-rdlc-en-text">
+                            <div>Ministry of InteriorGeneral Directorate of Traffic</div>
+                            <div>Sulaimany Traffic Directorate</div>
+                            <div>Registration Affair</div>
+                        </div>
+                    </div>
+
+                    <!-- Left Column: Inspection Place (Q) -->
+                    <div class="rap-rdlc-hdr-left">
+                        <div class="rap-rdlc-place-title">شوێنى پشکنین</div>
+                        <input type="text" id="rapPlace" class="rap-rdlc-place-input" list="globalPlaceList" placeholder="شوێنی پشکنین..." onchange="onGlobalPlaceChange(this.value)">
                     </div>
                 </div>
 
-                <!-- Row 2: Chassis | Color | Model Year -->
-                <div class="rap-row">
-                    <div class="rap-col">
-                        <span class="rap-badge-chassis">ژمارەی شاسی</span>
-                        <input type="text" id="rapG" class="rap-input" placeholder="ژمارەی شاسی سەرەکی" style="flex: 1; text-align: center; font-weight: 900;">
+                <!-- 2. Ref & Date Row (Tablix6: Left En No/Date, Right Ku No/Date) -->
+                <div class="rap-rdlc-ref-row">
+                    <!-- Left: No. & Date in English -->
+                    <div class="rap-rdlc-ref-left">
+                        <div class="rap-rdlc-ref-item">
+                            <span style="width: 45px;">No.</span>
+                            <span class="rap-rdlc-ref-colon">:</span>
+                            <input type="text" id="rapOutS" class="rap-rdlc-ref-input" readonly value="3407" title="ژمارەی ڕۆشتوو (S)">
+                        </div>
+                        <div class="rap-rdlc-ref-item">
+                            <span style="width: 45px;">Date</span>
+                            <span class="rap-rdlc-ref-colon">:</span>
+                            <input type="date" id="rapDate" class="rap-rdlc-ref-input" title="بەروار (O)" onchange="syncRapDateToKu(this.value)">
+                        </div>
                     </div>
-                    <div class="rap-col">
-                        <span class="rap-label" style="width: 130px;">ڕەنگی سوار ڕەو</span>
-                        <input type="text" id="rapF" class="rap-input" placeholder="ڕەنگ" style="flex: 1;">
-                        <span class="rap-label" style="margin-right: 6px;">مۆدێل</span>
-                        <input type="text" id="rapE" class="rap-input" value="0" style="width: 95px; text-align: center; font-weight: 900;">
+
+                    <!-- Right: ژمارە & بەروار in Kurdish -->
+                    <div class="rap-rdlc-ref-right">
+                        <div class="rap-rdlc-ref-item">
+                            <span style="width: 50px;">ژمارە</span>
+                            <span class="rap-rdlc-ref-colon">:</span>
+                            <span id="rapOutS_ku" class="rap-rdlc-ref-span">3407</span>
+                        </div>
+                        <div class="rap-rdlc-ref-item">
+                            <span style="width: 50px;">بەروار</span>
+                            <span class="rap-rdlc-ref-colon">:</span>
+                            <span id="rapDate_ku" class="rap-rdlc-ref-span">2026-09-23</span>
+                        </div>
                     </div>
                 </div>
 
-                <!-- Row 3: Qamara | Citizen Name -->
-                <div class="rap-row">
-                    <div class="rap-col">
-                        <span class="rap-label" style="width: 130px;">ژمارەی قەماره</span>
-                        <input type="text" id="rapH" class="rap-input" value="*" style="flex: 1; text-align: center;">
-                    </div>
-                    <div class="rap-col">
-                        <span class="rap-label" style="width: 130px;">بە ناوی هاوڵاتی</span>
-                        <input type="text" id="rapM" class="rap-input rap-citizen-input" placeholder="ناوی سیانی هاوڵاتی" style="flex: 1;">
+                <!-- Horizontal Dividing Line (Line1 in RDLC) -->
+                <div class="rap-rdlc-line1"></div>
+
+                <!-- 3. Recipient & Subject (Textbox35 & Textbox36 with Line5) -->
+                <div class="rap-rdlc-subject-wrap">
+                    <div class="rap-rdlc-recipient">بۆ  به‌ڕێز /  به‌ڕێوه‌به‌ری به‌شی تۆمار</div>
+                    <div class="rap-rdlc-subject">بابەت / ڕاپۆرتى پشکنین</div>
+                </div>
+
+                <!-- 4. Tablix2: Car Plate Box (دواى پشکنینى ئوتومبیلی ژمارە : [A] [C] [B]) -->
+                <div style="display:flex; justify-content:flex-end;">
+                    <div class="rap-rdlc-tablix2">
+                        <div class="rap-rdlc-cell rap-t2-b">
+                            <select id="rapB" class="rap-rdlc-cell-select" title="تابلۆی ئۆتۆمبێل (B)"></select>
+                        </div>
+                        <div class="rap-rdlc-cell rap-t2-c">
+                            <select id="rapC" class="rap-rdlc-cell-select" title="بەشی تابلۆ (C)"></select>
+                        </div>
+                        <div class="rap-rdlc-cell rap-t2-a">
+                            <input type="text" id="rapA" class="rap-rdlc-cell-input rap-font-plate" placeholder="ژمارە" title="ژمارەی ئۆتۆمبێل (A)">
+                        </div>
+                        <div class="rap-rdlc-cell rap-t2-colon">:</div>
+                        <div class="rap-rdlc-cell rap-t2-label">دواى پشکنینى ئوتومبیلی ژمارە</div>
                     </div>
                 </div>
 
-                <!-- Row 4: Trailer 1 Color | Trailer 1 Chassis -->
-                <div class="rap-row">
-                    <div class="rap-col">
-                        <span class="rap-label" style="width: 130px;">ڕەنگی عارەبانە1</span>
-                        <input type="text" id="rapJ" class="rap-input" placeholder="ڕەنگی عەرەبانە 1" style="flex: 1;">
+                <!-- 5. Tablix4: Car Make / Type Row (جۆرى ئوتومبێل : [D]) -->
+                <div class="rap-rdlc-tablix4">
+                    <div class="rap-rdlc-cell rap-t4-val">
+                        <input type="text" id="rapD" class="rap-rdlc-cell-input" placeholder="جۆرى ئوتومبێل و مۆدێل..." title="جۆری ئۆتۆمبێل (D)">
                     </div>
-                    <div class="rap-col">
-                        <span class="rap-label" style="width: 170px;">ژمارەی شاسی عەرەبانە</span>
-                        <input type="text" id="rapI" class="rap-input" value="*" style="flex: 1; text-align: center; font-weight: 900;">
+                    <div class="rap-rdlc-cell rap-t4-colon">:</div>
+                    <div class="rap-rdlc-cell rap-t4-label">جۆرى ئوتومبێل</div>
+                </div>
+
+                <!-- 6. Tablix3: 6-Row Specifications Grid -->
+                <div class="rap-rdlc-tablix3">
+                    <!-- Row 1: Model Year (E) on Right | Color (F) on Left -->
+                    <div class="rap-rdlc-t3-row">
+                        <!-- Left Sub-group: Color (F) -->
+                        <div class="rap-rdlc-t3-half-left">
+                            <div class="rap-rdlc-cell rap-t3-val-left">
+                                <input type="text" id="rapF" class="rap-rdlc-cell-input" placeholder="ڕەنگ" title="ڕەنگی سوارڕەو (F)">
+                            </div>
+                            <div class="rap-rdlc-cell rap-t3-colon-sm">:</div>
+                            <div class="rap-rdlc-cell rap-t3-label-sm">ڕەنگی</div>
+                        </div>
+
+                        <!-- Right Sub-group: Model Year (E) -->
+                        <div class="rap-rdlc-t3-half-right">
+                            <div class="rap-rdlc-cell rap-t3-val-right">
+                                <input type="text" id="rapE" class="rap-rdlc-cell-input rap-font-mono" value="0" placeholder="ساڵ" title="مۆدێل (E)">
+                            </div>
+                            <div class="rap-rdlc-cell rap-t3-colon">:</div>
+                            <div class="rap-rdlc-cell rap-t3-label">مۆدێل</div>
+                        </div>
+                    </div>
+
+                    <!-- Row 2: Chassis (G) on Right | Blank on Left -->
+                    <div class="rap-rdlc-t3-row">
+                        <!-- Left Spacer (No border per RDLC) -->
+                        <div class="rap-rdlc-t3-half-left rap-rdlc-spacer"></div>
+
+                        <!-- Right: Chassis Number (G) -->
+                        <div class="rap-rdlc-t3-half-right">
+                            <div class="rap-rdlc-cell rap-t3-val-right">
+                                <input type="text" id="rapG" class="rap-rdlc-cell-input rap-font-chassis auto-en-upper" placeholder="ژمارەى شاصی سەرەکی" title="ژمارەی شاسی (G)">
+                            </div>
+                            <div class="rap-rdlc-cell rap-t3-colon">:</div>
+                            <div class="rap-rdlc-cell rap-t3-label">ژمارەى شاصی</div>
+                        </div>
+                    </div>
+
+                    <!-- Row 3: Cabin / Body Number (H) on Right | Blank on Left -->
+                    <div class="rap-rdlc-t3-row">
+                        <!-- Left Spacer -->
+                        <div class="rap-rdlc-t3-half-left rap-rdlc-spacer"></div>
+
+                        <!-- Right: Cabin / Qamara (H) -->
+                        <div class="rap-rdlc-t3-half-right">
+                            <div class="rap-rdlc-cell rap-t3-val-right">
+                                <input type="text" id="rapH" class="rap-rdlc-cell-input rap-font-chassis" value="*" placeholder="ژمارەی لاشە" title="ژمارەی لاشە (H)">
+                            </div>
+                            <div class="rap-rdlc-cell rap-t3-colon">:</div>
+                            <div class="rap-rdlc-cell rap-t3-label">ژمارەى لاشە</div>
+                        </div>
+                    </div>
+
+                    <!-- Row 4: Trailer 1 Chassis (I) on Right | Trailer 1 Color (J) on Left -->
+                    <div class="rap-rdlc-t3-row">
+                        <!-- Left: Trailer 1 Color (J) -->
+                        <div class="rap-rdlc-t3-half-left">
+                            <div class="rap-rdlc-cell rap-t3-val-left">
+                                <input type="text" id="rapJ" class="rap-rdlc-cell-input" placeholder="ڕەنگی عەرەبانە 1" title="ڕەنگی عەرەبانە 1 (J)">
+                            </div>
+                            <div class="rap-rdlc-cell rap-t3-colon-sm">:</div>
+                            <div class="rap-rdlc-cell rap-t3-label-sm">ڕەنگی</div>
+                        </div>
+
+                        <!-- Right: Trailer 1 Chassis (I) -->
+                        <div class="rap-rdlc-t3-half-right">
+                            <div class="rap-rdlc-cell rap-t3-val-right">
+                                <input type="text" id="rapI" class="rap-rdlc-cell-input rap-font-chassis" value="*" placeholder="ژ.شاسی عەرەبانە 1" title="ژمارەی شاسی عەرەبانە 1 (I)">
+                            </div>
+                            <div class="rap-rdlc-cell rap-t3-colon">:</div>
+                            <div class="rap-rdlc-cell rap-t3-label">ژ.شاصی عەرەبانە1</div>
+                        </div>
+                    </div>
+
+                    <!-- Row 5: Trailer 2 Chassis (K) on Right | Trailer 2 Color (L) on Left -->
+                    <div class="rap-rdlc-t3-row">
+                        <!-- Left: Trailer 2 Color (L) -->
+                        <div class="rap-rdlc-t3-half-left">
+                            <div class="rap-rdlc-cell rap-t3-val-left">
+                                <input type="text" id="rapL" class="rap-rdlc-cell-input" placeholder="ڕەنگی عەرەبانە 2" title="ڕەنگی عەرەبانە 2 (L)">
+                            </div>
+                            <div class="rap-rdlc-cell rap-t3-colon-sm">:</div>
+                            <div class="rap-rdlc-cell rap-t3-label-sm">ڕەنگی</div>
+                        </div>
+
+                        <!-- Right: Trailer 2 Chassis (K) -->
+                        <div class="rap-rdlc-t3-half-right">
+                            <div class="rap-rdlc-cell rap-t3-val-right">
+                                <input type="text" id="rapK" class="rap-rdlc-cell-input rap-font-chassis" value="*" placeholder="ژ.شاسی عەرەبانە 2" title="ژمارەی شاسی عەرەبانە 2 (K)">
+                            </div>
+                            <div class="rap-rdlc-cell rap-t3-colon">:</div>
+                            <div class="rap-rdlc-cell rap-t3-label">ژ.شاصی عەرەبانە2</div>
+                        </div>
+                    </div>
+
+                    <!-- Row 6: Citizen Name (M) on Right | Blank on Left -->
+                    <div class="rap-rdlc-t3-row">
+                        <!-- Left Spacer -->
+                        <div class="rap-rdlc-t3-half-left rap-rdlc-spacer"></div>
+
+                        <!-- Right: Citizen / Owner Name (M) -->
+                        <div class="rap-rdlc-t3-half-right">
+                            <div class="rap-rdlc-cell rap-t3-val-right">
+                                <input type="text" id="rapM" class="rap-rdlc-cell-input rap-citizen-input" placeholder="ناوی سیانی هاوڵاتی" title="بەناوی هاوڵاتی (M)">
+                            </div>
+                            <div class="rap-rdlc-cell rap-t3-colon">:</div>
+                            <div class="rap-rdlc-cell rap-t3-label">بەناوى هاوڵاتى</div>
+                        </div>
                     </div>
                 </div>
 
-                <!-- Row 5: Trailer 2 Color | Trailer 2 Chassis -->
-                <div class="rap-row">
-                    <div class="rap-col">
-                        <span class="rap-label" style="width: 130px;">ڕەنگی عارەبانە2</span>
-                        <input type="text" id="rapL" class="rap-input" placeholder="ڕەنگی عەرەبانە 2" style="flex: 1;">
+                <!-- 7. Textbox3 & Tablix5: Purpose Box (بۆتان دەنێرین بە مەبەستى :- [N]) -->
+                <div class="rap-rdlc-purpose-wrap">
+                    <!-- Right-aligned Label Box (Textbox3: LightGrey background, solid border) -->
+                    <div style="display:flex; justify-content:flex-end;">
+                        <div class="rap-rdlc-purpose-label">
+                            بۆتان دەنێرین بە مەبەستى   :-
+                        </div>
                     </div>
-                    <div class="rap-col">
-                        <span class="rap-label" style="width: 170px;">ژمارەی شاسی عەرەبانە2</span>
-                        <input type="text" id="rapK" class="rap-input" value="*" style="flex: 1; text-align: center; font-weight: 900;">
+
+                    <!-- Full-Width Reason Text Area (Tablix5: N) -->
+                    <div class="rap-rdlc-purpose-box">
+                        <textarea id="rapN" rows="3" class="rap-rdlc-textarea" list="rapReasonsList" placeholder="هۆکاری پشکنین و کەموکوڕی شاسی بنووسە یان لە لیست هەڵبژێرە..."></textarea>
+                        <datalist id="rapReasonsList"></datalist>
                     </div>
                 </div>
 
-                <!-- Row 6: Barad 2 | Barad 1 -->
-                <div class="rap-row">
-                    <div class="rap-col">
-                        <span class="rap-label" style="width: 130px;">بەڕادی هاتووچۆ 2</span>
-                        <select id="rapR" class="rap-select" style="flex: 1;"></select>
+                <!-- 8. Respectful Closing (Textbox53: فەرمانتان لەگەڵ ڕێزدا) -->
+                <div class="rap-rdlc-closing">فەرمانتان لەگەڵ ڕێزدا</div>
+
+                <!-- 9. Signatures (4 Columns: ڕێکخەر R, بەرادى پشکنەر, بەرادى پشکنەر, ئه‌فسه‌ری پشكنین) -->
+                <div class="rap-rdlc-signatures">
+                    <div class="rap-rdlc-sig-col">
+                        <div class="rap-rdlc-sig-title">ڕێکخەر</div>
+                        <div id="rapSignRegistrar" class="rap-rdlc-sig-val">سیستەم</div>
                     </div>
-                    <div class="rap-col">
-                        <span class="rap-label" style="width: 170px;">بەڕادی هاتووچۆ 1</span>
-                        <select id="rapQ" class="rap-select" style="flex: 1;"></select>
+                    <div class="rap-rdlc-sig-col">
+                        <div class="rap-rdlc-sig-title">بەرادى پشکنەر</div>
+                        <div class="rap-rdlc-sig-line">................................</div>
+                    </div>
+                    <div class="rap-rdlc-sig-col">
+                        <div class="rap-rdlc-sig-title">بەرادى پشکنەر</div>
+                        <div class="rap-rdlc-sig-line">................................</div>
+                    </div>
+                    <div class="rap-rdlc-sig-col">
+                        <div class="rap-rdlc-sig-title">ئه‌فسه‌ری پشكنین</div>
+                        <div class="rap-rdlc-sig-line">................................</div>
                     </div>
                 </div>
 
-                <!-- Row 7: Red Badge "دەینێرین بۆتان بەمەبەستی" + Reason Input/Combobox (SWAPPED: Badge FIRST on Right, Input SECOND on Left) -->
-                <div class="rap-row rap-reason-row">
-                    <span class="rap-reason-badge">دەینێرین بۆتان بەمەبەستی</span>
-                    <input type="text" id="rapN" class="rap-input rap-reason-input" list="rapReasonsList" placeholder="هۆکار و تێبینی لیژنە بنووسە یان لە لیستەکە هەڵبژێرە...">
-                    <datalist id="rapReasonsList"></datalist>
-                </div>
-            </div>
+            </div><!-- END: .rap-rdlc-sheet -->
 
             <!-- Bottom Action Buttons -->
             <div class="rap-actions-row">
                 <div class="rap-actions-group">
-                    <button type="button" id="btnRapSave" class="rap-btn-action rap-btn-save" onclick="saveRaportRecord()">تۆمار کردنی زانیاری</button>
-                    <button type="button" id="btnRapPrint" class="rap-btn-action rap-btn-print" onclick="printRaportLetter()">چاپ کردنی ڕاپۆرت</button>
-                    <button type="button" id="btnRapCorrect" class="rap-btn-action rap-btn-correct" onclick="updateT1FromRaport()">ڕاست کردنەوەی زانیاری لە کاتی ڕاکێشان</button>
+                    <button type="button" id="btnRapSave" class="rap-btn-action rap-btn-save" onclick="saveRaportRecord()">
+                        <span>💾</span>
+                        <span>تۆمار کردنی زانیاری</span>
+                    </button>
+                    <button type="button" id="btnRapPrint" class="rap-btn-action rap-btn-print" onclick="printRaportLetter()">
+                        <span>🖨️</span>
+                        <span>چاپ کردنی ڕاپۆرت</span>
+                    </button>
+                    <button type="button" id="btnRapCorrect" class="rap-btn-action rap-btn-correct" onclick="updateT1FromRaport()">
+                        <span>✏️</span>
+                        <span>ڕاست کردنەوەی زانیاری لە کاتی ڕاکێشان</span>
+                    </button>
                 </div>
                 <div>
-                    <button type="button" id="btnRapNew" class="rap-btn-action rap-btn-new" onclick="resetRaportForm()">فۆڕمی نوێ (پاککردنەوە)</button>
+                    <button type="button" id="btnRapNew" class="rap-btn-action rap-btn-new" onclick="resetRaportForm()">
+                        <span>🔄</span>
+                        <span>فۆڕمی نوێ (پاککردنەوە)</span>
+                    </button>
                 </div>
             </div>
         </div>
@@ -4554,14 +5115,14 @@
     </div>
 </div>
 
-<!-- 13. MODAL: RAPORT PRINT (چاپی فەرمی ڕاپۆرت) -->
+<!-- 13. MODAL: RAPORT PRINT (چاپی فەرمی ڕاپۆرت – 100% هاوتای Report23.rdlc) -->
 <div class="overlay" id="modalRaportPrint" style="background: rgba(0,0,0,0.65); z-index: 10000;">
-    <div style="width: 100%; max-width: 840px; background: #fff; border-radius: 8px; overflow: hidden; box-shadow: 0 15px 50px rgba(0,0,0,0.4); margin: 15px auto; max-height: 94vh; display: flex; flex-direction: column;">
+    <div style="width: 100%; max-width: 860px; background: #fff; border-radius: 8px; overflow: hidden; box-shadow: 0 15px 50px rgba(0,0,0,0.4); margin: 15px auto; max-height: 94vh; display: flex; flex-direction: column;">
         <!-- Print Header Bar (no-print) -->
         <div class="no-print" style="background: #0f172a; color: #fff; padding: 10px 16px; display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #0284c7;">
             <div style="display: flex; align-items: center; gap: 8px; font-weight: 800; font-size: 14px;">
                 <span>🖨️</span>
-                <span>پێشبینینی چاپی نوسراوی ڕاپۆرت (فەرمی)</span>
+                <span>پێشبینینی چاپی نوسراوی ڕاپۆرتی پشکنین (فەرمی - Report23.rdlc)</span>
             </div>
             <div style="display: flex; gap: 8px;">
                 <button type="button" onclick="doPrintRaportDocument()" style="background: #0284c7; color: #fff; border: none; font-weight: 800; font-size: 13px; padding: 6px 18px; border-radius: 5px; cursor: pointer; display: flex; align-items: center; gap: 6px;">
@@ -4572,196 +5133,201 @@
             </div>
         </div>
 
-        <!-- Printable Document Area -->
-        <div id="raportPrintableDoc" style="padding: 24px 34px; overflow-y: auto; flex: 1; background: #fff; color: #000; direction: rtl; font-family: 'Speda', Tahoma, 'Segoe UI', Arial, sans-serif; font-size: 13.5px;">
+        <!-- Printable Document Area (Exact RDLC layout & typography) -->
+        <div id="raportPrintableDoc" style="padding: 24px 34px; overflow-y: auto; flex: 1; background: #fff; color: #000; direction: rtl; font-family: 'Speda', 'NRT Reg', Tahoma, Arial, sans-serif; font-size: 14pt;">
             
-            <!-- 1. Header (3 Columns) -->
-            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px;">
-                <!-- Right Column (Kurdish) -->
-                <div style="text-align: right; width: 35%; font-size: 14px; font-weight: 700; line-height: 1.7; color: #000;">
-                    <div>بەڕێوەبەرایەتی هاتووچۆی پارێزگای سلێمانی</div>
-                    <div style="margin-top: 3px;">بەڕێوەبەرایەتی بەشی تۆمار</div>
-                    <div style="margin-top: 3px; font-size: 15px;">هۆبەی &nbsp;<span style="font-family: Arial, sans-serif; font-weight: 700; font-size: 16px;">OPVI</span></div>
+            <!-- 1. Header (PageHeader in RDLC) -->
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 6px;">
+                <!-- Right Column (Kurdish: Directorate P, Registration, OPVI) -->
+                <div style="text-align: right; width: 36%; font-size: 14pt; font-weight: 700; line-height: 1.6; color: #000;">
+                    <div>بەڕێوەبەرایەتى هاتووچۆى پارێزگاى <span id="pDocDirectorate">سلێمانی</span></div>
+                    <div style="margin-top: 2px;">به‌ڕێوه‌به‌رێتی به‌شی تۆمار</div>
+                    <div style="margin-top: 2px; font-size: 14pt;">OPVI &nbsp;&nbsp;هۆبه‌ی</div>
                 </div>
 
-                <!-- Center Column (Logo & English) -->
-                <div style="text-align: center; width: 36%;">
-                    <img src="/img/kurdistan_traffic_logo.png" style="height: 66px; object-fit: contain; margin-bottom: 4px;" alt="Traffic Logo" onerror="this.style.display='none'">
-                    <div style="font-family: Arial, sans-serif; font-size: 9.5px; font-weight: 500; line-height: 1.35; direction: ltr; color: #000;">
+                <!-- Center Column (Official Emblem w_nawxo2 + English) -->
+                <div style="text-align: center; width: 38%;">
+                    <img src="data:image/jpeg;base64,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" style="height: 78px; object-fit: contain; margin-bottom: 4px;" alt="Ministry of Interior Traffic" onerror="this.src='/img/kurdistan_traffic_logo.png'">
+                    <div style="font-family: Arial, sans-serif; font-size: 9.5pt; font-weight: 700; line-height: 1.3; direction: ltr; color: #000;">
                         <div>Ministry of InteriorGeneral Directorate of Traffic</div>
                         <div>Sulaimany Traffic Directorate</div>
                         <div>Registration Affair</div>
                     </div>
                 </div>
 
-                <!-- Left Column (Place) -->
-                <div style="text-align: center; width: 28%; font-size: 14px; font-weight: 700; line-height: 1.7; color: #000;">
-                    <div>شوێنی پشکنین</div>
-                    <div id="pDocPlace" style="margin-top: 4px; font-weight: 700;">بێستون</div>
+                <!-- Left Column (Inspection Place Q) -->
+                <div style="text-align: center; width: 26%; font-size: 14pt; font-weight: 700; line-height: 1.6; color: #000;">
+                    <div>شوێنى پشکنین</div>
+                    <div id="pDocPlace" style="margin-top: 3px; font-weight: 700;">بێستون</div>
                 </div>
             </div>
 
-            <!-- 2. Ref & Date Row (Above HR) -->
-            <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-top: 14px; margin-bottom: 6px; font-size: 13.5px; font-weight: 700; color: #000;">
-                <!-- Left (English) -->
-                <div style="direction: ltr; font-family: Arial, sans-serif; line-height: 1.5; text-align: left;">
-                    <div>No. &nbsp;&nbsp;<span id="pDocS_en" style="font-family: Arial, sans-serif;">3405</span></div>
-                    <div>Date &nbsp;<span id="pDocDate_en" style="font-family: Arial, sans-serif;">2026-09-23</span></div>
+            <!-- 2. Ref & Date Row (Tablix6) -->
+            <div style="display: flex; justify-content: space-between; align-items: flex-end; margin-top: 14px; margin-bottom: 6px; font-size: 13.5pt; font-weight: 700; color: #000;">
+                <!-- Left (English: No. & Date) -->
+                <div style="direction: ltr; font-family: Arial, sans-serif; line-height: 1.45; text-align: left;">
+                    <div>No. &nbsp;&nbsp;&nbsp;<span id="pDocS_en" style="font-family: Arial, sans-serif; font-weight: 700;">3407</span></div>
+                    <div>Date &nbsp;&nbsp;<span id="pDocDate_en" style="font-family: Arial, sans-serif; font-weight: 700;">2026-09-23</span></div>
                 </div>
 
-                <!-- Right (Kurdish) -->
-                <div style="direction: rtl; line-height: 1.5; text-align: right;">
-                    <div>ژمارە : &nbsp;&nbsp;<span id="pDocS" style="font-family: Arial, sans-serif;">3405</span></div>
-                    <div>بەروار : &nbsp;<span id="pDocDate" style="font-family: Arial, sans-serif;">2026-09-23</span></div>
-                </div>
-            </div>
-
-            <!-- Solid Dividing Line -->
-            <div style="border-bottom: 1.5px solid #000; width: 100%; margin: 8px 0 16px 0;"></div>
-
-            <!-- 3. Recipient & Subject -->
-            <div style="text-align: center; margin-bottom: 18px; color: #000;">
-                <div style="font-size: 16px; font-weight: 700; margin-bottom: 6px;">
-                    بۆ &nbsp; بەڕێز &nbsp;/ &nbsp; بەڕێوەبەری بەشی تۆمار
-                </div>
-                <div style="font-size: 15px; font-weight: 700; display: inline-block; border-bottom: 1.5px solid #000; padding-bottom: 2px;">
-                    بابەت / ڕاپۆرتی پشکنین
+                <!-- Right (Kurdish: ژمارە & بەروار) -->
+                <div style="direction: rtl; line-height: 1.45; text-align: right;">
+                    <div>ژمارە &nbsp;: &nbsp;&nbsp;<span id="pDocS" style="font-family: Arial, sans-serif; font-weight: 700;">3407</span></div>
+                    <div>بەروار &nbsp;: &nbsp;&nbsp;<span id="pDocDate" style="font-family: Arial, sans-serif; font-weight: 700;">2026-09-23</span></div>
                 </div>
             </div>
 
-            <!-- 4. Specifications Stepped Grid -->
-            <div style="width: 100%; margin-bottom: 2px; color: #000;">
+            <!-- Solid Dividing Line (Line1 in RDLC) -->
+            <div style="border-bottom: 1.5px solid #000; width: 100%; margin: 6px 0 14px 0;"></div>
+
+            <!-- 3. Recipient & Subject (Textbox35 & Textbox36) -->
+            <div style="text-align: center; margin-bottom: 16px; color: #000;">
+                <div style="font-size: 14pt; font-weight: 700; margin-bottom: 4px;">
+                    بۆ  به‌ڕێز /  به‌ڕێوه‌به‌ری به‌شی تۆمار
+                </div>
+                <div style="font-size: 14pt; font-weight: 700; display: inline-block; border-bottom: 1.5px solid #000; padding-bottom: 2px;">
+                    بابەت / ڕاپۆرتى پشکنین
+                </div>
+            </div>
+
+            <!-- 4. Tablix2: Car Plate Header Box (~62% width on right) -->
+            <div style="display: flex; justify-content: flex-end; margin-bottom: -1.2px;">
+                <div style="width: 62%; display: flex; border: 1.2px solid #000; font-weight: 700; font-size: 13.5pt; min-height: 30px; align-items: stretch;">
+                    <div style="width: 28%; border-left: 1.2px solid #000; display: flex; align-items: center; justify-content: center; padding: 2px 4px; text-align: center;" id="pDocTablo">سلێمانی</div>
+                    <div style="width: 22%; border-left: 1.2px solid #000; display: flex; align-items: center; justify-content: center; padding: 2px 4px; text-align: center;" id="pDocBash">تایبەت</div>
+                    <div style="width: 18%; border-left: 1.2px solid #000; display: flex; align-items: center; justify-content: center; padding: 2px 4px; text-align: center; font-family: Arial, sans-serif; font-size: 14.5pt; font-weight: 700;" id="pDocPlateNo">59099</div>
+                    <div style="width: 6%; border-left: 1.2px solid #000; display: flex; align-items: center; justify-content: center;">:</div>
+                    <div style="width: 44%; display: flex; align-items: center; justify-content: flex-start; padding: 2px 6px; white-space: nowrap;">دواى پشکنینى ئوتومبیلی ژمارە</div>
+                </div>
+            </div>
+
+            <!-- 5. Tablix4: Full Width Car Type Row -->
+            <div style="width: 100%; border: 1.2px solid #000; display: flex; align-items: center; min-height: 38px; font-weight: 700; font-size: 13.5pt; margin-bottom: -1.2px; box-sizing: border-box;">
+                <div style="flex: 1; padding: 4px 10px; text-align: center; font-size: 13.5pt; line-height: 1.45;" id="pDocModel">
+                    تۆیۆتا هایلۆکس
+                </div>
+                <div style="width: 25px; text-align: center; border-right: none;">:</div>
+                <div style="width: 135px; text-align: right; padding-right: 8px; white-space: nowrap;">جۆرى ئوتومبێل</div>
+            </div>
+
+            <!-- 6. Tablix3: 6-Row Stepped Twin Table -->
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; width: 100%; box-sizing: border-box;">
                 
-                <!-- Sub-row 1: Car No. Header (Right aligned ~58% width) -->
-                <div style="display: flex; justify-content: flex-end; margin-bottom: -1.2px;">
-                    <div style="width: 58%; display: flex; border: 1.2px solid #000; border-collapse: collapse; font-weight: 700; font-size: 13px; min-height: 28px; align-items: stretch;">
-                        <div style="width: 28%; border-left: 1.2px solid #000; display: flex; align-items: center; justify-content: center; padding: 2px 4px; text-align: center;" id="pDocTablo">کاتی دهۆک</div>
-                        <div style="width: 22%; border-left: 1.2px solid #000; display: flex; align-items: center; justify-content: center; padding: 2px 4px; text-align: center;" id="pDocBash">بار</div>
-                        <div style="width: 20%; border-left: 1.2px solid #000; display: flex; align-items: center; justify-content: center; padding: 2px 4px; text-align: center; font-family: Arial, sans-serif; font-size: 14px; font-weight: 700;" id="pDocPlateNo">DS274</div>
-                        <div style="width: 6%; border-left: 1.2px solid #000; display: flex; align-items: center; justify-content: center;">:</div>
-                        <div style="width: 44%; display: flex; align-items: center; justify-content: flex-start; padding: 2px 6px; white-space: nowrap;">دوای پشکنینی ئوتومبێلی ژمارە</div>
+                <!-- Left Mini Grid (~32% width) -->
+                <div style="width: 32%; box-sizing: border-box;">
+                    <!-- Row 1 (Aligns with Model Year): Color (F) -->
+                    <div style="display: flex; border: 1.2px solid #000; min-height: 29px; align-items: stretch; font-weight: 700; font-size: 13.5pt; margin-bottom: -1.2px;">
+                        <div style="flex: 1; display: flex; align-items: center; justify-content: center; padding: 2px 6px; border-left: 1.2px solid #000;" id="pDocColor">سپی</div>
+                        <div style="width: 22px; display: flex; align-items: center; justify-content: center; border-left: 1.2px solid #000;">:</div>
+                        <div style="width: 52px; display: flex; align-items: center; justify-content: center;">ڕەنگی</div>
+                    </div>
+
+                    <!-- Row 2 Spacer (Aligns with Chassis) -->
+                    <div style="min-height: 29px; margin-bottom: -1.2px;"></div>
+
+                    <!-- Row 3 Spacer (Aligns with Cabin/Qamara) -->
+                    <div style="min-height: 29px; margin-bottom: -1.2px;"></div>
+
+                    <!-- Row 4 (Aligns with Arabana 1): Trailer 1 Color (J) -->
+                    <div style="display: flex; border: 1.2px solid #000; min-height: 29px; align-items: stretch; font-weight: 700; font-size: 13.5pt; margin-bottom: -1.2px;">
+                        <div style="flex: 1; display: flex; align-items: center; justify-content: center; padding: 2px 6px; border-left: 1.2px solid #000;" id="pDocA1Color">*</div>
+                        <div style="width: 22px; display: flex; align-items: center; justify-content: center; border-left: 1.2px solid #000;">:</div>
+                        <div style="width: 52px; display: flex; align-items: center; justify-content: center;">ڕەنگی</div>
+                    </div>
+
+                    <!-- Row 5 (Aligns with Arabana 2): Trailer 2 Color (L) -->
+                    <div style="display: flex; border: 1.2px solid #000; min-height: 29px; align-items: stretch; font-weight: 700; font-size: 13.5pt;">
+                        <div style="flex: 1; display: flex; align-items: center; justify-content: center; padding: 2px 6px; border-left: 1.2px solid #000;" id="pDocA2Color">*</div>
+                        <div style="width: 22px; display: flex; align-items: center; justify-content: center; border-left: 1.2px solid #000;">:</div>
+                        <div style="width: 52px; display: flex; align-items: center; justify-content: center;">ڕەنگی</div>
+                    </div>
+
+                    <!-- Row 6 Spacer (Aligns with Owner) -->
+                    <div style="min-height: 29px;"></div>
+                </div>
+
+                <!-- Right Grid (~62% width) -->
+                <div style="width: 62%; box-sizing: border-box;">
+                    <!-- Row 1: Model Year (E) -->
+                    <div style="display: flex; border: 1.2px solid #000; min-height: 29px; align-items: stretch; font-weight: 700; font-size: 13.5pt; margin-bottom: -1.2px;">
+                        <div style="flex: 1; display: flex; align-items: center; justify-content: center; font-family: Arial, sans-serif; font-size: 14pt;" id="pDocYear">2018</div>
+                        <div style="width: 25px; border-right: 1.2px solid #000; border-left: 1.2px solid #000; display: flex; align-items: center; justify-content: center;">:</div>
+                        <div style="width: 140px; display: flex; align-items: center; justify-content: flex-start; padding-right: 8px;">مۆدێل</div>
+                    </div>
+
+                    <!-- Row 2: Chassis Number (G) - Courier New 14pt Bold -->
+                    <div style="display: flex; border: 1.2px solid #000; min-height: 29px; align-items: stretch; font-weight: 700; font-size: 13.5pt; margin-bottom: -1.2px;">
+                        <div style="flex: 1; display: flex; align-items: center; justify-content: center; font-family: 'Courier New', Courier, monospace; font-size: 14pt; font-weight: 700; letter-spacing: 0.5px;" id="pDocChassis">WMA06XZZ9JM790078</div>
+                        <div style="width: 25px; border-right: 1.2px solid #000; border-left: 1.2px solid #000; display: flex; align-items: center; justify-content: center;">:</div>
+                        <div style="width: 140px; display: flex; align-items: center; justify-content: flex-start; padding-right: 8px;">ژمارەى شاصی</div>
+                    </div>
+
+                    <!-- Row 3: Cabin / Body Number (H) - Courier New 14pt Bold -->
+                    <div style="display: flex; border: 1.2px solid #000; min-height: 29px; align-items: stretch; font-weight: 700; font-size: 13.5pt; margin-bottom: -1.2px;">
+                        <div style="flex: 1; display: flex; align-items: center; justify-content: center; font-family: 'Courier New', Courier, monospace; font-size: 14pt; font-weight: 700;" id="pDocQamara">*</div>
+                        <div style="width: 25px; border-right: 1.2px solid #000; border-left: 1.2px solid #000; display: flex; align-items: center; justify-content: center;">:</div>
+                        <div style="width: 140px; display: flex; align-items: center; justify-content: flex-start; padding-right: 8px;">ژمارەى لاشە</div>
+                    </div>
+
+                    <!-- Row 4: Trailer 1 Chassis (I) - Courier New 14pt Bold -->
+                    <div style="display: flex; border: 1.2px solid #000; min-height: 29px; align-items: stretch; font-weight: 700; font-size: 13.5pt; margin-bottom: -1.2px;">
+                        <div style="flex: 1; display: flex; align-items: center; justify-content: center; font-family: 'Courier New', Courier, monospace; font-size: 14pt; font-weight: 700; letter-spacing: 0.5px;" id="pDocA1Chassis">*</div>
+                        <div style="width: 25px; border-right: 1.2px solid #000; border-left: 1.2px solid #000; display: flex; align-items: center; justify-content: center;">:</div>
+                        <div style="width: 140px; display: flex; align-items: center; justify-content: flex-start; padding-right: 8px;">ژ.شاصی عەرەبانە1</div>
+                    </div>
+
+                    <!-- Row 5: Trailer 2 Chassis (K) - Courier New 14pt Bold -->
+                    <div style="display: flex; border: 1.2px solid #000; min-height: 29px; align-items: stretch; font-weight: 700; font-size: 13.5pt; margin-bottom: -1.2px;">
+                        <div style="flex: 1; display: flex; align-items: center; justify-content: center; font-family: 'Courier New', Courier, monospace; font-size: 14pt; font-weight: 700;" id="pDocA2Chassis">*</div>
+                        <div style="width: 25px; border-right: 1.2px solid #000; border-left: 1.2px solid #000; display: flex; align-items: center; justify-content: center;">:</div>
+                        <div style="width: 140px; display: flex; align-items: center; justify-content: flex-start; padding-right: 8px;">ژ.شاصی عەرەبانە2</div>
+                    </div>
+
+                    <!-- Row 6: Citizen Name (M) -->
+                    <div style="display: flex; border: 1.2px solid #000; min-height: 29px; align-items: stretch; font-weight: 700; font-size: 13.5pt;">
+                        <div style="flex: 1; display: flex; align-items: center; justify-content: center; font-size: 13.5pt;" id="pDocOwner">احمد محمد عبدالله</div>
+                        <div style="width: 25px; border-right: 1.2px solid #000; border-left: 1.2px solid #000; display: flex; align-items: center; justify-content: center;">:</div>
+                        <div style="width: 140px; display: flex; align-items: center; justify-content: flex-start; padding-right: 8px;">بەناوى هاوڵاتى</div>
                     </div>
                 </div>
 
-                <!-- Row 2: Full Width Car Type Row -->
-                <div style="width: 100%; border: 1.2px solid #000; display: flex; align-items: center; min-height: 38px; font-weight: 700; font-size: 13px; margin-bottom: -1.2px; box-sizing: border-box;">
-                    <div style="flex: 1; padding: 4px 10px; text-align: center; font-size: 13px; line-height: 1.5;" id="pDocModel">
-                        مان راس تریله تاک ویل جوت تایه دبل قماره تریله لوری مقبط بجادر متحرک 3 دنکیر تاک تایه 42 طن
-                    </div>
-                    <div style="width: 25px; text-align: center; border-right: none;">:</div>
-                    <div style="width: 135px; text-align: right; padding-right: 8px; white-space: nowrap;">جۆری ئوتومبێل</div>
-                </div>
-
-                <!-- Rows 3-8: Stepped Twin Columns (Left ~30%, Right 58%, Gap ~12%) -->
-                <div style="display: flex; justify-content: space-between; align-items: flex-start; width: 100%; box-sizing: border-box;">
-                    
-                    <!-- Left Mini Grid (Width ~30%) -->
-                    <div style="width: 30%; box-sizing: border-box;">
-                        <!-- Left Row 1 (Aligns with Model/Year) -->
-                        <div style="display: flex; border: 1.2px solid #000; min-height: 27px; align-items: stretch; font-weight: 700; font-size: 13px; margin-bottom: -1.2px;">
-                            <div style="flex: 1; display: flex; align-items: center; justify-content: center; padding: 2px 6px; border-left: 1.2px solid #000;" id="pDocColor">سوور</div>
-                            <div style="width: 22px; display: flex; align-items: center; justify-content: center; border-left: 1.2px solid #000;">:</div>
-                            <div style="width: 48px; display: flex; align-items: center; justify-content: center;">ڕەنگی</div>
-                        </div>
-
-                        <!-- Left Spacer 2 (Aligns with Chassis) -->
-                        <div style="min-height: 27px; margin-bottom: -1.2px;"></div>
-
-                        <!-- Left Spacer 3 (Aligns with Qamara) -->
-                        <div style="min-height: 27px; margin-bottom: -1.2px;"></div>
-
-                        <!-- Left Row 4 (Aligns with Arabana 1) -->
-                        <div style="display: flex; border: 1.2px solid #000; min-height: 27px; align-items: stretch; font-weight: 700; font-size: 13px; margin-bottom: -1.2px;">
-                            <div style="flex: 1; display: flex; align-items: center; justify-content: center; padding: 2px 6px; border-left: 1.2px solid #000;" id="pDocA1Color">نەوتی</div>
-                            <div style="width: 22px; display: flex; align-items: center; justify-content: center; border-left: 1.2px solid #000;">:</div>
-                            <div style="width: 48px; display: flex; align-items: center; justify-content: center;">ڕەنگی</div>
-                        </div>
-
-                        <!-- Left Row 5 (Aligns with Arabana 2) -->
-                        <div style="display: flex; border: 1.2px solid #000; min-height: 27px; align-items: stretch; font-weight: 700; font-size: 13px;">
-                            <div style="flex: 1; display: flex; align-items: center; justify-content: center; padding: 2px 6px; border-left: 1.2px solid #000;" id="pDocA2Color">*</div>
-                            <div style="width: 22px; display: flex; align-items: center; justify-content: center; border-left: 1.2px solid #000;">:</div>
-                            <div style="width: 48px; display: flex; align-items: center; justify-content: center;">ڕەنگی</div>
-                        </div>
-
-                        <!-- Left Spacer 6 (Aligns with Owner) -->
-                        <div style="min-height: 27px;"></div>
-                    </div>
-
-                    <!-- Right Grid (Width 58%) -->
-                    <div style="width: 58%; box-sizing: border-box;">
-                        <!-- Right Row 1: Model Year -->
-                        <div style="display: flex; border: 1.2px solid #000; min-height: 27px; align-items: stretch; font-weight: 700; font-size: 13px; margin-bottom: -1.2px;">
-                            <div style="flex: 1; display: flex; align-items: center; justify-content: center; font-family: Arial, sans-serif; font-size: 13.5px;" id="pDocYear">2018</div>
-                            <div style="width: 25px; border-right: 1.2px solid #000; border-left: 1.2px solid #000; display: flex; align-items: center; justify-content: center;">:</div>
-                            <div style="width: 135px; display: flex; align-items: center; justify-content: flex-start; padding-right: 8px;">مۆدێل</div>
-                        </div>
-
-                        <!-- Right Row 2: Chassis -->
-                        <div style="display: flex; border: 1.2px solid #000; min-height: 27px; align-items: stretch; font-weight: 700; font-size: 13px; margin-bottom: -1.2px;">
-                            <div style="flex: 1; display: flex; align-items: center; justify-content: center; font-family: Arial, sans-serif; font-size: 13.5px; letter-spacing: 0.5px;" id="pDocChassis">WMA06XZZ9JM790078</div>
-                            <div style="width: 25px; border-right: 1.2px solid #000; border-left: 1.2px solid #000; display: flex; align-items: center; justify-content: center;">:</div>
-                            <div style="width: 135px; display: flex; align-items: center; justify-content: flex-start; padding-right: 8px;">ژمارەی شاسی</div>
-                        </div>
-
-                        <!-- Right Row 3: Cabin / Qamara -->
-                        <div style="display: flex; border: 1.2px solid #000; min-height: 27px; align-items: stretch; font-weight: 700; font-size: 13px; margin-bottom: -1.2px;">
-                            <div style="flex: 1; display: flex; align-items: center; justify-content: center; font-family: Arial, sans-serif; font-size: 14px;" id="pDocQamara">*</div>
-                            <div style="width: 25px; border-right: 1.2px solid #000; border-left: 1.2px solid #000; display: flex; align-items: center; justify-content: center;">:</div>
-                            <div style="width: 135px; display: flex; align-items: center; justify-content: flex-start; padding-right: 8px;">ژمارەی لاشە</div>
-                        </div>
-
-                        <!-- Right Row 4: Trailer 1 Chassis -->
-                        <div style="display: flex; border: 1.2px solid #000; min-height: 27px; align-items: stretch; font-weight: 700; font-size: 13px; margin-bottom: -1.2px;">
-                            <div style="flex: 1; display: flex; align-items: center; justify-content: center; font-family: Arial, sans-serif; font-size: 13.5px; letter-spacing: 0.5px;" id="pDocA1Chassis">WSMS6980000757042</div>
-                            <div style="width: 25px; border-right: 1.2px solid #000; border-left: 1.2px solid #000; display: flex; align-items: center; justify-content: center;">:</div>
-                            <div style="width: 135px; display: flex; align-items: center; justify-content: flex-start; padding-right: 8px;">ژ.شاسی عەرەبانە1</div>
-                        </div>
-
-                        <!-- Right Row 5: Trailer 2 Chassis -->
-                        <div style="display: flex; border: 1.2px solid #000; min-height: 27px; align-items: stretch; font-weight: 700; font-size: 13px; margin-bottom: -1.2px;">
-                            <div style="flex: 1; display: flex; align-items: center; justify-content: center; font-family: Arial, sans-serif; font-size: 14px;" id="pDocA2Chassis">*</div>
-                            <div style="width: 25px; border-right: 1.2px solid #000; border-left: 1.2px solid #000; display: flex; align-items: center; justify-content: center;">:</div>
-                            <div style="width: 135px; display: flex; align-items: center; justify-content: flex-start; padding-right: 8px;">ژ.شاسی عەرەبانە2</div>
-                        </div>
-
-                        <!-- Right Row 6: Owner Name -->
-                        <div style="display: flex; border: 1.2px solid #000; min-height: 27px; align-items: stretch; font-weight: 700; font-size: 13px;">
-                            <div style="flex: 1; display: flex; align-items: center; justify-content: center; font-size: 13.5px;" id="pDocOwner">حسن احمد عبدالله</div>
-                            <div style="width: 25px; border-right: 1.2px solid #000; border-left: 1.2px solid #000; display: flex; align-items: center; justify-content: center;">:</div>
-                            <div style="width: 135px; display: flex; align-items: center; justify-content: flex-start; padding-right: 8px;">بەناوی هاوڵاتی</div>
-                        </div>
-                    </div>
-
-                </div>
             </div>
 
-            <!-- 5. Purpose Box (بۆتان دەنێرین بە مەبەستی :-) -->
+            <!-- 7. Purpose Box (Textbox3 & Tablix5 in RDLC) -->
             <div style="margin-top: 14px; width: 100%;">
-                <!-- Right-aligned Purpose Label Box -->
+                <!-- Right-aligned Label Box (Textbox3: LightGrey background, solid border) -->
                 <div style="display: flex; justify-content: flex-end; margin-bottom: -1.2px;">
-                    <div style="width: 39%; border: 1.2px solid #000; padding: 4px 10px; font-weight: 700; font-size: 13.5px; text-align: center; background: #fff;">
-                        بۆتان دەنێرین بە مەبەستی :-
+                    <div style="width: 42%; border: 1.2px solid #000; padding: 4px 10px; font-weight: 700; font-size: 14pt; text-align: center; background: #e2e8f0; color: #000;">
+                        بۆتان دەنێرین بە مەبەستى   :-
                     </div>
                 </div>
 
-                <!-- Full Width Reason Content Box -->
-                <div style="width: 100%; border: 1.2px solid #000; padding: 8px 14px; font-size: 13.5px; font-weight: 700; line-height: 1.8; color: #000; min-height: 52px; box-sizing: border-box; text-align: right;" id="pDocReason">
+                <!-- Full Width Reason Content Box (Tablix5: N) -->
+                <div style="width: 100%; border: 1.2px solid #000; padding: 8px 14px; font-size: 14pt; font-weight: 700; line-height: 1.8; color: #000; min-height: 58px; box-sizing: border-box; text-align: right;" id="pDocReason">
                     شاسی حفری خۆڕکە لێیداوە و چەند ژمارەیەکی ناخوێنرێتەوە. وەژمارەکانی تری پاک بکرێنەوە نامینن. بدرێت بە لیژنەی هاوبەش.
                 </div>
             </div>
 
-            <!-- 6. Respectful Closing -->
-            <div style="text-align: center; margin-top: 36px; font-size: 14.5px; font-weight: 700; color: #000;">
+            <!-- 8. Respectful Closing (Textbox53: فەرمانتان لەگەڵ ڕێزدا) -->
+            <div style="text-align: center; margin-top: 36px; font-size: 11pt; font-weight: 700; color: #000;">
                 فەرمانتان لەگەڵ ڕێزدا
             </div>
 
-            <!-- 7. Signatures Row -->
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 55px; padding: 0 16px; font-size: 14px; font-weight: 700; color: #000;">
-                <div style="text-align: center; width: 22%;">ڕێکخەر</div>
-                <div style="text-align: center; width: 22%;">بەڕادی پشکنەر</div>
-                <div style="text-align: center; width: 22%;">بەڕادی پشکنەر</div>
-                <div style="text-align: center; width: 22%;">ئەفسەری پشکنین</div>
+            <!-- 9. Signatures Row (4 Columns) -->
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-top: 48px; padding: 0 16px; font-size: 11pt; font-weight: 700; color: #000;">
+                <div style="text-align: center; width: 22%;">
+                    <div style="font-size: 11pt;">ڕێکخەر</div>
+                    <div id="pDocRegistrar" style="margin-top: 8px; font-size: 10.5pt; font-weight: 700; color: #1e293b;">-</div>
+                </div>
+                <div style="text-align: center; width: 22%;">
+                    <div style="font-size: 11pt;">بەرادى پشکنەر</div>
+                </div>
+                <div style="text-align: center; width: 22%;">
+                    <div style="font-size: 11pt;">بەرادى پشکنەر</div>
+                </div>
+                <div style="text-align: center; width: 22%;">
+                    <div style="font-size: 11pt; font-weight: 700;">ئه‌فسه‌ری پشكنین</div>
+                </div>
             </div>
 
         </div>
@@ -10605,6 +11171,16 @@ function resetRaportForm() {
     initRaportForm();
 }
 
+function syncRapDateToKu(val) {
+    const el = document.getElementById('rapDate_ku');
+    if (el) el.textContent = val || new Date().toISOString().slice(0, 10);
+}
+
+function onRapDirectorateChange(val) {
+    const el = document.getElementById('pDocDirectorate');
+    if (el) el.textContent = val || 'سلێمانی';
+}
+
 async function initRaportForm(id) {
     initRaportTheme();
     _raportCurrentId = id || null;
@@ -10613,6 +11189,7 @@ async function initRaportForm(id) {
     const today = new Date().toISOString().slice(0, 10);
     const dateInput = document.getElementById('rapDate');
     if (dateInput && !dateInput.value) dateInput.value = today;
+    if (document.getElementById('rapDate_ku')) document.getElementById('rapDate_ku').textContent = dateInput?.value || today;
 
     // Load lookups & next sequence
     try {
@@ -10621,19 +11198,31 @@ async function initRaportForm(id) {
         if (d.success) {
             // Sequence S
             const outS = document.getElementById('rapOutS');
-            if (outS && !id) outS.value = d.nextS;
+            if (outS && !id) {
+                outS.value = d.nextS;
+                if (document.getElementById('rapOutS_ku')) document.getElementById('rapOutS_ku').textContent = d.nextS;
+            }
 
-            // Current user badge
-            const badgeUser = document.getElementById('rapBadgeUser');
-            if (badgeUser) badgeUser.textContent = d.currentUser?.username || '9';
+            // Registrar Name (R)
+            const regName = d.currentUser?.name || d.currentUser?.username || 'سیستەم';
+            if (document.getElementById('rapSignRegistrar')) {
+                document.getElementById('rapSignRegistrar').textContent = regName;
+            }
 
-            // Populate and set active place
+            // Directorate (P)
+            const dirSelect = document.getElementById('rapDirectorate');
+            if (dirSelect && d.directorates && d.directorates.length) {
+                dirSelect.innerHTML = d.directorates.map(dr => `<option value="${dr}">${dr}</option>`).join('');
+                if (!dirSelect.value) dirSelect.value = 'سلێمانی';
+            }
+
+            // Populate and set active place (Q)
             const placeInput = document.getElementById('rapPlace');
             if (placeInput && !id) {
                 placeInput.value = getActivePlace();
             }
 
-            // Populate tablos datalist and dropdowns
+            // Populate tablos datalist and dropdowns (B)
             const sTabloList = document.getElementById('rapSearchTabloList');
             const sTablo = document.getElementById('rapSearchTablo');
             const rapB = document.getElementById('rapB');
@@ -10645,7 +11234,7 @@ async function initRaportForm(id) {
                 if (rapB && !rapB.value) rapB.value = 'سلێمانی';
             }
 
-            // Populate bashes datalist and dropdowns
+            // Populate bashes datalist and dropdowns (C)
             const sBashList = document.getElementById('rapSearchBashList');
             const sBash = document.getElementById('rapSearchBash');
             const rapC = document.getElementById('rapC');
@@ -10655,16 +11244,6 @@ async function initRaportForm(id) {
                 if (rapC) rapC.innerHTML = bashOpts;
                 if (sBash && !sBash.value) sBash.value = 'تایبەت';
                 if (rapC && !rapC.value) rapC.value = 'تایبەت';
-            }
-
-            // Populate barads dropdowns
-            const rapQ = document.getElementById('rapQ');
-            const rapR = document.getElementById('rapR');
-            if (rapQ && (!_raportLookupsLoaded || rapQ.options.length <= 1)) {
-                const baradOpts = '<option value="">-- هەڵبژێرە --</option>' + 
-                    (d.barads || []).map(b => `<option value="${b}">${b}</option>`).join('');
-                rapQ.innerHTML = baradOpts;
-                rapR.innerHTML = baradOpts;
             }
 
             // Populate reasons datalist
@@ -10679,7 +11258,7 @@ async function initRaportForm(id) {
         console.error('Error initializing raport form:', err);
     }
 
-    // Setup Enter key navigation for desktop rapid entry
+    // Setup Enter key navigation for desktop rapid entry (RTL RDLC Flow)
     const rapContainer = document.getElementById('page-raport');
     if (rapContainer && !rapContainer._enterInit) {
         rapContainer._enterInit = true;
@@ -10692,11 +11271,11 @@ async function initRaportForm(id) {
                     doRaportSearch();
                     return;
                 }
-                if (target.tagName === 'BUTTON') return;
+                if (target.tagName === 'BUTTON' || target.tagName === 'TEXTAREA') return;
                 if (target.tagName === 'INPUT' || target.tagName === 'SELECT') {
                     e.preventDefault();
                     const inputs = Array.from(rapContainer.querySelectorAll(
-                        '#rapA, #rapB, #rapC, #rapD, #rapG, #rapF, #rapE, #rapH, #rapM, #rapJ, #rapI, #rapL, #rapK, #rapR, #rapQ, #rapN'
+                        '#rapPlace, #rapA, #rapC, #rapB, #rapD, #rapF, #rapE, #rapG, #rapH, #rapJ, #rapI, #rapL, #rapK, #rapM, #rapN'
                     ));
                     const idx = inputs.indexOf(target);
                     if (idx > -1) {
@@ -10734,7 +11313,8 @@ async function loadRaportRecord(id) {
         const json = await res.json();
         if (json.success && json.data) {
             const r = json.data;
-            document.getElementById('rapOutS').value = r.S || '';
+            if (document.getElementById('rapOutS')) document.getElementById('rapOutS').value = r.S || '';
+            if (document.getElementById('rapOutS_ku')) document.getElementById('rapOutS_ku').textContent = r.S || '';
             document.getElementById('rapA').value = r.A || '';
             document.getElementById('rapB').value = r.B || '';
             document.getElementById('rapC').value = r.C || '';
@@ -10749,10 +11329,14 @@ async function loadRaportRecord(id) {
             document.getElementById('rapL').value = r.L || '';
             document.getElementById('rapM').value = r.M || '';
             document.getElementById('rapN').value = r.N || '';
-            if (r.O) document.getElementById('rapDate').value = String(r.O).slice(0, 10);
-            if (r.P) document.getElementById('rapPlace').value = r.P;
-            if (r.Q) document.getElementById('rapQ').value = r.Q;
-            if (r.R) document.getElementById('rapR').value = r.R;
+            if (r.O) {
+                const dStr = String(r.O).slice(0, 10);
+                if (document.getElementById('rapDate')) document.getElementById('rapDate').value = dStr;
+                if (document.getElementById('rapDate_ku')) document.getElementById('rapDate_ku').textContent = dStr;
+            }
+            if (r.P && document.getElementById('rapDirectorate')) document.getElementById('rapDirectorate').value = r.P;
+            if (r.Q && document.getElementById('rapPlace')) document.getElementById('rapPlace').value = r.Q;
+            if (r.R && document.getElementById('rapSignRegistrar')) document.getElementById('rapSignRegistrar').textContent = r.R;
         }
     } catch (e) {
         console.error('Error loading raport row:', e);
@@ -10903,8 +11487,10 @@ async function doRaportSearch() {
             document.getElementById('rapJ').value = row.arabana1_color || '';
             document.getElementById('rapK').value = row.arabana2_chassis || '*';
             document.getElementById('rapL').value = row.arabana2_color || '';
-            if (row.barad1) document.getElementById('rapQ').value = row.barad1;
-            if (row.place && row.place !== '*') document.getElementById('rapPlace').value = row.place;
+            if (row.place && row.place !== '*') {
+                const elPlace = document.getElementById('rapPlace');
+                if (elPlace) elPlace.value = row.place;
+            }
 
             if (alertBox) {
                 const srcText = d.source === 'VA' ? 'تەیبڵی تاقیگە (VA)' : 'تۆماری ئۆتۆمبێل (T1)';
@@ -10972,12 +11558,11 @@ async function saveRaportRecord() {
         L: document.getElementById('rapL')?.value || '',
         M: document.getElementById('rapM')?.value || '',
         N: document.getElementById('rapN')?.value || '',
-        P: (document.getElementById('rapPlace')?.value || '').trim() || getActivePlace(),
-        place: (document.getElementById('rapPlace')?.value || '').trim() || getActivePlace(),
-        Q: document.getElementById('rapQ')?.value || '',
-        R: document.getElementById('rapR')?.value || '',
-        S: sVal,
-        UUser: (currentUser && (currentUser.name || currentUser.username)) || (window.currentUser && (window.currentUser.name || window.currentUser.username)) || ''
+        O: document.getElementById('rapDate')?.value || new Date().toISOString().slice(0, 10),
+        P: (document.getElementById('rapDirectorate')?.value || '').trim() || 'سلێمانی',
+        Q: (document.getElementById('rapPlace')?.value || '').trim() || getActivePlace(),
+        R: (currentUser && (currentUser.name || currentUser.username)) || (window.currentUser && (window.currentUser.name || window.currentUser.username)) || document.getElementById('rapSignRegistrar')?.textContent || 'سیستەم',
+        S: sVal
     };
 
     const btn = document.getElementById('btnRapSave');
@@ -10993,7 +11578,8 @@ async function saveRaportRecord() {
         if (d.success) {
             alert(d.message || 'ڕاپۆرت بە سەرکەوتوویی لە هەردوو تەیبڵی (RAP) و (حیجز) تۆمارکرا');
             if (d.nextS) {
-                document.getElementById('rapOutS').value = d.nextS;
+                if (document.getElementById('rapOutS')) document.getElementById('rapOutS').value = d.nextS;
+                if (document.getElementById('rapOutS_ku')) document.getElementById('rapOutS_ku').textContent = d.nextS;
             }
             // Refresh suspicious page table if open
             if (typeof loadSuspicious === 'function') loadSuspicious();
@@ -11061,8 +11647,9 @@ async function updateT1FromRaport() {
 
 function printRaportLetter() {
     // Populate printable document fields
-    const sVal  = document.getElementById('rapOutS')?.value || '3405';
+    const sVal  = document.getElementById('rapOutS')?.value || '3407';
     const date  = document.getElementById('rapDate')?.value || new Date().toISOString().split('T')[0];
+    const directorate = document.getElementById('rapDirectorate')?.value || 'سلێمانی';
     const place = (document.getElementById('rapPlace')?.value || '').trim() || getActivePlace();
     const plate = document.getElementById('rapA')?.value || '-';
     const tablo = document.getElementById('rapB')?.value || '';
@@ -11077,12 +11664,14 @@ function printRaportLetter() {
     const a1Cl  = document.getElementById('rapJ')?.value || '';
     const a2Ch  = document.getElementById('rapK')?.value || '*';
     const a2Cl  = document.getElementById('rapL')?.value || '';
-    const reason= document.getElementById('rapN')?.value || 'شاسی حفری خۆڕکە لێیداوە  و چەند ژمارەیەکی ناخوێنرێتەوە. وەژمارەکانی تری پاک بکرێنەوە نامینن. بدرێت بە لیژنەی هاوبەش.';
+    const reason= document.getElementById('rapN')?.value || 'شاسی حفری خۆڕکە لێیداوە و چەند ژمارەیەکی ناخوێنرێتەوە. وەژمارەکانی تری پاک بکرێنەوە نامینن. بدرێت بە لیژنەی هاوبەش.';
+    const registrar = (currentUser && (currentUser.name || currentUser.username)) || document.getElementById('rapSignRegistrar')?.textContent || '-';
 
     if (document.getElementById('pDocS')) document.getElementById('pDocS').textContent = sVal;
     if (document.getElementById('pDocS_en')) document.getElementById('pDocS_en').textContent = sVal;
     if (document.getElementById('pDocDate')) document.getElementById('pDocDate').textContent = date;
     if (document.getElementById('pDocDate_en')) document.getElementById('pDocDate_en').textContent = date;
+    if (document.getElementById('pDocDirectorate')) document.getElementById('pDocDirectorate').textContent = directorate;
     if (document.getElementById('pDocPlace')) document.getElementById('pDocPlace').textContent = (place === '*' || !place) ? getActivePlace() : place;
 
     if (document.getElementById('pDocPlateNo')) document.getElementById('pDocPlateNo').textContent = plate;
@@ -11099,6 +11688,7 @@ function printRaportLetter() {
     if (document.getElementById('pDocA2Chassis')) document.getElementById('pDocA2Chassis').textContent = a2Ch || '*';
     if (document.getElementById('pDocA2Color')) document.getElementById('pDocA2Color').textContent = (a2Cl && a2Cl !== '*') ? a2Cl : '*';
     if (document.getElementById('pDocReason')) document.getElementById('pDocReason').textContent = reason;
+    if (document.getElementById('pDocRegistrar')) document.getElementById('pDocRegistrar').textContent = registrar;
 
     openOverlay('modalRaportPrint');
 }
@@ -11515,59 +12105,83 @@ async function showDetailGomrgRow(id) {
 
 async function showDetailRaportRow(id) {
     try {
-        const d = await fetch('/api/raport/' + id).then(r => r.json());
-        if (!d || d.error) {
+        const res = await fetch('/api/raport/' + id).then(r => r.json());
+        if (!res || !res.success || !res.data) {
             alert('نوسراوی ڕاپۆرت نەدۆزرایەوە');
             return;
         }
+        const d = res.data;
         document.getElementById('modalTitle').textContent = '📄 نوسراوی ڕاپۆرت – ' + (d.A || d.S || '');
         openOverlay('detailModal');
         document.getElementById('modalBody').innerHTML = `
-            <div class="d-item"><div class="d-label">ژمارەی دەرچوو (S)</div><div class="d-val hl">${d.S || '-'}</div></div>
+            <div class="d-item"><div class="d-label">ژمارەی ڕۆشتوو (S)</div><div class="d-val hl">${d.S || '-'}</div></div>
             <div class="d-item"><div class="d-label">ژمارەی تابلۆ (A)</div><div class="d-val hl">${d.A || '-'}</div></div>
-            <div class="d-item"><div class="d-label">پارێزگا (B)</div><div class="d-val">${d.B || '-'}</div></div>
-            <div class="d-item"><div class="d-label">جۆری تابلۆ (C)</div><div class="d-val">${d.C || '-'}</div></div>
-            <div class="d-item"><div class="d-label">شاسی (D)</div><div class="d-val" style="font-family:monospace; font-weight:800; color:#0284c7;">${d.D || '-'}</div></div>
-            <div class="d-item"><div class="d-label">جۆری ئۆتۆمبێل (F)</div><div class="d-val">${d.F || '-'}</div></div>
-            <div class="d-item"><div class="d-label">مۆدێل (G)</div><div class="d-val">${d.G || '-'}</div></div>
-            <div class="d-item"><div class="d-label">ڕەنگ (H)</div><div class="d-val">${d.H || '-'}</div></div>
-            <div class="d-item"><div class="d-label">ناوی خاوەن (I)</div><div class="d-val">${d.I || '-'}</div></div>
+            <div class="d-item"><div class="d-label">تابلۆ (B)</div><div class="d-val">${d.B || '-'}</div></div>
+            <div class="d-item"><div class="d-label">بەش (C)</div><div class="d-val">${d.C || '-'}</div></div>
+            <div class="d-item"><div class="d-label">جۆری ئۆتۆمبێل (D)</div><div class="d-val">${d.D || '-'}</div></div>
+            <div class="d-item"><div class="d-label">مۆدێل (E)</div><div class="d-val">${d.E || '-'}</div></div>
+            <div class="d-item"><div class="d-label">ڕەنگ (F)</div><div class="d-val">${d.F || '-'}</div></div>
+            <div class="d-item"><div class="d-label">ژمارەی شاسی (G)</div><div class="d-val" style="font-family:monospace; font-weight:800; color:#0284c7;">${d.G || '-'}</div></div>
+            <div class="d-item"><div class="d-label">ژمارەی لاشە (H)</div><div class="d-val" style="font-family:monospace;">${d.H || '*'}</div></div>
+            <div class="d-item"><div class="d-label">شاسی عەرەبانە1 (I)</div><div class="d-val" style="font-family:monospace;">${d.I || '*'}</div></div>
+            <div class="d-item"><div class="d-label">ڕەنگی عەرەبانە1 (J)</div><div class="d-val">${d.J || '-'}</div></div>
+            <div class="d-item"><div class="d-label">شاسی عەرەبانە2 (K)</div><div class="d-val" style="font-family:monospace;">${d.K || '*'}</div></div>
+            <div class="d-item"><div class="d-label">ڕەنگی عەرەبانە2 (L)</div><div class="d-val">${d.L || '-'}</div></div>
+            <div class="d-item"><div class="d-label">بەناوی هاوڵاتی (M)</div><div class="d-val">${d.M || '-'}</div></div>
+            <div class="d-item"><div class="d-label">بەڕێوەبەرایەتی (P)</div><div class="d-val">${d.P || '-'}</div></div>
+            <div class="d-item"><div class="d-label">شوێنی پشکنین (Q)</div><div class="d-val">${d.Q || '-'}</div></div>
+            <div class="d-item"><div class="d-label">ڕێکخەر (R)</div><div class="d-val" style="color:#059669; font-weight:800;">${d.R || '-'}</div></div>
             <div class="d-item"><div class="d-label">بەرواری نوسراو (O)</div><div class="d-val">${d.O ? String(d.O).slice(0, 10) : '-'}</div></div>
-            <div class="d-item"><div class="d-label">مەبەست / نێردراو بۆ</div><div class="d-val">${d.P || d.Q || '-'}</div></div>
-            <div class="d-item"><div class="d-label">تۆمارکەر (R)</div><div class="d-val" style="color:#059669; font-weight:800;">${d.R || '-'}</div></div>
-            <div class="d-item full" style="background:#fffbeb; border:1px solid #fde68a;"><div class="d-label">تێبینی / کێشەی شاسی (E)</div><div class="d-val">${d.E || '-'}</div></div>
+            <div class="d-item full" style="background:#fffbeb; border:1px solid #fde68a;"><div class="d-label">بۆتان دەنێرین بە مەبەستی (N)</div><div class="d-val">${d.N || '-'}</div></div>
         `;
     } catch (e) {
+        console.error('Error showing raport detail:', e);
         alert('کێشە لە پیشاندانی ڕاپۆرت: ' + e.message);
     }
 }
 
 async function openRaportPrintDirect(id) {
     try {
-        const d = await fetch('/api/raport/' + id).then(r => r.json());
-        if (!d || d.error) {
+        const res = await fetch('/api/raport/' + id).then(r => r.json());
+        if (!res || !res.success || !res.data) {
             alert('داتای ڕاپۆرت نەدۆزرایەوە');
             return;
         }
+        const d = res.data;
 
         const setVal = (elId, val) => {
             const el = document.getElementById(elId);
-            if (el) el.textContent = val || '-';
+            if (el) el.textContent = (val !== null && val !== undefined && String(val).trim()) ? String(val).trim() : '-';
         };
 
-        setVal('pDocOutNo', d.S || d.A || '-');
-        setVal('pDocDate', d.O ? String(d.O).slice(0, 10) : new Date().toISOString().slice(0, 10));
-        setVal('pDocPlate', (d.A || '-') + ' ' + (d.B || '') + ' (' + (d.C || '') + ')');
-        setVal('pDocCarType', d.F || '-');
-        setVal('pDocModel', d.G || '-');
-        setVal('pDocColor', d.H || '-');
-        setVal('pDocChassis', d.D || '-');
-        setVal('pDocOwner', d.I || '-');
-        setVal('pDocPurpose', d.P || d.Q || 'پشکنینی ئەندازەیی و تەکنیکی');
-        setVal('pDocInspector', d.R || currentUser?.name || '-');
+        const sVal = d.S || '3407';
+        const dateStr = d.O ? String(d.O).slice(0, 10) : new Date().toISOString().slice(0, 10);
+
+        setVal('pDocS', sVal);
+        setVal('pDocS_en', sVal);
+        setVal('pDocDate', dateStr);
+        setVal('pDocDate_en', dateStr);
+        setVal('pDocDirectorate', d.P || 'سلێمانی');
+        setVal('pDocPlace', d.Q || 'بێستون');
+        setVal('pDocPlateNo', d.A || '-');
+        setVal('pDocTablo', d.B || '');
+        setVal('pDocBash', d.C || '');
+        setVal('pDocModel', d.D || '-');
+        setVal('pDocYear', d.E || '-');
+        setVal('pDocColor', d.F || '-');
+        setVal('pDocChassis', d.G || '-');
+        setVal('pDocQamara', d.H || '*');
+        setVal('pDocA1Chassis', d.I || '*');
+        setVal('pDocA1Color', (d.J && d.J !== '*') ? d.J : '');
+        setVal('pDocA2Chassis', d.K || '*');
+        setVal('pDocA2Color', (d.L && d.L !== '*') ? d.L : '*');
+        setVal('pDocOwner', d.M || '-');
+        setVal('pDocReason', d.N || '-');
+        setVal('pDocRegistrar', d.R || '-');
 
         openOverlay('modalRaportPrint');
     } catch (e) {
+        console.error('Error opening direct raport print:', e);
         alert('کێشە لە چاپی ڕاپۆرت: ' + e.message);
     }
 }

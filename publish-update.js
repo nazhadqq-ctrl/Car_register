@@ -33,6 +33,7 @@ const FILES_TO_PUBLISH = [
     'public/profile-avatar.jpg',
     'public/traffic-it-logo.jpg',
     'public/app-icon.png',
+    'public/img/w_nawxo2.jpg',
     'Update_TrafficCheck.bat',
     'Start_Silent_Print_Chrome.bat',
     'Start_Silent_Print_Edge.bat',

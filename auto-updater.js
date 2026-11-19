@@ -70,6 +70,7 @@ const FILES_TO_UPDATE = [
   'public/profile-avatar.jpg',
   'public/traffic-it-logo.jpg',
   'public/app-icon.png',
+  'public/img/w_nawxo2.jpg',
   'verify-syntax.js'
 ];
 
