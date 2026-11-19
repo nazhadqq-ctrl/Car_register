@@ -2862,11 +2862,19 @@
             padding: 8px 22px;
         }
 
-        /* ─── PRINT STYLES FOR RAPORT DOCUMENT ─── */
+        /* ══ PRINT RULES FOR OFFICIAL RAPORT DOCUMENT (Report23.rdlc Standard - Fitted strictly to A4) ══ */
         @media print {
             @page {
                 size: A4 portrait;
-                margin: 8mm 10mm;
+                margin: 5mm 8mm 5mm 8mm;
+            }
+            html, body {
+                width: 100% !important;
+                height: 100% !important;
+                margin: 0 !important;
+                padding: 0 !important;
+                background: #fff !important;
+                overflow: hidden !important;
             }
             body.printing-raport * {
                 visibility: hidden !important;
@@ -2878,10 +2886,11 @@
                 visibility: visible !important;
             }
             body.printing-raport #modalRaportPrint {
-                position: absolute !important;
+                position: fixed !important;
                 left: 0 !important;
                 top: 0 !important;
                 width: 100% !important;
+                height: 100% !important;
                 margin: 0 !important;
                 padding: 0 !important;
                 background: #fff !important;
@@ -2889,24 +2898,40 @@
                 border: none !important;
                 display: block !important;
             }
+            body.printing-raport #modalRaportPrint > div {
+                width: 100% !important;
+                max-width: 100% !important;
+                margin: 0 !important;
+                padding: 0 !important;
+                border: none !important;
+                border-radius: 0 !important;
+                box-shadow: none !important;
+                max-height: none !important;
+                height: 100% !important;
+            }
             body.printing-raport .no-print {
                 display: none !important;
             }
             body.printing-raport #raportPrintableDoc {
-                position: absolute !important;
-                left: 0 !important;
-                top: 0 !important;
+                position: static !important;
                 width: 100% !important;
-                max-width: 100% !important;
-                padding: 0 !important;
-                margin: 0 !important;
+                max-width: 194mm !important;
+                margin: 0 auto !important;
+                padding: 2mm 4mm !important;
                 box-shadow: none !important;
                 border: none !important;
                 background: #fff !important;
                 color: #000 !important;
-                overflow: visible !important;
-                height: auto !important;
-                max-height: none !important;
+                overflow: hidden !important;
+                box-sizing: border-box !important;
+                page-break-inside: avoid !important;
+                break-inside: avoid !important;
+                page-break-after: avoid !important;
+                break-after: avoid !important;
+            }
+            body.printing-raport #raportPrintableDoc * {
+                page-break-inside: avoid !important;
+                break-inside: avoid !important;
             }
         }
         /* ══ ABOUT ME (دەربارەی من — نەژاد قادر محمد) ══════════════════ */
@@ -4994,8 +5019,8 @@
             </div>
         </div>
 
-        <!-- Printable Document Area (100% Exact Replica of Official Kurdistan Traffic Report23.rdlc Standard) -->
-        <div id="raportPrintableDoc" style="padding: 24px 34px; overflow-y: auto; flex: 1; background: #fff; color: #000; direction: rtl; font-family: 'NRT Reg', 'Speda', Tahoma, Arial, sans-serif; font-size: 13.5pt;">
+        <!-- Printable Document Area (100% Exact Replica of Official Kurdistan Traffic Report23.rdlc Standard - Fitted strictly to A4) -->
+        <div id="raportPrintableDoc" style="padding: 16px 28px; overflow-y: auto; flex: 1; background: #fff; color: #000; direction: rtl; font-family: 'NRT Reg', 'Speda', Tahoma, Arial, sans-serif; font-size: 12.5pt; max-width: 194mm; margin: 0 auto; box-sizing: border-box;">
             
             <!-- Hidden DOM elements required for static validator & JS backward-compatibility -->
             <div style="display:none;" aria-hidden="true">
@@ -5008,19 +5033,19 @@
             </div>
 
             <!-- 1. Header (PageHeader) -->
-            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 4px;">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 2px;">
                 <!-- Right Column (Kurdish: Directorate, Registration, OPVI) -->
-                <div style="text-align: right; width: 36%; font-size: 13.5pt; font-weight: 700; line-height: 1.5; color: #000;">
+                <div style="text-align: right; width: 36%; font-size: 12.5pt; font-weight: 700; line-height: 1.45; color: #000;">
                     <div id="pDocDirectorate">بەڕێوەبەرایەتی هاتووچۆی پارێزگای سلێمانی</div>
                     <div style="margin-top: 1px;">بەڕێوەبەرێتی بەشی تۆمار</div>
-                    <div style="margin-top: 1px; font-size: 14pt;">OPVI &nbsp;&nbsp;هۆبه‌ی</div>
+                    <div style="margin-top: 1px; font-size: 13pt;">OPVI &nbsp;&nbsp;هۆبه‌ی</div>
                 </div>
 
                 <!-- Center Column (Official Kurdistan Emblem w_nawxo2 + English) -->
                 <div style="text-align: center; width: 38%;">
                     <img src="data:image/jpeg;base64,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
-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" style="height: 78px; object-fit: contain; margin-bottom: 4px;" alt="Ministry of Interior Traffic">
-                    <div style="font-family: Arial, sans-serif; font-size: 9.5pt; font-weight: 700; line-height: 1.3; direction: ltr; color: #000;">
+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" style="height: 66px; object-fit: contain; margin-bottom: 2px;" alt="Ministry of Interior Traffic">
+                    <div style="font-family: Arial, sans-serif; font-size: 8.5pt; font-weight: 700; line-height: 1.25; direction: ltr; color: #000;">
                         <div>Ministry of InteriorGeneral Directorate of Traffic</div>
                         <div>Sulaimany Traffic Directorate</div>
                         <div>Registration Affair</div>
@@ -5028,14 +5053,14 @@
                 </div>
 
                 <!-- Left Column (Inspection Place) -->
-                <div style="text-align: center; width: 26%; font-size: 13.5pt; font-weight: 700; line-height: 1.5; color: #000;">
+                <div style="text-align: center; width: 26%; font-size: 12.5pt; font-weight: 700; line-height: 1.45; color: #000;">
                     <div>شوێنى پشکنین</div>
-                    <div id="pDocPlace" style="margin-top: 3px; font-weight: 700;"></div>
+                    <div id="pDocPlace" style="margin-top: 2px; font-weight: 700;"></div>
                 </div>
             </div>
 
             <!-- 2. Ref Row (No. on left, ژمارە : on right) + Horizontal Rule -->
-            <div style="display: flex; justify-content: space-between; align-items: flex-end; font-size: 13.5pt; font-weight: 700; color: #000; margin-top: 2px;">
+            <div style="display: flex; justify-content: space-between; align-items: flex-end; font-size: 12.5pt; font-weight: 700; color: #000; margin-top: 2px;">
                 <div style="text-align: right; width: 45%;">
                     ژمارە : &nbsp;<span id="pDocS" style="font-family: Arial, sans-serif;"></span>
                 </div>
@@ -5043,89 +5068,89 @@
                     No. &nbsp;<span id="pDocS_en"></span>
                 </div>
             </div>
-            <div style="border-bottom: 1.5px solid #000; width: 100%; margin: 4px 0 16px 0;"></div>
+            <div style="border-bottom: 1.5px solid #000; width: 100%; margin: 2px 0 10px 0;"></div>
 
             <!-- 3. Recipient & Subject -->
-            <div style="text-align: center; margin-bottom: 16px; color: #000;">
-                <div style="font-size: 15pt; font-weight: 700; margin-bottom: 6px;">
+            <div style="text-align: center; margin-bottom: 10px; color: #000;">
+                <div style="font-size: 13.5pt; font-weight: 700; margin-bottom: 4px;">
                     بۆ  به‌ڕێز /  به‌ڕێوه‌به‌ری به‌شی تۆمار
                 </div>
-                <div style="font-size: 15pt; font-weight: 700; display: inline-block; border-bottom: 1.8px solid #000; padding-bottom: 2px;">
+                <div style="font-size: 13.5pt; font-weight: 700; display: inline-block; border-bottom: 1.8px solid #000; padding-bottom: 1px;">
                     بابەت / ڕاپۆرتى پشکنین
                 </div>
             </div>
 
-            <!-- 4. Unified Specifications Table (Exact 6-Row Grid from RDLC image) -->
-            <table style="width: 100%; border-collapse: collapse; border: 1.5px solid #000; font-size: 13pt; font-weight: 700; color: #000; margin-bottom: 14px;">
+            <!-- 4. Unified Specifications Table (Exact 6-Row Grid strictly fitted for A4) -->
+            <table style="width: 100%; border-collapse: collapse; border: 1.5px solid #000; font-size: 11.5pt; font-weight: 700; color: #000; margin-bottom: 10px;">
                 <!-- Row 1: Model Year & Color -->
-                <tr style="height: 35px;">
-                    <td style="width: 18%; border: 1.2px solid #000; padding: 2px 8px; text-align: right; background: #fff;">مۆدێل</td>
-                    <td style="width: 3%; border: 1.2px solid #000; text-align: center; padding: 2px;">:</td>
-                    <td style="width: 38%; border: 1.2px solid #000; text-align: center; padding: 2px 6px; font-weight: 800;" id="pDocYear"></td>
-                    <td style="width: 10%; border: 1.2px solid #000; text-align: center; padding: 2px 6px; background: #fff;">ڕەنگی</td>
-                    <td style="width: 3%; border: 1.2px solid #000; text-align: center; padding: 2px;">:</td>
-                    <td style="width: 28%; border: 1.2px solid #000; text-align: center; padding: 2px 6px; font-weight: 800;" id="pDocColor"></td>
+                <tr style="height: 30px;">
+                    <td style="width: 18%; border: 1.2px solid #000; padding: 1px 8px; text-align: right; background: #fff;">مۆدێل</td>
+                    <td style="width: 3%; border: 1.2px solid #000; text-align: center; padding: 1px;">:</td>
+                    <td style="width: 38%; border: 1.2px solid #000; text-align: center; padding: 1px 6px; font-weight: 800;" id="pDocYear"></td>
+                    <td style="width: 10%; border: 1.2px solid #000; text-align: center; padding: 1px 6px; background: #fff;">ڕەنگی</td>
+                    <td style="width: 3%; border: 1.2px solid #000; text-align: center; padding: 1px;">:</td>
+                    <td style="width: 28%; border: 1.2px solid #000; text-align: center; padding: 1px 6px; font-weight: 800;" id="pDocColor"></td>
                 </tr>
                 <!-- Row 2: Chassis Number (Wide span across) -->
-                <tr style="height: 35px;">
-                    <td style="width: 18%; border: 1.2px solid #000; padding: 2px 8px; text-align: right; background: #fff;">ژمارەى شاصی</td>
-                    <td style="width: 3%; border: 1.2px solid #000; text-align: center; padding: 2px;">:</td>
-                    <td colspan="4" style="border: 1.2px solid #000; text-align: center; padding: 2px 8px; font-family: 'JetBrains Mono', Consolas, 'Courier New', monospace; font-size: 14.5pt; font-weight: 800; letter-spacing: 1px;" id="pDocChassis"></td>
+                <tr style="height: 30px;">
+                    <td style="width: 18%; border: 1.2px solid #000; padding: 1px 8px; text-align: right; background: #fff;">ژمارەى شاصی</td>
+                    <td style="width: 3%; border: 1.2px solid #000; text-align: center; padding: 1px;">:</td>
+                    <td colspan="4" style="border: 1.2px solid #000; text-align: center; padding: 1px 8px; font-family: 'JetBrains Mono', Consolas, 'Courier New', monospace; font-size: 13.5pt; font-weight: 800; letter-spacing: 1px;" id="pDocChassis"></td>
                 </tr>
                 <!-- Row 3: Cabin / Body Number (Wide span across) -->
-                <tr style="height: 35px;">
-                    <td style="width: 18%; border: 1.2px solid #000; padding: 2px 8px; text-align: right; background: #fff;">ژمارەى لاشە</td>
-                    <td style="width: 3%; border: 1.2px solid #000; text-align: center; padding: 2px;">:</td>
-                    <td colspan="4" style="border: 1.2px solid #000; text-align: center; padding: 2px 8px; font-family: 'JetBrains Mono', Consolas, monospace;" id="pDocQamara">*</td>
+                <tr style="height: 30px;">
+                    <td style="width: 18%; border: 1.2px solid #000; padding: 1px 8px; text-align: right; background: #fff;">ژمارەى لاشە</td>
+                    <td style="width: 3%; border: 1.2px solid #000; text-align: center; padding: 1px;">:</td>
+                    <td colspan="4" style="border: 1.2px solid #000; text-align: center; padding: 1px 8px; font-family: 'JetBrains Mono', Consolas, monospace;" id="pDocQamara">*</td>
                 </tr>
                 <!-- Row 4: Trailer 1 Chassis & Color -->
-                <tr style="height: 35px;">
-                    <td style="width: 18%; border: 1.2px solid #000; padding: 2px 8px; text-align: right; background: #fff;">ژ.شاسی عەرەبانە1</td>
-                    <td style="width: 3%; border: 1.2px solid #000; text-align: center; padding: 2px;">:</td>
-                    <td style="width: 38%; border: 1.2px solid #000; text-align: center; padding: 2px 6px; font-family: 'JetBrains Mono', Consolas, monospace;" id="pDocA1Chassis">*</td>
-                    <td style="width: 10%; border: 1.2px solid #000; text-align: center; padding: 2px 6px; background: #fff;">ڕەنگی</td>
-                    <td style="width: 3%; border: 1.2px solid #000; text-align: center; padding: 2px;">:</td>
-                    <td style="width: 28%; border: 1.2px solid #000; text-align: center; padding: 2px 6px; font-weight: 800;" id="pDocA1Color"></td>
+                <tr style="height: 30px;">
+                    <td style="width: 18%; border: 1.2px solid #000; padding: 1px 8px; text-align: right; background: #fff;">ژ.شاسی عەرەبانە1</td>
+                    <td style="width: 3%; border: 1.2px solid #000; text-align: center; padding: 1px;">:</td>
+                    <td style="width: 38%; border: 1.2px solid #000; text-align: center; padding: 1px 6px; font-family: 'JetBrains Mono', Consolas, monospace;" id="pDocA1Chassis">*</td>
+                    <td style="width: 10%; border: 1.2px solid #000; text-align: center; padding: 1px 6px; background: #fff;">ڕەنگی</td>
+                    <td style="width: 3%; border: 1.2px solid #000; text-align: center; padding: 1px;">:</td>
+                    <td style="width: 28%; border: 1.2px solid #000; text-align: center; padding: 1px 6px; font-weight: 800;" id="pDocA1Color"></td>
                 </tr>
                 <!-- Row 5: Trailer 2 Chassis & Color -->
-                <tr style="height: 35px;">
-                    <td style="width: 18%; border: 1.2px solid #000; padding: 2px 8px; text-align: right; background: #fff;">ژ.شاسی عەرەبانە2</td>
-                    <td style="width: 3%; border: 1.2px solid #000; text-align: center; padding: 2px;">:</td>
-                    <td style="width: 38%; border: 1.2px solid #000; text-align: center; padding: 2px 6px; font-family: 'JetBrains Mono', Consolas, monospace;" id="pDocA2Chassis">*</td>
-                    <td style="width: 10%; border: 1.2px solid #000; text-align: center; padding: 2px 6px; background: #fff;">ڕەنگی</td>
-                    <td style="width: 3%; border: 1.2px solid #000; text-align: center; padding: 2px;">:</td>
-                    <td style="width: 28%; border: 1.2px solid #000; text-align: center; padding: 2px 6px; font-weight: 800;" id="pDocA2Color"></td>
+                <tr style="height: 30px;">
+                    <td style="width: 18%; border: 1.2px solid #000; padding: 1px 8px; text-align: right; background: #fff;">ژ.شاسی عەرەبانە2</td>
+                    <td style="width: 3%; border: 1.2px solid #000; text-align: center; padding: 1px;">:</td>
+                    <td style="width: 38%; border: 1.2px solid #000; text-align: center; padding: 1px 6px; font-family: 'JetBrains Mono', Consolas, monospace;" id="pDocA2Chassis">*</td>
+                    <td style="width: 10%; border: 1.2px solid #000; text-align: center; padding: 1px 6px; background: #fff;">ڕەنگی</td>
+                    <td style="width: 3%; border: 1.2px solid #000; text-align: center; padding: 1px;">:</td>
+                    <td style="width: 28%; border: 1.2px solid #000; text-align: center; padding: 1px 6px; font-weight: 800;" id="pDocA2Color"></td>
                 </tr>
                 <!-- Row 6: Owner Full Name (Wide span across) -->
-                <tr style="height: 35px;">
-                    <td style="width: 18%; border: 1.2px solid #000; padding: 2px 8px; text-align: right; background: #fff;">بەناوى هاوڵاتى</td>
-                    <td style="width: 3%; border: 1.2px solid #000; text-align: center; padding: 2px;">:</td>
-                    <td colspan="4" style="border: 1.2px solid #000; text-align: center; padding: 2px 8px; font-weight: 800; font-size: 13.5pt;" id="pDocOwner"></td>
+                <tr style="height: 30px;">
+                    <td style="width: 18%; border: 1.2px solid #000; padding: 1px 8px; text-align: right; background: #fff;">بەناوى هاوڵاتى</td>
+                    <td style="width: 3%; border: 1.2px solid #000; text-align: center; padding: 1px;">:</td>
+                    <td colspan="4" style="border: 1.2px solid #000; text-align: center; padding: 1px 8px; font-weight: 800; font-size: 12.5pt;" id="pDocOwner"></td>
                 </tr>
             </table>
 
             <!-- 5. Purpose Header Box (Pinned to Right side, ~42% width with LightGrey background) -->
-            <div style="display: flex; justify-content: flex-start; margin-bottom: 6px;">
-                <div style="width: 42%; background: #d9d9d9; border: 1.5px solid #000; padding: 6px 14px; text-align: right; font-size: 13.5pt; font-weight: 700; color: #000; box-sizing: border-box;">
+            <div style="display: flex; justify-content: flex-start; margin-bottom: 4px;">
+                <div style="width: 42%; background: #d9d9d9; border: 1.5px solid #000; padding: 4px 12px; text-align: right; font-size: 12.5pt; font-weight: 700; color: #000; box-sizing: border-box;">
                     بۆتان دەنێرین بە مەبەستى   :-
                 </div>
             </div>
 
             <!-- 6. Purpose Content Area -->
-            <div style="min-height: 80px; padding: 8px 14px; font-size: 13.5pt; font-weight: 600; line-height: 1.6; text-align: right; color: #000; margin-bottom: 24px;" id="pDocReason">
+            <div style="min-height: 55px; max-height: 110px; padding: 6px 12px; font-size: 12pt; font-weight: 600; line-height: 1.5; text-align: right; color: #000; margin-bottom: 16px;" id="pDocReason">
             </div>
 
             <!-- 7. Formal Closing -->
-            <div style="text-align: center; font-size: 14pt; font-weight: 700; color: #000; margin-bottom: 40px;">
+            <div style="text-align: center; font-size: 13pt; font-weight: 700; color: #000; margin-bottom: 24px;">
                 فەرمانتان لەگەڵ ڕێزدا
             </div>
 
             <!-- 8. Signatures (4 Columns: Registrar, 2 Inspectors, Inspection Officer) -->
-            <div style="display: flex; justify-content: space-between; align-items: flex-start; padding: 0 10px; font-size: 13.5pt; font-weight: 700; color: #000;">
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; padding: 0 8px; font-size: 12pt; font-weight: 700; color: #000;">
                 <!-- 1. Registrar (Right) -->
                 <div style="text-align: center; width: 22%;">
                     <div>ڕێکخەر</div>
-                    <div style="margin-top: 25px; font-size: 12pt; font-weight: 800; color: #000;" id="pDocRegistrar"></div>
+                    <div style="margin-top: 18px; font-size: 11.5pt; font-weight: 800; color: #000;" id="pDocRegistrar"></div>
                 </div>
 
                 <!-- 2. Inspector 1 -->

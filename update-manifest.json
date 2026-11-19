@@ -1,22 +1,22 @@
 {
-  "version": "1.8.8",
-  "build": 188,
-  "generatedAt": "2026-11-19T20:12:13.715Z",
+  "version": "1.8.9",
+  "build": 189,
+  "generatedAt": "2026-11-19T20:24:35.499Z",
   "files": {
-    "version.json": "f38d6974d86e982966629904e51fc974be3db4bf9761d7e0f5ececeb2d7586f8",
+    "version.json": "00ddb705374420f8299b87f3df904cb5185db3f43b826bd0d37ae7ba99e7ca07",
     "security.js": "8765788b8bc619adf58331a40c3b0260adcdc4670701176b721387520d9b5601",
     "server.js": "a5229aa745be5091a1577a09e64e07217ce2587498813994e602619b57aa6687",
     "auto-updater.js": "e688dac73664cd8c5a08ec20bc8309d0994f11e1e15539017525f1c2a8f24c45",
-    "package.json": "31f04e3649b5a4ef2b4e485d85a421df2bbe6bb20cc3a581f0917266d5dc4176",
-    "public/index.html": "bf97516efef6561cfcd47e5eacca7f0d2027d8273225204bb52290302a96a06e",
-    "public/login.html": "41d610f4e80e035d4bd4d49278bb643d5bf0c4cb9f1289997367b5d548b69562",
+    "package.json": "12db48fb326b581bf2ed7fd56fc829295410c555346b4b16d20fbe2954dad4f7",
+    "public/index.html": "4a166d3275ef60b4d08ffa6e91a005e92d67e8a435ccdaf97d53b1ed7631b27c",
+    "public/login.html": "cdc538a2c62561f74ddfd082ec4c6e8a124752049f6fc2db5cc8ce885a0a0d11",
     "public/profile-avatar.jpg": "dba7a4321bd779a8b43380208ba613f50863b7e86585615ea1132255b1e60a0b",
     "public/traffic-it-logo.jpg": "7692bbde9a6e19bdc0524b2bc7bf42e84492a0c5106ce61ef6ea22b965e4ccc1",
     "public/app-icon.png": "ec23beaa84710e269134d29e75f339cb72ac8f4a344b9811905332687b776910",
     "public/img/w_nawxo2.jpg": "296642af0f040294ebebc8d448e5668c69b6afb007d4e120edb3c67d19e02dee",
     "Update_TrafficCheck.bat": "7b134fc897a25df310f5b4bbb475c1b2600e2f9f9ade11dcceb820a9a6b083e5",
-    "Start_Silent_Print_Chrome.bat": "4e18d2b02046ffcd39cff585252740848310907e27a31d8d3162a112dedbc293",
-    "Start_Silent_Print_Edge.bat": "0c2922e08ab8b19e00d6e018018e4a8bb3ea6bb9f1155b0bb129ef76bc4a88b2",
+    "Start_Silent_Print_Chrome.bat": "ae50051906398e52d054ab1d417a4e12745b908fc7d93931e818f885aed6d488",
+    "Start_Silent_Print_Edge.bat": "75f79521ae59dce64de0942cc3d09ae848517557075fb469a33e308cb2c6c3e8",
     "verify-syntax.js": "1f83868c3e558a66c2d27ef45c37ce322557c3c99209bb21e6b441f62a773739"
   }
 }

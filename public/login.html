@@ -61,9 +61,41 @@
         @keyframes roadSlide { 0% { transform: translateX(-100%); } 100% { transform: translateX(100%); } }
 
         /* ── Login Container (Large & Prominent) ── */
+        /* ── Fullscreen Controls ── */
+        .btn-fullscreen {
+            background: rgba(13, 27, 53, 0.88);
+            border: 1.5px solid rgba(240, 200, 66, 0.45);
+            color: #fde047;
+            font-family: var(--ku-font);
+            font-size: 13.5px;
+            font-weight: 800;
+            padding: 8px 18px;
+            border-radius: 12px;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 8px 24px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.15);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            user-select: none;
+        }
+        .btn-fullscreen:hover {
+            background: rgba(26, 58, 107, 0.95);
+            border-color: #fde047;
+            color: #ffffff;
+            transform: translateY(-2px);
+            box-shadow: 0 12px 28px rgba(240, 200, 66, 0.25);
+        }
+        .btn-fullscreen:active {
+            transform: translateY(0);
+        }
+
+        /* ── Login Container (Large, Grand & Prominent Fullscreen Layout) ── */
         .login-wrapper {
             position: relative; z-index: 10;
-            width: 100%; max-width: 550px;
+            width: 100%; max-width: 620px;
             animation: fadeIn 0.45s ease-out;
         }
         @keyframes fadeIn { from { opacity: 0; transform: translateY(18px); } to { opacity: 1; transform: translateY(0); } }
@@ -434,6 +466,13 @@
     </style>
 </head>
 <body>
+
+<div class="top-screen-controls" style="position: fixed; top: 16px; left: 16px; z-index: 9999;">
+    <button type="button" id="btnFullscreenToggle" onclick="toggleFullScreen()" class="btn-fullscreen" title="فوول شاشە (Full Screen)">
+        <span id="fsIcon" style="font-size: 16px;">⛶</span>
+        <span id="fsText">تەواوی شاشە (Full Screen)</span>
+    </button>
+</div>
 
 <div class="bg-glow"></div>
 <div class="road-anim"></div>
@@ -821,6 +860,71 @@ for (let i = 0; i < 14; i++) {
     `;
     document.body.appendChild(p);
 }
+
+// Initialize on page load - always show login screen
+// ─── Full Screen Handling (تەواوی شاشە) ──────────────────────────────────
+function toggleFullScreen() {
+    if (!document.fullscreenElement && !document.webkitFullscreenElement && !document.mozFullScreenElement && !document.msFullscreenElement) {
+        const el = document.documentElement;
+        if (el.requestFullscreen) {
+            el.requestFullscreen().catch(() => {});
+        } else if (el.webkitRequestFullscreen) {
+            el.webkitRequestFullscreen();
+        } else if (el.msRequestFullscreen) {
+            el.msRequestFullscreen();
+        }
+        updateFsButton(true);
+    } else {
+        if (document.exitFullscreen) {
+            document.exitFullscreen().catch(() => {});
+        } else if (document.webkitExitFullscreen) {
+            document.webkitExitFullscreen();
+        } else if (document.msExitFullscreen) {
+            document.msExitFullscreen();
+        }
+        updateFsButton(false);
+    }
+}
+
+function updateFsButton(isFs) {
+    const icon = document.getElementById('fsIcon');
+    const text = document.getElementById('fsText');
+    if (icon && text) {
+        if (isFs) {
+            icon.textContent = '🗗';
+            text.textContent = 'دەرچوون لە فوول شاشە';
+        } else {
+            icon.textContent = '⛶';
+            text.textContent = 'تەواوی شاشە (Full Screen)';
+        }
+    }
+}
+
+['fullscreenchange', 'webkitfullscreenchange', 'mozfullscreenchange', 'MSFullscreenChange'].forEach(ev => {
+    document.addEventListener(ev, () => {
+        const isFs = !!(document.fullscreenElement || document.webkitFullscreenElement || document.mozFullScreenElement || document.msFullscreenElement);
+        updateFsButton(isFs);
+    });
+});
+
+// Auto-maximize window bounds if browser allows
+try {
+    if (window.screen) {
+        window.moveTo(0, 0);
+        window.resizeTo(screen.availWidth, screen.availHeight);
+    }
+} catch(e) {}
+
+// Auto-request fullscreen on first click anywhere
+document.addEventListener('click', function autoFsOnFirstClick(e) {
+    if (!document.fullscreenElement && !document.webkitFullscreenElement) {
+        const el = document.documentElement;
+        if (el.requestFullscreen) {
+            el.requestFullscreen().catch(() => {});
+        }
+    }
+    document.removeEventListener('click', autoFsOnFirstClick);
+}, { once: true });
 
 // Initialize on page load - always show login screen
 loadUsersData();

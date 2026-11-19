@@ -31,7 +31,7 @@ if exist "%ProgramFiles(x86)%\Microsoft\Edge\Application\msedge.exe" (
 )
 
 if not exist "%LocalAppData%\TrafficCheck\KioskProfile" mkdir "%LocalAppData%\TrafficCheck\KioskProfile" >nul 2>&1
-start "" "%EDGE_EXE%" --user-data-dir="%LocalAppData%\TrafficCheck\KioskProfile" --kiosk-printing --no-first-run --no-default-browser-check --disable-background-mode --app=http://localhost:3000/login.html
+start "" "%EDGE_EXE%" --user-data-dir="%LocalAppData%\TrafficCheck\KioskProfile" --kiosk-printing --start-maximized --no-first-run --no-default-browser-check --disable-background-mode --app=http://localhost:3000/login.html
 
 echo.
 echo سیستەم کرایەوە بە سەرکەوتوویی!
