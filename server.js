@@ -1269,6 +1269,73 @@ app.get('/api/raport/search-car', requireAuth, async (req, res) => {
     }
 });
 
+// ─── CHECK IF RAPORT IS REGISTERED IN DATABASE BEFORE PRINTING ─────
+app.get('/api/raport/check-registered', requireAuth, async (req, res) => {
+    try {
+        const pool = await getPool();
+        const plate = String(req.query.plate || '').trim();
+        const tablo = String(req.query.tablo || '').trim();
+        const bash  = String(req.query.bash  || '').trim();
+        const reason = String(req.query.reason || '').trim();
+        const id    = parseInt(req.query.id, 10);
+
+        if (!plate && !id) {
+            return res.status(400).json({ success: false, registered: false, message: 'ژمارەی ئۆتۆمبێل پێویستە' });
+        }
+
+        let r = null;
+        if (id && !isNaN(id) && id > 0) {
+            r = await pool.request()
+                .input('id', sql.Int, id)
+                .query(`SELECT TOP 1 * FROM RAP WHERE id = @id`);
+        }
+
+        if (!r || !r.recordset || r.recordset.length === 0) {
+            const cleanPlate = plate
+                .replace(/[٠-٩]/g, d => '٠١٢٣٤٥٦٧٨٩'.indexOf(d))
+                .replace(/[۰-۹]/g, d => '۰۱۲۳۴۵۶۷۸۹'.indexOf(d));
+            const cleanPlateNoSpace = cleanPlate.replace(/\s+/g, '');
+
+            let q = pool.request()
+                .input('plate', sql.NVarChar, cleanPlate)
+                .input('plateNoSpace', sql.NVarChar, cleanPlateNoSpace);
+
+            let queryStr = `
+                SELECT TOP 1 * FROM RAP 
+                WHERE (A = @plate OR REPLACE(A, ' ', '') = @plateNoSpace)
+            `;
+            if (tablo && tablo !== '*' && tablo !== 'هەموو') {
+                q.input('tablo', sql.NVarChar, tablo);
+                queryStr += ` AND (B = @tablo OR REPLACE(REPLACE(B, N'ى', N'ی'), N'ك', N'ک') = REPLACE(REPLACE(@tablo, N'ى', N'ی'), N'ك', N'ک')) `;
+            }
+            if (bash && bash !== '*' && bash !== 'هەموو') {
+                q.input('bash', sql.NVarChar, bash);
+                queryStr += ` AND (C = @bash OR REPLACE(REPLACE(C, N'ى', N'ی'), N'ك', N'ک') = REPLACE(REPLACE(@bash, N'ى', N'ی'), N'ك', N'ک')) `;
+            }
+            queryStr += ` ORDER BY id DESC`;
+            r = await q.query(queryStr);
+        }
+
+        if (r && r.recordset && r.recordset.length > 0) {
+            const row = r.recordset[0];
+            return res.json({
+                success: true,
+                registered: true,
+                data: row
+            });
+        }
+
+        return res.json({
+            success: true,
+            registered: false,
+            message: 'ئەم ئۆتۆمبێلە لە داتابەیسدا تۆمار نەکراوە'
+        });
+    } catch (err) {
+        console.error('Check registered raport error:', err);
+        return res.status(500).json({ success: false, registered: false, error: err.message });
+    }
+});
+
 // ─── DUAL-SERVER HIJZ INSERTION & OFFLINE QUEUE (ATOMIC STORAGE) ────
 const PENDING_HIJZ_FILE = path.join(getSecurityDataDir('data'), 'pending_hijz_90.json');
 const LEGACY_PENDING_HIJZ_FILE = path.join(__dirname, 'pending_hijz_90.json');
@@ -1428,7 +1495,16 @@ app.post('/api/raport', requireAuth, async (req, res) => {
         const b = req.body || {};
 
         if (!b.A || !String(b.A).trim()) {
-            return res.status(400).json({ success: false, message: 'تکایە ژمارەی ئۆتۆمبێل پڕبکەرەوە' });
+            return res.status(400).json({ success: false, message: 'تکایە ژمارەی ئۆتۆمبێل پڕبکەرەوە (پێویستە)' });
+        }
+        if (!b.B || !String(b.B).trim() || b.B === '*' || b.B === 'هەموو') {
+            return res.status(400).json({ success: false, message: 'تکایە پارێزگا / تابلۆ دیاری بکە (پێویستە)' });
+        }
+        if (!b.C || !String(b.C).trim() || b.C === '*' || b.C === 'هەموو') {
+            return res.status(400).json({ success: false, message: 'تکایە بەش دیاری بکە (پێویستە)' });
+        }
+        if (!b.N || !String(b.N).trim()) {
+            return res.status(400).json({ success: false, message: 'تکایە هۆکاری ناردن (دەینێرین بۆتان بەمەبەستی) بنووسە (پێویستە)' });
         }
 
         // Auto-generate S if not passed or <= 0

@@ -3417,7 +3417,9 @@
             color: #64748b;
             font-weight: 700;
         }
-    </style>
+    
+        .auto-en-upper { text-transform: uppercase !important; }
+</style>
 </head>
 <body>
 
@@ -5021,62 +5023,64 @@
 
         <!-- Printable Document Area (100% Exact Replica of Official Kurdistan Traffic Report23.rdlc Standard - Fitted strictly to A4) -->
         <div id="raportPrintableDoc" style="padding: 16px 28px; overflow-y: auto; flex: 1; background: #fff; color: #000; direction: rtl; font-family: 'NRT Reg', 'Speda', Tahoma, Arial, sans-serif; font-size: 12.5pt; max-width: 194mm; margin: 0 auto; box-sizing: border-box;">
-            
-            <!-- Hidden DOM elements required for static validator & JS backward-compatibility -->
-            <div style="display:none;" aria-hidden="true">
-                <span id="pDocDate"></span>
-                <span id="pDocDate_en"></span>
-                <span id="pDocPlateNo"></span>
-                <span id="pDocBash"></span>
-                <span id="pDocTablo"></span>
-                <span id="pDocModel"></span>
-            </div>
 
-            <!-- 1. Header (PageHeader) -->
-            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 2px;">
-                <!-- Right Column (Kurdish: Directorate, Registration, OPVI) -->
-                <div style="text-align: right; width: 36%; font-size: 12.5pt; font-weight: 700; line-height: 1.45; color: #000;">
-                    <div id="pDocDirectorate">بەڕێوەبەرایەتی هاتووچۆی پارێزگای سلێمانی</div>
-                    <div style="margin-top: 1px;">بەڕێوەبەرێتی بەشی تۆمار</div>
-                    <div style="margin-top: 1px; font-size: 13pt;">OPVI &nbsp;&nbsp;هۆبه‌ی</div>
+            <!-- 1. Header (PageHeader strictly matching Report23.rdlc standard & official KRG template) -->
+            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 4px; padding-bottom: 2px;">
+                <!-- Left Column (Inspection Place) -->
+                <div style="text-align: center; width: 30%; font-size: 13pt; font-weight: 700; line-height: 1.4; color: #000; padding-top: 6px;">
+                    <div style="font-size: 13.5pt; font-weight: 800;">شوێنی پشکنین</div>
+                    <div id="pDocPlace" style="margin-top: 5px; font-size: 12.5pt; font-weight: 800; min-height: 22px; color: #000;"></div>
                 </div>
 
-                <!-- Center Column (Official Kurdistan Emblem w_nawxo2 + English) -->
-                <div style="text-align: center; width: 38%;">
-                    <img src="data:image/jpeg;base64,/9j/4AAQSkZJRgABAQEASABIAAD/2wBDAAQCAwMDAgQDAwMEBAQEBQkGBQUFBQsICAYJDQsNDQ0LDAwOEBQRDg8TDwwMEhgSExUWFxcXDhEZGxkWGhQWFxb/2wBDAQQEBAUFBQoGBgoWDwwPFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhYWFhb/wgARCAEeAcwDASIAAhEBAxEB/8QAHAABAAICAwEAAAAAAAAAAAAAAAUGBAcBAwgC/8QAGgEBAAIDAQAAAAAAAAAAAAAAAAIDAQQFBv/aAAwDAQACEAMQAAAB3+AAAAAAAAAAAADjitYOpV8zMFkcnvXJQLP2OBMjZuAAAAAAAAAAAAAAAAAAAAAAHSdqg1CGd2xdfyF3XmRcp4nohyXz19sJ3F1y61XPY8zZHOlrziu4OOZ4AAAAAAAAAAAAAAAAAA4icXS9M90WCK1tLFjpmTj8nb521k5PV1ORbGpYF740Kql9xMxx+/B2mb57fn+RuXV7VG94Cietb/rbI52zuupwmX1dS55OjdwRlJi2AAAAAAAAAAAAAAHGHmanhmD6ZyqcHftfzh59csDYevN2dTV5HR1wD4iCW7IKZOwAAGrcDamieVtTef1V3Uuy8vDkYtyKFffQc/kSAAAAAAAAAAAACFJTRfXLczZyqxZ65ytuxvn6on1bi0vuj0nN5G3Vh6mx8Q17Dz2u65cy0Qth6Q3R4I9cYzfwAcaG3do/QvnsbJh+Fv8AzNYOdnGPuTQkh3dHdrq7d6gAAAAAAAAAAADjWOztPUTot+rdg4W/2Y2S1bYKdrFnshi2uvYWxDdTVt472hNiyPT4u9PeTGMMZNr6olD3Iw8rGeVZo9MufnpyOB0FaslbhKyiicXBzGVuU3S76u2j6Dn8ieAAAAAAAAAAAONJbu0vq299fscDwN+eYmXVKPxZqDujOI6Rqkwc4R3bmcbFeh82/wCZ6Hn61z7JmSxqubucvXn67ZR57o42SUWCFzjGn8GSsiImuUdZoyTnHI2tq7aPpOdyLoAAAAAAAAAAAcap2tV4ZpTAz/K9SrWbmr3RtT4+9eyF+5fCuhmq7MxzkiuWV29HG5TWM/sl+jrcdjC52yGncYMXZHszMvvzgdNU/iG+bJfW+PuFhK9X3GyvVcoMgAAAAAAAAAAANK5mwdVcbclPn6cnbrE7lQd8JxBTtUnHKOQAJjryYbdo6xpXgccgcQU8SEXly9kQonxlwO6O3pZQ6mqAAAAAAAAAAAABEaV9AUKOahn6/tHnejMDUt6YSwpxhpjqh54nkFOQlyIZAAMeJnGdhfiZniEnOxDI4hLmJxILfosu8q5aO/zwyAAAAAAAAAAAAAAo+vd813Ws1HJfPzxt2TQGbr2SQqkAAAAAAQ+PbHLws/P2qo3aOdKdnS5F8AAAAAAAAAAAAAAAAOrXeyEM6Q7dw0fnbNG4mMfRv7siK6aLJtBzEM9ghkxY2yM5hYGZlhcZ0js1YfXdrnv0Uu788dDW5EgAAAAAAAAAAAAxTKa7pJbp5f6j1K0P8m+mPkAAxyC1p8SvE3Rxy9qJ5hMzrak1jZNUonY3RE3RuA5W1Fbj1h19nT3GOtqACIJd5snTezyjLHphpG+FydfYAAAAAADAM+n6z0Sbc13HzsJVf4unaxEzENXbI88Bb/Qnkzln3tz5C3Rhs/HoVb1Leih92uo53Pm6/wDS1E9YRfolvUaJrPpziufn7p9EY1kNOVrbflPQ2LXuny7uTZq9Ddml7bLF+x9L6Y2q946DiuM4ZmGNh06OuJTciydEJdW3NNw+ce3Zvw/6Ky2s6u0AAAAEUPJvb1wllY/VVaZZtqofdtVdXGzakV8CwV+bJrux7BjMHZeMHDY8zoKs0z9T1fTVyql6b7/LUht1elXnf4y9FQeg46GbrsLznU6LPRWPpv6sjN1KwytsKpMXujSUXp7epgcnGbbOsy6nGcYzb4Xtmteyw+n/AAht/Yr9KOvsAAAAMHyT67op5NexZ88d2b1dyaHvl8HT0ZtbNT6V9Qz54teg9OZxX3PB9Z0lbGcCZgaTh6K0zWc/OM60d1INs6nnOwuU3o7EwypP4ncrjUKbaGcT4k6uxH9b6Pnm7bkNE75t0djN5xMz7NY0X0QPJFU9xfB4M59twLGqPR9FvTIAAAAAAAAENB3UaussvHlY1ttHMND4HpiANPd99qZ86/sEoQN6q1XPmQyJkutUqXaWnin2Ay7F2WE1Ni7/AO81jf8AH7iUiJ+bK3OSwAAAAAAAAAAAAAAAAYOcICHu4ofVsHpKLLyfyRvd8ZBEZ/HYdMlFZ58485iFN7dgdhT5WbGFmgAAAAAAAAB//8QAMBAAAgICAQIGAgEDAwUAAAAABAUCAwEGABAUBxETFSBAElAwFiEiIyQxFzM0NTb/2gAIAQEAAQUC+5uZ/arNfN75X+2dtaV8UhZ0qWa8Y8lSNUvw4YMBjFJ1R4/7Mw4QXkWILPPWWMSj7wvHuGvqvh+unKMIF7QH+c2uytykKGIUzNfVkZXJvbZ/ArXsGnr0a4KxxrpULF+wOxyFuxLirP07VgIuE15nBuv452Kui8ikg6SsW53cvDGCF6bCGYTWjsLJjdfTTaLbWRJ5k/uEoloYnR6qGaDXQsoKDsZLOInYjKXH70ZQUPdVfT+h2BnSqCfd1YGtHqAVNW5Le0amoemFFrZmLTUOP8d8BxcBqgPYqfjsCwdsAvtujeaLWTjX3lsb/EQf1dZEJJUSWl0HB/fOIqEEolcxPc/9/Zj5NmEY4jFkR2oWpLvbU/yljEo/PxDDzXVVONlZg9RQ61hYUmQ580qov2Rr9/dyO+Z823N8BFw+BQ+Rr7vZfjLOMYIbK6ODuFN+YSxKPyNogSJq+ZYXc2Oq3s9f/skKqgQPoh1l6z7s5YhBNPJUubL5ddd8/wCvOphNAtGyb2FSP7thuU5gmjV58WszgJ6ZukTrvkujiDrhnl2mu/8Ao+LLey2/7j4+tYoWnF06YFVigPm048lcc+eOU29nsnXZUbvYXn/TjHpbLqDJTT1xzw7a5aa98C76xhtexmQfH9vopVtXoL+bH5wXbQ2IC3SEsSj9rf7PVLeWSGYdC6sEC67dm5VwyisoXU2sro/CccSjtQlYL/
-4s3qfvuGOs8kE5DjNT7XCQiqmVqMWQcTTRsB8kINmIxypsgjBVDyyVzcKImYtQ7Vuvf1BWAmkYNVx2GiXx1OK6EkSBo1Y7qZiriKdXpNodBnP0reUZelOWSuTG0710TTlJe/dndMtRlJeh5/xbAgwJEZHt+kxNwhKBLBukQL0FseXl7fBaZHuQ8xSOGLqF/FAWkjBGLIR5qd/6Qi7qWFIuAv3fwKXAEQvHqs8FH8XjAeCiFJZ08NG47t4/rl3Kmppcocmh1FPbnzsasWfLRjEwgnRtT1uRwAEIAhwJ4okVXJrdRDJbheItRnIJFyYrADDGW9MVdwCAk8oKA6xqrMUXNgaCSYUwNpWloBDkcAk6Ba+6JJKzpdsLRCWJ3EMg6kBnFNTeLZ1RGGFFpJIkCLItiAq6uHGoheHeFTUTSKli5k3TxruaoYXhs6eKbiGEFBaoasgIFJFpFwRbVN0gv4FlYtlNHRJLScCE+VauVyT5icr8svWlTsVEqrKq5u+oKgK8FGi9hnmu3gl6UI42+xOHn5YkCiYACwEBT9kyc/dPobYn54doo9DYQ14FIthgQk6KNGcOTiuCUR91MwKOgX6qeM43EUaNibro7ltGyabfovg6PKrIlKF35IanxD/4XUaxIIH4Kj2j5rAI4yZZLKwFzAqxAuNQikKirCIUwNTM8OTImSJRDcCwtitmJeSWsNzeHhRd1hyvJYTptHFqURIk3OtErBdoM7UDWqOCsbgsVZ4BwcYiVePRdixcGX/FEXBgTrjgOOyhA/V4cUymru1oiKaSmE9KtDYCSstost4mKdQTsJYi1wQAc2y0rDO9NGMYQ3HXFQDzI4BSnaRL3MShHYlMGZstgiLYphhbyJBLM5ER9UlNiHLIgZUTe27UB85IkiTYUN0zX9UvlwGgsaKZsljKSMwsgs/YDQfGZLiogk00CNEZhZRJCiSc+iCcHKwfNQvJK0XBPgI60tgdiEJW2WJycYKJSAQVY2ZeWcFJiWBMUUkMXAERDbSgJKRQDwCT2xkhwk1DTRhe/MUTHVn/sVH2VTgYkBTU4z+0jwsQgA7CKcPCUVEeSbslpMBN1QLJaz+TfcJxsxTBoqU77KaAkkYCVrwJQkjRwpks3w6liiBmKM9EhlfNCZSzbat0GJKzhfFGoEEJ4bk4tqD5pwQ8JaygMHFCn51GQJlILOBetyhpuK8y8gJKAQMFrVOQIzihDmLuDsUaBAOM7jdYl0E9KgDyXFcoTC2SOoajZCSpFBgskSA1rb1sy7wADLR+ptULZN/SxqIhJZJRSuOhiYwjEL3gTdaJPCxEuYkRqlv2BQ/Jikq5JJCI1LfVawYnMAzASRt3UkDrWQEkTLfCVqRMBKj3JV4oeXrBhm9mEHgqDUJnZrWYxxS19rRvzGElLYIpqVXY9QLRCMxclIUPccvGIsWSSEQuYnIy4UWRsoEilCyFL++NQTBTAqsdX9+xO5yRzZykGaEXRq7zRMEEHK6METJ2S+BUIkguCgzehkv/lYdQDQIVxQZo2JEbDJBBDkgGYptkMlruWZQy1H2n00hL5rFiyOP40zuwykXElUze3FTUy2N8fKInrSULRnbNgGVyDpqmXyYQpuxcg8BWdSQQKQxIPKiKVQ8FiUpps36FSRc0K/kpnn0FxMCF0E4mgjxwJ+Gfiic50h5KACLul8hHyNCRJ6myQ/BpaRqGlluuNSlpzQNLznSE43YkyG5FKlPsATBQhI2ANAsBHDxBhIGsAvobdgJW4BEhZQQKqkq0GuELAFmDg6fwgao0xghDqSWgxngbmkMcwZbstBCKciGJLkU7KSErrQJ7wo8tWgGYSiS2CCCS2nEzUAsO8QCA0yQFZQYJB4leUHMrYkASuBlcFlIQkZFStPeBGLBEIWAIXWQGcAyMCSWEBckYs2qPxMVMVBJKKaUMNTCbMoBsCOVgoo2S4iZrJQvDV0Uf4iSISgkmbCbgqMoRIoJESRZtai4cqEMlgZnQJFgRqYmUW5UMlYTAZkTOKkmACA2BP9qhbSZFUoyyhuLo4oe2ToggVtADx/FgxNELBN0WYAQiS4yxLU1uTr/JIZvY3vU36jgUAAWLRtp5CjAAQJEQG8WWmVvg0AIoCBAAAYDbKtUbEJoPgExnOb1ADK2wu1Ygy4jURapl+LyBC5ouUOioyryEdEQ1Lxo4cJMjgpauiTS/7j//2gAIAQMAAT8QCP/aAAgBAgAKPxAJ/8QAFBABAAAAAAAAAAAAAAAAAAAAkP/aAAgBAQAAPxAT/9g==" style="height: 66px; object-fit: contain; margin-bottom: 2px;" alt="Ministry of Interior Traffic">
-                    <div style="font-family: Arial, sans-serif; font-size: 8.5pt; font-weight: 700; line-height: 1.25; direction: ltr; color: #000;">
+                <!-- Center Column (Official KRG Eagle Emblem w_nawxo2 + English Titles) -->
+                <div style="text-align: center; width: 40%; display: flex; flex-direction: column; align-items: center; justify-content: flex-start;">
+                    <img src="data:image/png;base64,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" alt="KRG Traffic Emblem" style="height: 72px; width: auto; max-width: 95px; object-fit: contain; display: block; margin: 0 auto 3px auto;">
+                    <div style="font-family: Arial, 'NRT Reg', Tahoma, sans-serif; font-size: 8.5pt; font-weight: 700; line-height: 1.32; direction: ltr; color: #000; text-align: center;">
                         <div>Ministry of InteriorGeneral Directorate of Traffic</div>
                         <div>Sulaimany Traffic Directorate</div>
                         <div>Registration Affair</div>
                     </div>
                 </div>
 
-                <!-- Left Column (Inspection Place) -->
-                <div style="text-align: center; width: 26%; font-size: 12.5pt; font-weight: 700; line-height: 1.45; color: #000;">
-                    <div>شوێنى پشکنین</div>
-                    <div id="pDocPlace" style="margin-top: 2px; font-weight: 700;"></div>
+                <!-- Right Column (Directorate, Registration, OPVI) -->
+                <div style="text-align: center; width: 30%; font-size: 13pt; font-weight: 700; line-height: 1.45; color: #000; padding-top: 4px;">
+                    <div id="pDocDirectorate" style="font-size: 13pt; font-weight: 800;">بەڕێوەبەرایەتی هاتووچۆی پارێزگای سلێمانی</div>
+                    <div style="font-size: 13.5pt; font-weight: 900; margin-top: 3px;">بەڕێوەبەرێتی بەشی تۆمار</div>
+                    <div style="font-size: 14pt; font-weight: 900; margin-top: 3px; letter-spacing: 0.5px;">هۆبەی OPVI</div>
                 </div>
             </div>
 
-            <!-- 2. Ref Row (No. on left, ژمارە : on right) + Horizontal Rule -->
-            <div style="display: flex; justify-content: space-between; align-items: flex-end; font-size: 12.5pt; font-weight: 700; color: #000; margin-top: 2px;">
-                <div style="text-align: right; width: 45%;">
-                    ژمارە : &nbsp;<span id="pDocS" style="font-family: Arial, sans-serif;"></span>
+            <!-- 2. Ref Row & Date Row (Matching Report23.rdlc Tablix) -->
+            <div style="display: flex; justify-content: space-between; align-items: center; font-size: 11.5pt; font-weight: 700; color: #000; margin-top: 6px; padding: 0 4px;">
+                <div style="display: flex; gap: 20px; direction: ltr; font-family: Arial, sans-serif; align-items: center;">
+                    <div>No. &nbsp;<span id="pDocS_en" style="font-weight: 800; min-width: 30px; display: inline-block;"></span></div>
+                    <div style="margin-left: 20px;">Date: &nbsp;<span id="pDocDate_en" style="font-weight: 700;"></span></div>
                 </div>
-                <div style="text-align: left; width: 45%; direction: ltr; font-family: Arial, sans-serif;">
-                    No. &nbsp;<span id="pDocS_en"></span>
+                <div style="display: flex; gap: 24px; direction: rtl; align-items: center;">
+                    <div>ژمارە : &nbsp;<span id="pDocS" style="font-family: Arial, sans-serif; font-weight: 800; min-width: 30px; display: inline-block;"></span></div>
+                    <div style="margin-right: 24px;">بەروار : &nbsp;<span id="pDocDate" style="font-family: Arial, sans-serif; font-weight: 700;"></span></div>
                 </div>
             </div>
-            <div style="border-bottom: 1.5px solid #000; width: 100%; margin: 2px 0 10px 0;"></div>
 
-            <!-- 3. Recipient & Subject -->
-            <div style="text-align: center; margin-bottom: 10px; color: #000;">
-                <div style="font-size: 13.5pt; font-weight: 700; margin-bottom: 4px;">
-                    بۆ  به‌ڕێز /  به‌ڕێوه‌به‌ری به‌شی تۆمار
-                </div>
-                <div style="font-size: 13.5pt; font-weight: 700; display: inline-block; border-bottom: 1.8px solid #000; padding-bottom: 1px;">
+            <!-- Divider Line strictly matching Line1 in Report23.rdlc -->
+            <hr style="border: none; border-top: 1.8px solid #000; margin: 4px 0 10px 0;">
+
+<div style="font-size: 13.5pt; font-weight: 700; display: inline-block; border-bottom: 1.8px solid #000; padding-bottom: 1px;">
                     بابەت / ڕاپۆرتى پشکنین
+                </div>
+            </div>
+
+            <!-- Vehicle Header Info (Strictly matching Report23.rdlc: A, C, B and D) -->
+            <div style="display: flex; justify-content: space-between; align-items: center; margin: 4px 0 8px 0; font-size: 11.5pt; font-weight: 700; color: #000; border: 1.5px solid #000; padding: 3px 8px; background: #fff;">
+                <div style="display: flex; align-items: center; gap: 8px;">
+                    <span>دواى پشکنینى ئوتومبیلی ژمارە :</span>
+                    <span id="pDocPlateNo" style="font-weight: 900; font-family: 'JetBrains Mono', Consolas, monospace; font-size: 13pt;"></span>
+                    <span id="pDocBash" style="font-weight: 800;"></span>
+                    <span id="pDocTablo" style="font-weight: 800;"></span>
+                </div>
+                <div style="display: flex; align-items: center; gap: 6px;">
+                    <span>جۆرى ئوتومبێل :</span>
+                    <span id="pDocModel" style="font-weight: 800;"></span>
                 </div>
             </div>
 
@@ -5467,23 +5471,28 @@ function setupC4KurdInputs() {
 // ─── AUTO ENGLISH UPPERCASE & KEY LENGTH CALCULATOR ─────────────────────
 function toEnglishUppercase(text) {
     if (!text) return '';
+
+    // 1. Convert Arabic 101 ligatures for B (Lam-Alef in all forms) to 'B' FIRST before single characters
+    let s = text.replace(/[\uFEFB\uFEFC\uFEF7\uFEF8\uFEF9\uFEFA]|لا|لآ|لإ|لأ/g, 'B');
+
+    // 2. Comprehensive QWERTY keycap map for Kurdish Central & Arabic 101 layouts + Eastern Arabic/Persian digits
     const map = {
-        // Standard PC Keyboard letters (QWERTY layout mapped from Kurdish keys)
-        'ق':'Q',
-        'و':'W',
-        'ە':'E', 'ع':'E',
+        // Standard PC Keyboard letters (QWERTY layout mapped from Kurdish & Arabic keys)
+        'ق':'Q', 'ض':'Q',
+        'و':'W', 'ص':'W',
+        'ە':'E', 'ع':'E', 'ث':'E',
         'ر':'R', 'ڕ':'R',
         'ت':'T', 'ط':'T',
-        'ی':'Y', 'ي':'Y', 'ى':'Y',
-        'ۆ':'O', 'ؤ':'O',
+        'ی':'Y', 'ي':'Y', 'ى':'Y', 'غ':'Y',
+        'ۆ':'O', 'ؤ':'O', 'خ':'O',
         'ێ':'I', 'ئ':'I',
-        'پ':'P',
-        'ا':'A', 'ئا':'A', 'أ':'A', 'إ':'A', 'آ':'A', 'ء':'A',
-        'س':'S', 'ص':'S',
-        'د':'D', 'ض':'D',
+        'پ':'P', 'ح':'P',
+        'ا':'A', 'ئا':'A', 'أ':'A', 'إ':'A', 'آ':'A', 'ء':'A', 'ش':'A',
+        'س':'S',
+        'د':'D',
         'ف':'F',
-        'گ':'G', 'غ':'G',
-        'ه':'H', 'ھ':'H', 'ح':'H',
+        'گ':'G',
+        'ه':'H', 'ھ':'H',
         'ژ':'J',
         'ک':'K', 'ك':'K',
         'ل':'L', 'ڵ':'L',
@@ -5493,15 +5502,16 @@ function toEnglishUppercase(text) {
         'ڤ':'V',
         'ب':'B',
         'ن':'N',
-        'م':'M',
+        'م':'M', 'ة':'M',
         
-        // Eastern Arabic & Persian digits
+        // Eastern Arabic & Persian digits to standard 0-9
         '٠':'0','١':'1','٢':'2','٣':'3','٤':'4','٥':'5','٦':'6','٧':'7','٨':'8','٩':'9',
         '۰':'0','۱':'1','۲':'2','۳':'3','۴':'4','۵':'5','۶':'6','۷':'7','۸':'8','۹':'9'
     };
+
     let out = '';
-    for (let i = 0; i < text.length; i++) {
-        const ch = text[i];
+    for (let i = 0; i < s.length; i++) {
+        const ch = s[i];
         if (map[ch] !== undefined) {
             out += map[ch];
         } else {
@@ -5639,84 +5649,7 @@ function updateBarcodeState(forceRegenerate = false) {
 }
 
 function setupAutoEnglishUpper() {
-    // 1. Direct Physical PC Keyboard Interceptor via e.code
-    // Guarantees exact QWERTY English keycap characters regardless of Windows keyboard language (Kurdish/Arabic/etc.)
-    document.addEventListener('keydown', function(e) {
-        const target = e.target;
-        if (!target || !target.classList) return;
-
-        const isAutoEn = target.classList.contains('auto-en-upper');
-        const isMobile = target.id === 'dfT';
-        if (!isAutoEn && !isMobile) return;
-
-        // Allow system/browser shortcuts (Ctrl+C, Ctrl+V, Ctrl+A, Ctrl+Z, Alt+Shift, etc.)
-        if (e.ctrlKey || e.metaKey || e.altKey) return;
-
-        // Allow navigation and text editing control keys
-        const allowedControlKeys = [
-            'Backspace', 'Delete', 'Tab', 'Enter', 'Escape',
-            'ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown',
-            'Home', 'End', 'PageUp', 'PageDown', 'Insert',
-            'F1', 'F2', 'F3', 'F4', 'F5', 'F6', 'F7', 'F8', 'F9', 'F10', 'F11', 'F12'
-        ];
-        if (allowedControlKeys.includes(e.key)) return;
-
-        let char = null;
-        if (/^Key[A-Z]$/.test(e.code)) {
-            char = e.code.slice(3).toUpperCase();
-        } else if (/^Digit[0-9]$/.test(e.code)) {
-            if (e.shiftKey) {
-                if (e.code === 'Digit8') char = '*';
-                else return;
-            } else {
-                char = e.code.slice(5);
-            }
-        } else if (/^Numpad[0-9]$/.test(e.code)) {
-            char = e.code.slice(6);
-        } else if (e.code === 'Space') {
-            char = ' ';
-        } else if (e.code === 'NumpadMultiply') {
-            char = '*';
-        }
-
-        if (char === null) return;
-
-        // Field specific allowed characters
-        if (isMobile) {
-            if (!/[0-9]/.test(char)) { e.preventDefault(); return; }
-        } else if (target.id === 'dfR') {
-            if (!/[A-Z0-9]/.test(char)) { e.preventDefault(); return; }
-        } else if (target.id === 'dfA' || target.id === 'gomrgSearchCarN' || target.id === 'gomrgCarN') {
-            if (!/[A-Z0-9 ]/.test(char)) { e.preventDefault(); return; }
-        } else if (target.id === 'dfS' || target.id === 'dfW' || target.id === 'dfAA') {
-            if (!/[A-Z0-9*]/.test(char)) { e.preventDefault(); return; }
-        } else {
-            if (!/[A-Z0-9 ]/.test(char)) { e.preventDefault(); return; }
-        }
-
-        e.preventDefault();
-
-        const start = target.selectionStart;
-        const end = target.selectionEnd;
-        const val = target.value;
-
-        let maxLen = target.maxLength > 0 && target.maxLength < 1000 ? target.maxLength : 999;
-        if (target.id === 'dfR' || target.id === 'dfS' || target.id === 'dfW' || target.id === 'dfAA') {
-            maxLen = 17;
-        } else if (target.id === 'dfT') {
-            maxLen = 11;
-        }
-
-        if ((val.length - (end - start)) >= maxLen) {
-            return;
-        }
-
-        target.value = val.slice(0, start) + char + val.slice(end);
-        target.setSelectionRange(start + 1, start + 1);
-        target.dispatchEvent(new Event('input', { bubbles: true }));
-    });
-
-    // 2. Input event listener for pasted text, touch inputs, and normalization
+    // Standard Input Normalizer (NO destructive keydown interceptor - fixes the 'BA' double-typing bug permanently)
     document.addEventListener('input', function(e) {
         if (!e.target) return;
 
@@ -5737,23 +5670,25 @@ function setupAutoEnglishUpper() {
             const original = e.target.value;
             let converted = toEnglishUppercase(original);
 
-            // For vehicle plate (dfA)
-            if (e.target.id === 'dfA') {
+            // Field specific character filtering and upper-casing
+            if (e.target.id === 'dfA' || e.target.id === 'rapA' || e.target.id === 'gomrgSearchCarN' || e.target.id === 'gomrgCarN' || e.target.id === 'rapSearchCarNo') {
                 converted = converted.replace(/[^A-Z0-9 ]/g, '');
-            } else if (e.target.id === 'dfR') {
-                // Chassis: strictly max 17 uppercase alphanumeric chars!
+            } else if (e.target.id === 'dfR' || e.target.id === 'rapG') {
+                // Chassis / VIN: strictly max 17 uppercase alphanumeric chars
                 converted = converted.replace(/[^A-Z0-9]/g, '').slice(0, 17);
-            } else if (e.target.id === 'dfS') {
-                // Cabin: strictly max 17 uppercase alphanumeric chars!
+            } else if (e.target.id === 'dfS' || e.target.id === 'dfW' || e.target.id === 'dfAA') {
+                // Cabin / Trailers: strictly max 17 uppercase alphanumeric chars or *
                 converted = converted.replace(/[^A-Z0-9*]/g, '').slice(0, 17);
-            } else if (e.target.id === 'dfW' || e.target.id === 'dfAA') {
-                // Trailer chassis: strictly max 17 uppercase alphanumeric chars!
-                converted = converted.replace(/[^A-Z0-9*]/g, '').slice(0, 17);
+            } else {
+                converted = converted.replace(/[^A-Z0-9 *_-]/g, '');
             }
 
             if (original !== converted) {
+                // Maintain correct cursor position even if ligature was replaced (e.g. لا -> B)
+                const diff = original.length - converted.length;
+                const newPos = Math.max(0, cursor - (diff > 0 ? diff : 0));
                 e.target.value = converted;
-                e.target.setSelectionRange(cursor, cursor);
+                e.target.setSelectionRange(newPos, newPos);
             }
             if (e.target.id === 'dfR') {
                 updateKeyLength();
@@ -11370,17 +11305,36 @@ async function doRaportSearch() {
 
 async function saveRaportRecord() {
     const a = (document.getElementById('rapA')?.value || '').trim();
+    const b = (document.getElementById('rapB')?.value || '').trim();
+    const c = (document.getElementById('rapC')?.value || '').trim();
+    const n = (document.getElementById('rapN')?.value || '').trim();
+
     if (!a) {
-        alert('تکایە ژمارەی ئۆتۆمبێل دیاری بکە');
+        alert('تکایە ژمارەی ئۆتۆمبێل دیاری بکە (پێویستە)');
         document.getElementById('rapA')?.focus();
+        return;
+    }
+    if (!b || b === '*' || b === 'هەموو') {
+        alert('تکایە پارێزگا / تابلۆ دیاری بکە (پێویستە)');
+        document.getElementById('rapB')?.focus();
+        return;
+    }
+    if (!c || c === '*' || c === 'هەموو') {
+        alert('تکایە بەش دیاری بکە (پێویستە)');
+        document.getElementById('rapC')?.focus();
+        return;
+    }
+    if (!n) {
+        alert('تکایە هۆکاری ناردن (دەینێرین بۆتان بەمەبەستی) بنووسە (پێویستە)');
+        document.getElementById('rapN')?.focus();
         return;
     }
 
     const sVal = parseInt(document.getElementById('rapOutS')?.value, 10) || 0;
     const body = {
         A: a,
-        B: document.getElementById('rapB')?.value || '',
-        C: document.getElementById('rapC')?.value || '',
+        B: b,
+        C: c,
         D: document.getElementById('rapD')?.value || '',
         E: document.getElementById('rapE')?.value || '0',
         F: document.getElementById('rapF')?.value || '',
@@ -11391,7 +11345,7 @@ async function saveRaportRecord() {
         K: document.getElementById('rapK')?.value || '*',
         L: document.getElementById('rapL')?.value || '',
         M: document.getElementById('rapM')?.value || '',
-        N: document.getElementById('rapN')?.value || '',
+        N: n,
         P: (document.getElementById('rapPlace')?.value || '').trim() || getActivePlace(),
         place: (document.getElementById('rapPlace')?.value || '').trim() || getActivePlace(),
         Q: document.getElementById('rapQ')?.value || '',
@@ -11411,6 +11365,7 @@ async function saveRaportRecord() {
         });
         const d = await res.json();
         if (d.success) {
+            _raportCurrentId = d.id;
             alert(d.message || 'ڕاپۆرت بە سەرکەوتوویی لە هەردوو تەیبڵی (RAP) و (حیجز) تۆمارکرا');
             if (d.nextS) {
                 document.getElementById('rapOutS').value = d.nextS;
@@ -11420,7 +11375,7 @@ async function saveRaportRecord() {
 
             // Ask to print
             if (confirm('زانیارییەکان بە سەرکەوتوویی لە هەردوو تەیبڵدا تۆمارکران. ئایا دەتەوێت نوسراوی ڕاپۆرتەکە چاپ بکەیت؟')) {
-                printRaportLetter();
+                printRaportLetter(d.id);
             }
         } else {
             alert(d.message || 'هەڵە لە تۆمارکردن');
@@ -11479,55 +11434,146 @@ async function updateT1FromRaport() {
     }
 }
 
-function printRaportLetter() {
-    // Populate printable document fields
-    const sVal  = document.getElementById('rapOutS')?.value || '3405';
-    const date  = document.getElementById('rapDate')?.value || new Date().toISOString().split('T')[0];
-    const place = (document.getElementById('rapPlace')?.value || '').trim() || getActivePlace();
-    const plate = document.getElementById('rapA')?.value || '-';
-    const tablo = document.getElementById('rapB')?.value || '';
-    const bash  = document.getElementById('rapC')?.value || '';
-    const model = document.getElementById('rapD')?.value || '-';
-    const year  = document.getElementById('rapE')?.value || '-';
-    const color = document.getElementById('rapF')?.value || '-';
-    const chass = document.getElementById('rapG')?.value || '-';
-    const qam   = document.getElementById('rapH')?.value || '*';
-    const owner = document.getElementById('rapM')?.value || '-';
-    const a1Ch  = document.getElementById('rapI')?.value || '*';
-    const a1Cl  = document.getElementById('rapJ')?.value || '';
-    const a2Ch  = document.getElementById('rapK')?.value || '*';
-    const a2Cl  = document.getElementById('rapL')?.value || '';
-    const reason= document.getElementById('rapN')?.value || 'شاسی حفری خۆڕکە لێیداوە  و چەند ژمارەیەکی ناخوێنرێتەوە. وەژمارەکانی تری پاک بکرێنەوە نامینن. بدرێت بە لیژنەی هاوبەش.';
+async function printRaportLetter(targetId) {
+    const rawPlate = (document.getElementById('rapA')?.value || '').trim();
+    const tablo    = (document.getElementById('rapB')?.value || '').trim();
+    const bash     = (document.getElementById('rapC')?.value || '').trim();
+    const reason   = (document.getElementById('rapN')?.value || '').trim();
 
-    if (document.getElementById('pDocS')) document.getElementById('pDocS').textContent = sVal;
-    if (document.getElementById('pDocS_en')) document.getElementById('pDocS_en').textContent = sVal;
-    if (document.getElementById('pDocDate')) document.getElementById('pDocDate').textContent = date;
-    if (document.getElementById('pDocDate_en')) document.getElementById('pDocDate_en').textContent = date;
-    if (document.getElementById('pDocPlace')) document.getElementById('pDocPlace').textContent = (place === '*' || !place) ? getActivePlace() : place;
+    // 1. STRICT REQUIREMENT: Car No + Province + Bash + Reason MUST NOT be empty
+    if (!rawPlate) {
+        alert('⚠️ بە هیچ شێوەیەک ڕاپۆرت پرنت ناکرێت!\n\nژمارەی ئۆتۆمبێل تۆمار نەکراوە. تکایە سەرەتا ژمارەی ئۆتۆمبێل بنووسە.');
+        document.getElementById('rapA')?.focus();
+        return;
+    }
+    if (!tablo || tablo === '*' || tablo === 'هەموو') {
+        alert('⚠️ بە هیچ شێوەیەک ڕاپۆرت پرنت ناکرێت!\n\nپارێزگا / تابلۆ تۆمار نەکراوە. تکایە سەرەتا پارێزگا دیاری بکە.');
+        document.getElementById('rapB')?.focus();
+        return;
+    }
+    if (!bash || bash === '*' || bash === 'هەموو') {
+        alert('⚠️ بە هیچ شێوەیەک ڕاپۆرت پرنت ناکرێت!\n\nبەش دیاری نەکراوە. تکایە سەرەتا بەشی ئۆتۆمبێل هەڵبژێرە.');
+        document.getElementById('rapC')?.focus();
+        return;
+    }
+    if (!reason) {
+        alert('⚠️ بە هیچ شێوەیەک ڕاپۆرت پرنت ناکرێت!\n\nهۆکاری ناردن (دەینێرین بۆتان بەمەبەستی) تۆمار نەکراوە. تکایە سەرەتا هۆکاری کێشەی ئۆتۆمبێل بنووسە.');
+        document.getElementById('rapN')?.focus();
+        return;
+    }
 
-    if (document.getElementById('pDocPlateNo')) document.getElementById('pDocPlateNo').textContent = plate;
-    if (document.getElementById('pDocBash')) document.getElementById('pDocBash').textContent = bash;
-    if (document.getElementById('pDocTablo')) document.getElementById('pDocTablo').textContent = tablo;
-    if (document.getElementById('pDocModel')) document.getElementById('pDocModel').textContent = model;
-    if (document.getElementById('pDocYear')) document.getElementById('pDocYear').textContent = year;
-    if (document.getElementById('pDocColor')) document.getElementById('pDocColor').textContent = color;
-    if (document.getElementById('pDocChassis')) document.getElementById('pDocChassis').textContent = chass;
-    if (document.getElementById('pDocQamara')) document.getElementById('pDocQamara').textContent = qam || '*';
-    if (document.getElementById('pDocOwner')) document.getElementById('pDocOwner').textContent = owner;
-    if (document.getElementById('pDocA1Chassis')) document.getElementById('pDocA1Chassis').textContent = a1Ch || '*';
-    if (document.getElementById('pDocA1Color')) document.getElementById('pDocA1Color').textContent = (a1Cl && a1Cl !== '*') ? a1Cl : '';
-    if (document.getElementById('pDocA2Chassis')) document.getElementById('pDocA2Chassis').textContent = a2Ch || '*';
-    if (document.getElementById('pDocA2Color')) document.getElementById('pDocA2Color').textContent = (a2Cl && a2Cl !== '*') ? a2Cl : '*';
-    if (document.getElementById('pDocReason')) document.getElementById('pDocReason').textContent = reason;
-    const directorate = tablo || 'سلێمانی';
-    const registrar = (currentUser && (currentUser.name || currentUser.username)) || 'سیستەم';
-    if (document.getElementById('pDocDirectorate')) document.getElementById('pDocDirectorate').textContent = directorate;
-    if (document.getElementById('pDocRegistrar')) document.getElementById('pDocRegistrar').textContent = registrar;
+    // 2. CHECK IF REGISTERED IN DATABASE (تۆمارکراوە لە داتابەیس یان نا)
+    const checkBtn = document.getElementById('btnRapPrint');
+    const oldBtnHtml = checkBtn ? checkBtn.innerHTML : '';
+    if (checkBtn) {
+        checkBtn.disabled = true;
+        checkBtn.innerHTML = '<span>⏳ پشکنینی تۆمار لە داتابەیس...</span>';
+    }
 
-    openOverlay('modalRaportPrint');
+    try {
+        const idToCheck = targetId || _raportCurrentId || '';
+        const url = `/api/raport/check-registered?id=${encodeURIComponent(idToCheck)}&plate=${encodeURIComponent(rawPlate)}&tablo=${encodeURIComponent(tablo)}&bash=${encodeURIComponent(bash)}`;
+        const res = await fetch(url);
+        const checkResult = await res.json();
+
+        if (!checkResult || !checkResult.registered || !checkResult.data) {
+            alert(`⚠️ بە هیچ شێوەیەک ڕاپۆرت پرنت ناکرێت چونكە هێشتا تۆمار نەکراوە!\n\nئەم ئۆتۆمبێلە بە ژمارەی (${rawPlate}) و تابلۆی (${tablo}) و بەشی (${bash}) لە داتابەیسدا تۆمار نەکراوە.\n\nتکایە سەرەتا کلیک لە دوگمەی سەوزی (💾 تۆمار کردنی زانیاری) بکە تا لە تەیبڵی RAP تۆمار بکرێت، پاشان دەتوانیت چاپی بکەیت.`);
+            return;
+        }
+
+        // 3. EQUATE ALL FIELDS STRICTLY TO DATABASE RECORD (تەواوی خانەکان یەکسان بکە بە فیڵدی داتابەیسەکە)
+        const db = checkResult.data;
+        _raportCurrentId = db.id;
+
+        // Synchronize all form input fields with the database fields:
+        if (db.A !== undefined && db.A !== null) document.getElementById('rapA').value = db.A;
+        if (db.B !== undefined && db.B !== null) document.getElementById('rapB').value = db.B;
+        if (db.C !== undefined && db.C !== null) document.getElementById('rapC').value = db.C;
+        if (db.D !== undefined && db.D !== null) document.getElementById('rapD').value = db.D;
+        if (db.E !== undefined && db.E !== null) document.getElementById('rapE').value = db.E;
+        if (db.F !== undefined && db.F !== null) document.getElementById('rapF').value = db.F;
+        if (db.G !== undefined && db.G !== null) document.getElementById('rapG').value = db.G;
+        if (db.H !== undefined && db.H !== null) document.getElementById('rapH').value = db.H;
+        if (db.I !== undefined && db.I !== null) document.getElementById('rapI').value = db.I;
+        if (db.J !== undefined && db.J !== null) document.getElementById('rapJ').value = db.J;
+        if (db.K !== undefined && db.K !== null) document.getElementById('rapK').value = db.K;
+        if (db.L !== undefined && db.L !== null) document.getElementById('rapL').value = db.L;
+        if (db.M !== undefined && db.M !== null) document.getElementById('rapM').value = db.M;
+        if (db.N !== undefined && db.N !== null) document.getElementById('rapN').value = db.N;
+        if (db.S !== undefined && db.S !== null) document.getElementById('rapOutS').value = db.S;
+        if (db.O) {
+            document.getElementById('rapDate').value = String(db.O).slice(0, 10);
+        }
+        if (db.Q) document.getElementById('rapPlace').value = db.Q;
+
+        // Synchronize all printable document elements (A - S) strictly with the database fields:
+        const sVal      = db.S || document.getElementById('rapOutS')?.value || '3405';
+        const dateStr   = db.O ? String(db.O).slice(0, 10) : (document.getElementById('rapDate')?.value || new Date().toISOString().split('T')[0]);
+        const place     = db.Q || (document.getElementById('rapPlace')?.value || '').trim() || getActivePlace();
+        const directorate = db.P || db.B || 'سلێمانی';
+        const plate     = db.A || rawPlate;
+        const tabloVal  = db.B || tablo;
+        const bashVal   = db.C || bash;
+        const carType   = db.D || '-';
+        const year      = db.E || '-';
+        const color     = db.F || '-';
+        const chass     = db.G || '-';
+        const qam       = db.H || '*';
+        const owner     = db.M || '-';
+        const a1Ch      = db.I || '*';
+        const a1Cl      = (db.J && db.J !== '*') ? db.J : '';
+        const a2Ch      = db.K || '*';
+        const a2Cl      = (db.L && db.L !== '*') ? db.L : '';
+        const reasonVal = db.N || reason;
+        const registrar = db.R || (currentUser && (currentUser.name || currentUser.username)) || 'سیستەم';
+
+        if (document.getElementById('pDocS')) document.getElementById('pDocS').textContent = sVal;
+        if (document.getElementById('pDocS_en')) document.getElementById('pDocS_en').textContent = sVal;
+        if (document.getElementById('pDocDate')) document.getElementById('pDocDate').textContent = dateStr;
+        if (document.getElementById('pDocDate_en')) document.getElementById('pDocDate_en').textContent = dateStr;
+        if (document.getElementById('pDocPlace')) document.getElementById('pDocPlace').textContent = (place === '*' || !place) ? getActivePlace() : place;
+        if (document.getElementById('pDocDirectorate')) document.getElementById('pDocDirectorate').textContent = directorate;
+
+        if (document.getElementById('pDocPlateNo')) document.getElementById('pDocPlateNo').textContent = plate;
+        if (document.getElementById('pDocBash')) document.getElementById('pDocBash').textContent = bashVal;
+        if (document.getElementById('pDocTablo')) document.getElementById('pDocTablo').textContent = tabloVal;
+        if (document.getElementById('pDocModel')) document.getElementById('pDocModel').textContent = carType;
+
+        if (document.getElementById('pDocYear')) document.getElementById('pDocYear').textContent = year;
+        if (document.getElementById('pDocColor')) document.getElementById('pDocColor').textContent = color;
+        if (document.getElementById('pDocChassis')) document.getElementById('pDocChassis').textContent = chass;
+        if (document.getElementById('pDocQamara')) document.getElementById('pDocQamara').textContent = qam || '*';
+        if (document.getElementById('pDocOwner')) document.getElementById('pDocOwner').textContent = owner;
+        if (document.getElementById('pDocA1Chassis')) document.getElementById('pDocA1Chassis').textContent = a1Ch || '*';
+        if (document.getElementById('pDocA1Color')) document.getElementById('pDocA1Color').textContent = a1Cl;
+        if (document.getElementById('pDocA2Chassis')) document.getElementById('pDocA2Chassis').textContent = a2Ch || '*';
+        if (document.getElementById('pDocA2Color')) document.getElementById('pDocA2Color').textContent = a2Cl || '*';
+        if (document.getElementById('pDocReason')) document.getElementById('pDocReason').textContent = reasonVal;
+        if (document.getElementById('pDocRegistrar')) document.getElementById('pDocRegistrar').textContent = registrar;
+
+        openOverlay('modalRaportPrint');
+    } catch (err) {
+        console.error('printRaportLetter error:', err);
+        alert('هەڵە لە پشکنینی داتابەیس: ' + err.message);
+    } finally {
+        if (checkBtn) {
+            checkBtn.disabled = false;
+            checkBtn.innerHTML = oldBtnHtml;
+        }
+    }
 }
 
 function doPrintRaportDocument() {
+    const plate = (document.getElementById('pDocPlateNo')?.textContent || '').trim();
+    const tablo = (document.getElementById('pDocTablo')?.textContent || '').trim();
+    const bash  = (document.getElementById('pDocBash')?.textContent || '').trim();
+    const reason= (document.getElementById('pDocReason')?.textContent || '').trim();
+
+    if (!plate || !tablo || !bash || !reason || plate === '-' || reason === '-') {
+        alert('⚠️ بە هیچ شێوەیەک ڕاپۆرت پرنت ناکرێت!\n\nپێویستە (ژمارە + پارێزگا + بەش + هۆکاری ناردن) تۆمارکرابێت.');
+        return;
+    }
+
     document.body.classList.add('printing-raport');
     window.print();
     setTimeout(() => {
@@ -11983,6 +12029,14 @@ async function openRaportPrintDirect(id) {
             return;
         }
         const d = res.data;
+
+        // Strict Check: Car Plate + Province + Bash + Reason MUST be registered!
+        if (!d.A || !d.B || !d.C || !d.N || String(d.A).trim() === '-' || String(d.N).trim() === '-') {
+            alert('⚠️ بە هیچ شێوەیەک ڕاپۆرت پرنت ناکرێت!\n\nزانیارییە سەرەکییەکان (ژمارە + پارێزگا + بەش + هۆکاری ناردن) لەم تۆمارەدا بوونی نییە یان تەواو نەکراوە.');
+            return;
+        }
+
+        _raportCurrentId = d.id;
 
         const setVal = (elId, val) => {
             const el = document.getElementById(elId);
