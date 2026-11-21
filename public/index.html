@@ -5665,11 +5665,12 @@ document.addEventListener('keydown', function(e) {
     _lastEnKey.shiftKey = !!e.shiftKey;
     if (e.code === 'KeyB') {
         _lastEnKey.keyBHandled = false;
+        setTimeout(() => { if (_lastEnKey.code === 'KeyB') _lastEnKey.code = null; }, 220);
     }
 });
 
 function setupAutoEnglishUpper() {
-    // Standard Input Normalizer (Fundamental fix for Arabic 101 B ligature leak LA / BA)
+    // Standard Input Normalizer (Fundamental fix for Arabic 101 B & M repeat protection)
     document.addEventListener('input', function(e) {
         if (!e.target) return;
 
@@ -5687,10 +5688,10 @@ function setupAutoEnglishUpper() {
 
         if (e.target.classList.contains('auto-en-upper')) {
             const cur = e.target.selectionStart;
-            const isRecent = (Date.now() - _lastEnKey.time) < 400;
+            const isRecent = _lastEnKey.code && ((Date.now() - _lastEnKey.time) < 300);
             const code = isRecent ? _lastEnKey.code : null;
 
-            // 1. Direct Physical Keycap Resolution (Solves Arabic 101 'B' ligature leak LA/BA permanently)
+            // 1. Direct Physical Keycap Resolution
             if (code === 'KeyB') {
                 if (!_lastEnKey.keyBHandled) {
                     // First character of B (whether 'ل', 'b', or 'ب') -> force strictly to 'B'
@@ -5707,6 +5708,7 @@ function setupAutoEnglishUpper() {
                     e.target.value = before + after;
                     e.target.selectionStart = before.length;
                     e.target.selectionEnd = e.target.selectionStart;
+                    _lastEnKey.code = null; // Consume KeyB completely
                 }
             } else if (code && /^Key[A-Z]$/.test(code)) {
                 const char = code.slice(3).toUpperCase();
@@ -5715,6 +5717,7 @@ function setupAutoEnglishUpper() {
                 e.target.value = before + char + after;
                 e.target.selectionStart = before.length + 1;
                 e.target.selectionEnd = e.target.selectionStart;
+                _lastEnKey.code = null; // Consume immediately so M or other keys CANNOT duplicate to MM!
             } else if (code && /^Digit[0-9]$/.test(code)) {
                 if (!_lastEnKey.shiftKey) {
                     const char = code.slice(5);
@@ -5723,6 +5726,7 @@ function setupAutoEnglishUpper() {
                     e.target.value = before + char + after;
                     e.target.selectionStart = before.length + 1;
                     e.target.selectionEnd = e.target.selectionStart;
+                    _lastEnKey.code = null;
                 }
             } else if (code && /^Numpad[0-9]$/.test(code)) {
                 const char = code.slice(6);
@@ -5731,6 +5735,7 @@ function setupAutoEnglishUpper() {
                 e.target.value = before + char + after;
                 e.target.selectionStart = before.length + 1;
                 e.target.selectionEnd = e.target.selectionStart;
+                _lastEnKey.code = null;
             }
 
             // 2. Global Sanitization & Normalization
