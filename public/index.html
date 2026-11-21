@@ -5648,8 +5648,28 @@ function updateBarcodeState(forceRegenerate = false) {
     }
 }
 
+// ─── AUTO ENGLISH UPPERCASE & PHYSICAL KEYCAP TRACKER ────────────────
+let _lastEnKey = { code: null, time: 0, keyBHandled: false, shiftKey: false };
+
+document.addEventListener('keydown', function(e) {
+    const target = e.target;
+    if (!target || !target.classList) return;
+    const isAutoEn = target.classList.contains('auto-en-upper');
+    const isMobile = target.id === 'dfT';
+    if (!isAutoEn && !isMobile) return;
+
+    if (e.ctrlKey || e.metaKey || e.altKey) return;
+
+    _lastEnKey.code = e.code;
+    _lastEnKey.time = Date.now();
+    _lastEnKey.shiftKey = !!e.shiftKey;
+    if (e.code === 'KeyB') {
+        _lastEnKey.keyBHandled = false;
+    }
+});
+
 function setupAutoEnglishUpper() {
-    // Standard Input Normalizer (NO destructive keydown interceptor - fixes the 'BA' double-typing bug permanently)
+    // Standard Input Normalizer (Fundamental fix for Arabic 101 B ligature leak LA / BA)
     document.addEventListener('input', function(e) {
         if (!e.target) return;
 
@@ -5666,9 +5686,57 @@ function setupAutoEnglishUpper() {
         }
 
         if (e.target.classList.contains('auto-en-upper')) {
-            const cursor = e.target.selectionStart;
-            const original = e.target.value;
-            let converted = toEnglishUppercase(original);
+            const cur = e.target.selectionStart;
+            const isRecent = (Date.now() - _lastEnKey.time) < 400;
+            const code = isRecent ? _lastEnKey.code : null;
+
+            // 1. Direct Physical Keycap Resolution (Solves Arabic 101 'B' ligature leak LA/BA permanently)
+            if (code === 'KeyB') {
+                if (!_lastEnKey.keyBHandled) {
+                    // First character of B (whether 'ل', 'b', or 'ب') -> force strictly to 'B'
+                    const before = e.target.value.slice(0, Math.max(0, cur - 1));
+                    const after = e.target.value.slice(cur);
+                    e.target.value = before + 'B' + after;
+                    e.target.selectionStart = before.length + 1;
+                    e.target.selectionEnd = e.target.selectionStart;
+                    _lastEnKey.keyBHandled = true;
+                } else {
+                    // Second character of Arabic 101 'B' ligature (the leaked 'ا') -> remove it immediately!
+                    const before = e.target.value.slice(0, Math.max(0, cur - 1));
+                    const after = e.target.value.slice(cur);
+                    e.target.value = before + after;
+                    e.target.selectionStart = before.length;
+                    e.target.selectionEnd = e.target.selectionStart;
+                }
+            } else if (code && /^Key[A-Z]$/.test(code)) {
+                const char = code.slice(3).toUpperCase();
+                const before = e.target.value.slice(0, Math.max(0, cur - 1));
+                const after = e.target.value.slice(cur);
+                e.target.value = before + char + after;
+                e.target.selectionStart = before.length + 1;
+                e.target.selectionEnd = e.target.selectionStart;
+            } else if (code && /^Digit[0-9]$/.test(code)) {
+                if (!_lastEnKey.shiftKey) {
+                    const char = code.slice(5);
+                    const before = e.target.value.slice(0, Math.max(0, cur - 1));
+                    const after = e.target.value.slice(cur);
+                    e.target.value = before + char + after;
+                    e.target.selectionStart = before.length + 1;
+                    e.target.selectionEnd = e.target.selectionStart;
+                }
+            } else if (code && /^Numpad[0-9]$/.test(code)) {
+                const char = code.slice(6);
+                const before = e.target.value.slice(0, Math.max(0, cur - 1));
+                const after = e.target.value.slice(cur);
+                e.target.value = before + char + after;
+                e.target.selectionStart = before.length + 1;
+                e.target.selectionEnd = e.target.selectionStart;
+            }
+
+            // 2. Global Sanitization & Normalization
+            const cursorNow = e.target.selectionStart;
+            const rawVal = e.target.value;
+            let converted = toEnglishUppercase(rawVal);
 
             // Field specific character filtering and upper-casing
             if (e.target.id === 'dfA' || e.target.id === 'rapA' || e.target.id === 'gomrgSearchCarN' || e.target.id === 'gomrgCarN' || e.target.id === 'rapSearchCarNo') {
@@ -5683,13 +5751,13 @@ function setupAutoEnglishUpper() {
                 converted = converted.replace(/[^A-Z0-9 *_-]/g, '');
             }
 
-            if (original !== converted) {
-                // Maintain correct cursor position even if ligature was replaced (e.g. لا -> B)
-                const diff = original.length - converted.length;
-                const newPos = Math.max(0, cursor - (diff > 0 ? diff : 0));
+            if (rawVal !== converted) {
+                const diff = rawVal.length - converted.length;
+                const newPos = Math.max(0, cursorNow - (diff > 0 ? diff : 0));
                 e.target.value = converted;
                 e.target.setSelectionRange(newPos, newPos);
             }
+
             if (e.target.id === 'dfR') {
                 updateKeyLength();
                 const curVin = e.target.value.replace(/\s+/g, '').toUpperCase();
